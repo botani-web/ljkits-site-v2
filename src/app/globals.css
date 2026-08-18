@@ -1,0 +1,295 @@
+@import 'tailwindcss';
+
+/* ==========================================================================
+   TOKENS DE DESIGN
+   Tailwind v4 se configure ici, en CSS : pas de tailwind.config.js.
+   Chaque variable déclarée dans @theme génère les classes correspondantes
+   (--color-soupe → bg-soupe, text-soupe, border-soupe…).
+
+   Les couleurs viennent directement des maquettes. Note : index.html et
+   reglement.html appelaient #0E061F « --noir », kits.html « --nuit ».
+   C'est la même couleur : on garde le nom « nuit » partout.
+   ========================================================================== */
+@theme {
+  /* --- fonds, du plus sombre au plus clair --- */
+  --color-nuit: #0e061f;
+  --color-charbon: #171029;
+  --color-braise: #211736;
+  --color-bord: #2e2245;
+
+  /* --- couleurs de marque --- */
+  --color-soupe: #fe9301;
+  --color-or: #fdc003;
+  --color-oni: #e92813;
+  --color-oni-fonce: #8c1710;
+  --color-violet: #b478ff;
+
+  /* --- texte --- */
+  --color-creme: #f2e8d9;
+  --color-gris: #9e93ac;
+
+  /* --- états --- */
+  --color-vert: #5be06b;
+  --color-rouge: #e05b5b;
+
+  /* --- marque tierce --- */
+  --color-discord: #5865f2;
+
+  /* --- typographies (les variables sont posées par next/font, cf. layout.tsx) --- */
+  --font-titre: var(--police-titre), 'Bungee', cursive;
+  --font-corps: var(--police-corps), 'Outfit', system-ui, sans-serif;
+  --font-mono: var(--police-mono), 'JetBrains Mono', monospace;
+
+  /* --- largeurs de contenu (namespace --container-* → classes max-w-*) --- */
+  --container-contenu: 1180px;
+  --container-lecture: 820px;
+}
+
+/* ==========================================================================
+   BASE
+   ========================================================================== */
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--color-nuit);
+    color: var(--color-creme);
+    font-family: var(--font-corps);
+    font-size: 17px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  ::selection {
+    background: var(--color-soupe);
+    color: var(--color-nuit);
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  /* Anneau de focus visible au clavier, invisible à la souris. */
+  :focus-visible {
+    outline: 2px solid var(--color-or);
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+
+  /* Respect du réglage système « réduire les animations ». */
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+      animation: none !important;
+      transition: none !important;
+    }
+  }
+}
+
+/* ==========================================================================
+   UTILITAIRES MAISON
+   Uniquement les motifs répétés sur plusieurs pages et trop verbeux à
+   réécrire en classes Tailwind à chaque fois.
+   ========================================================================== */
+
+/* Le mot en dégradé or → soupe des titres h1. */
+@utility texte-accent {
+  background: linear-gradient(180deg, var(--color-or) 18%, var(--color-soupe) 82%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 0 26px rgb(254 147 1 / 0.4));
+}
+
+/* Le halo rouge/orange derrière les en-têtes de page. */
+@utility halo-hero {
+  position: relative;
+
+  &::before {
+    content: '';
+    position: absolute;
+    left: -30%;
+    right: -30%;
+    top: 0;
+    height: 460px;
+    background:
+      radial-gradient(ellipse 34% 46% at 50% 16%, rgb(233 40 19 / 0.16), transparent 70%),
+      radial-gradient(ellipse 60% 80% at 50% 0%, rgb(254 147 1 / 0.1), transparent 65%);
+    pointer-events: none;
+  }
+
+  & > * {
+    position: relative;
+  }
+}
+
+/* La pastille verte pulsante du statut « en ligne ». */
+@utility pastille-statut {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-vert);
+  box-shadow: 0 0 0 0 rgb(91 224 107 / 0.6);
+  animation: pulsation 2s infinite;
+  flex-shrink: 0;
+}
+
+@keyframes pulsation {
+  0% {
+    box-shadow: 0 0 0 0 rgb(91 224 107 / 0.55);
+  }
+  70% {
+    box-shadow: 0 0 0 9px rgb(91 224 107 / 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgb(91 224 107 / 0);
+  }
+}
+
+/* ==========================================================================
+   RENDU DU MARKDOWN
+   Applique le style des maquettes au HTML produit par src/lib/markdown.ts.
+   Utilisé par le règlement et par la description longue des kits.
+   ========================================================================== */
+@layer components {
+  .markdown {
+    color: var(--color-gris);
+    font-size: 16px;
+  }
+
+  .markdown > * + * {
+    margin-top: 0.85rem;
+  }
+
+  .markdown strong {
+    color: var(--color-or);
+    font-weight: 700;
+  }
+
+  .markdown em {
+    color: var(--color-creme);
+    font-style: italic;
+  }
+
+  .markdown a {
+    color: var(--color-soupe);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  .markdown a:hover {
+    color: var(--color-or);
+  }
+
+  .markdown h2,
+  .markdown h3 {
+    font-family: var(--font-titre);
+    font-weight: 400;
+    text-transform: uppercase;
+    color: var(--color-creme);
+    line-height: 1.2;
+    margin-top: 1.6rem;
+  }
+
+  .markdown h2 {
+    font-size: 20px;
+  }
+
+  .markdown h3 {
+    font-size: 17px;
+  }
+
+  .markdown ul,
+  .markdown ol {
+    padding-left: 1.35rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+
+  .markdown ul {
+    list-style: disc;
+  }
+
+  .markdown ol {
+    list-style: decimal;
+  }
+
+  .markdown li::marker {
+    color: var(--color-soupe);
+  }
+
+  .markdown code {
+    font-family: var(--font-mono);
+    font-size: 0.85em;
+    color: var(--color-or);
+    background: var(--color-braise);
+    padding: 2px 8px;
+    border-radius: 6px;
+  }
+
+  .markdown pre {
+    background: var(--color-braise);
+    border: 1px solid var(--color-bord);
+    border-radius: 10px;
+    padding: 14px 16px;
+    overflow-x: auto;
+  }
+
+  .markdown pre code {
+    background: none;
+    padding: 0;
+  }
+
+  /*
+    Les citations Markdown servent d'encarts, comme les .callout des
+    maquettes : un liseré orange à gauche et un fond plus clair.
+  */
+  .markdown blockquote {
+    display: block;
+    background: var(--color-braise);
+    border-left: 3px solid var(--color-soupe);
+    border-radius: 0 10px 10px 0;
+    padding: 14px 18px;
+    color: var(--color-creme);
+    font-size: 15.5px;
+  }
+
+  .markdown blockquote > * + * {
+    margin-top: 0.5rem;
+  }
+
+  .markdown hr {
+    border: none;
+    border-top: 1px solid var(--color-bord);
+  }
+
+  .markdown table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14.5px;
+  }
+
+  .markdown th,
+  .markdown td {
+    border: 1px solid var(--color-bord);
+    padding: 8px 12px;
+    text-align: left;
+  }
+
+  .markdown th {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--color-gris);
+  }
+}

@@ -1,0 +1,115 @@
+// ---------------------------------------------------------------------------
+// Schéma de la base LJKITS.
+// Trois domaines seulement : les kits, le règlement, le compte admin.
+// La boutique (phase 2) viendra s'ajouter à côté, sans toucher à ces tables.
+// ---------------------------------------------------------------------------
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// Les deux familles de kits.
+/// GRATUIT  : kit classique, se débloque en coins gagnés en jouant.
+/// EXCLUSIF : kit maison, se débloque en coins AUSSI, mais peut être
+///            proposé à l'achat en euros pour raccourcir le grind (phase 2).
+enum TypeKit {
+  GRATUIT
+  EXCLUSIF
+}
+
+model Kit {
+  id String @id @default(cuid())
+
+  /// Identifiant dans l'URL : /kits/kitsune. Modifiable depuis l'admin.
+  slug String @unique
+  /// Nom affiché : "Kitsune".
+  nom  String
+  /// Idéogramme décoratif, kits exclusifs uniquement : "狐".
+  kanji String?
+  /// Surtitre de la carte : "Tromperie", "Mobilité"…
+  role  String
+
+  /// Une ou deux phrases, affichées sur la carte de la grille /kits.
+  descriptionCourte String
+  /// Texte long en Markdown, affiché sur la page /kits/[slug].
+  descriptionLongue String @db.Text
+
+  /// Prix en coins gagnés en jeu. 0 = offert.
+  prixCoins Int @default(0)
+  /// Prix en euros, en CENTIMES (400 = 4 €). null = pas de prix en euros.
+  /// Les centimes évitent les arrondis flottants et sont déjà le format
+  /// attendu par les prestataires de paiement en phase 2.
+  prixEurosCentimes Int?
+
+  type TypeKit @default(GRATUIT)
+
+  /// Affiché sur le site public. false = brouillon, visible en admin seulement.
+  visible Boolean @default(true)
+  /// Proposé à l'achat en euros (boutique, phase 2).
+  achetable Boolean @default(false)
+  /// Badge "Bientôt disponible" : le kit est annoncé mais pas encore jouable.
+  bientot Boolean @default(false)
+  /// Badge "Kit de départ" : offert à l'arrivée sur le serveur.
+  /// Champ à part et non déduit de prixCoins, pour pouvoir offrir un kit
+  /// temporairement (événement) sans le faire passer pour un kit de départ.
+  kitDeDepart Boolean @default(false)
+
+  /// Position dans la grille. Réglée par les boutons ↑ / ↓ de l'admin.
+  /// Volontairement sans contrainte d'unicité : l'échange de deux positions
+  /// se fait en une transaction, sans valeur temporaire.
+  ordre Int
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  caracteristiques CaracteristiqueKit[]
+
+  @@index([visible, ordre])
+  @@index([ordre])
+}
+
+/// Une ligne de la fiche technique d'un kit : "Cooldown" / "3 s".
+model CaracteristiqueKit {
+  id      String @id @default(cuid())
+  kitId   String
+  libelle String
+  valeur  String
+  ordre   Int
+
+  kit Kit @relation(fields: [kitId], references: [id], onDelete: Cascade)
+
+  @@index([kitId, ordre])
+}
+
+/// Le règlement est une simple liste de sections ordonnées.
+/// Pas de table "Reglement" englobante : la date de dernière mise à jour
+/// affichée côté public est le max(updatedAt) des sections publiées.
+model SectionReglement {
+  id      String @id @default(cuid())
+  /// Titre de la section : "Triche — tolérance zéro".
+  titre   String
+  /// Corps de la section, en Markdown.
+  contenu String @db.Text
+  /// Position dans la page, sert aussi de numéro affiché (1, 2, 3…).
+  ordre   Int
+  /// false = brouillon : la section reste invisible côté public.
+  publie  Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([publie, ordre])
+}
+
+/// Un seul compte. Pas de champ "role" : être dans cette table suffit.
+model Admin {
+  id             String   @id @default(cuid())
+  email          String   @unique
+  motDePasseHash String
+  createdAt      DateTime @default(now())
+}

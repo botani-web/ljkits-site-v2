@@ -1,0 +1,65 @@
+import { Marked } from 'marked'
+
+/**
+ * Rendu Markdown → HTML pour le règlement et les descriptions longues de kits.
+ *
+ * Deux règles de sécurité, parce que le résultat est injecté avec
+ * dangerouslySetInnerHTML :
+ *
+ *  1. Le HTML brut n'est JAMAIS interprété. `marked` route les balises
+ *     écrites à la main (inline comme bloc) vers le rendu `html` : on
+ *     l'écrase pour renvoyer le texte échappé. Taper <script> dans l'admin
+ *     affiche donc littéralement "<script>", ça n'exécute rien.
+ *
+ *  2. Les liens sont limités aux schémas sûrs. Un lien Markdown
+ *     [x](javascript:...) est neutralisé.
+ *
+ * Le compte admin est unique et c'est moi : ces garde-fous sont une
+ * ceinture-bretelles, pas une protection contre un attaquant déjà connecté.
+ */
+
+/** Échappe les cinq caractères qui ont un sens en HTML. */
+function echapper(texte: string): string {
+  return texte
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
+/** Un lien est accepté s'il est relatif, ou s'il utilise http/https/mailto. */
+function lienSur(href: string): boolean {
+  const nettoye = href.trim().toLowerCase()
+  if (nettoye.startsWith('/') || nettoye.startsWith('#')) return true
+  return /^(https?:|mailto:)/.test(nettoye)
+}
+
+const moteur = new Marked({
+  gfm: true, // tableaux, listes de tâches, barré…
+  breaks: true, // un simple retour à la ligne devient un <br>
+})
+
+moteur.use({
+  renderer: {
+    // Règle 1 : tout token HTML est recraché en texte échappé.
+    html({ text }) {
+      return echapper(text)
+    },
+    // Règle 2 : les liens dangereux perdent leur href.
+    link({ href, title, tokens }) {
+      const contenu = this.parser.parseInline(tokens)
+      if (!lienSur(href)) return contenu
+      const attrTitre = title ? ` title="${echapper(title)}"` : ''
+      const externe = /^https?:/.test(href.trim())
+        ? ' target="_blank" rel="noopener noreferrer"'
+        : ''
+      return `<a href="${echapper(href)}"${attrTitre}${externe}>${contenu}</a>`
+    },
+  },
+})
+
+/** Convertit du Markdown en HTML prêt à être injecté. */
+export function markdownVersHtml(markdown: string): string {
+  return moteur.parse(markdown, { async: false })
+}

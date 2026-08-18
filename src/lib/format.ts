@@ -1,0 +1,44 @@
+/** Petits formateurs d'affichage, partagés par le site public et l'admin. */
+
+/** 12000 → "12 000" (espace insécable fine, comme dans les maquettes). */
+export function formaterCoins(coins: number): string {
+  return coins.toLocaleString('fr-FR').replace(/ | /g, ' ')
+}
+
+/** 400 → "4 €"  ·  450 → "4,50 €". */
+export function formaterEuros(centimes: number): string {
+  const euros = centimes / 100
+  const texte = Number.isInteger(euros)
+    ? String(euros)
+    : euros.toFixed(2).replace('.', ',')
+  return `${texte} €`
+}
+
+/**
+ * "4" ou "4,50" ou "4.50" → 400 / 450 centimes.
+ * Renvoie null si le champ est vide, NaN si la saisie est invalide
+ * (c'est zod qui rejettera le NaN, cf. validations.ts).
+ */
+export function eurosVersCentimes(saisie: string): number | null {
+  const nettoye = saisie.trim().replace(',', '.')
+  if (nettoye === '') return null
+  const valeur = Number(nettoye)
+  if (!Number.isFinite(valeur)) return Number.NaN
+  return Math.round(valeur * 100)
+}
+
+/** 400 → "4" · 450 → "4,50" — pour pré-remplir le champ du formulaire. */
+export function centimesVersEuros(centimes: number | null): string {
+  if (centimes === null) return ''
+  const euros = centimes / 100
+  return Number.isInteger(euros) ? String(euros) : euros.toFixed(2).replace('.', ',')
+}
+
+/** Date → "12 mars 2026". */
+export function formaterDate(date: Date): string {
+  return date.toLocaleDateString('fr-FR', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  })
+}
