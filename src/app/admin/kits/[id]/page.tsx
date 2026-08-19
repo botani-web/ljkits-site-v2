@@ -63,6 +63,7 @@ export default async function PageModifierKit({
           achetable: kit.achetable,
           bientot: kit.bientot,
           kitDeDepart: kit.kitDeDepart,
+          commandeLivraison: kit.commandeLivraison,
           caracteristiques: kit.caracteristiques.map((carac) => ({
             libelle: carac.libelle,
             valeur: carac.valeur,

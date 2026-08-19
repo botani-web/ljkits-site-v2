@@ -21,6 +21,7 @@ import { SITE } from '@/lib/site'
 const LIENS = [
   { href: '/#jouer', label: 'Jouer' },
   { href: '/kits', label: 'Kits' },
+  { href: '/boutique', label: 'Boutique' },
   { href: '/#vote', label: 'Voter' },
   { href: '/reglement', label: 'Règlement' },
 ]

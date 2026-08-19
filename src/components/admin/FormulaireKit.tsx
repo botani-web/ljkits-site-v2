@@ -11,6 +11,7 @@ import {
   ChampTexte,
   MessageErreurGlobale,
 } from '@/components/admin/Champs'
+import { ChampCommandeLivraison } from '@/components/admin/ChampCommandeLivraison'
 import { EditeurMarkdown } from '@/components/admin/EditeurMarkdown'
 import { ListeCaracteristiques } from '@/components/admin/ListeCaracteristiques'
 import { centimesVersEuros } from '@/lib/format'
@@ -30,6 +31,7 @@ export type KitEnEdition = {
   achetable: boolean
   bientot: boolean
   kitDeDepart: boolean
+  commandeLivraison: string
   caracteristiques: { libelle: string; valeur: string }[]
 }
 
@@ -170,6 +172,15 @@ export function FormulaireKit({
         <ListeCaracteristiques
           valeurInitiale={kit?.caracteristiques}
           erreurs={etat.champs?.caracteristiques}
+        />
+      </section>
+
+      {/* --------------------- livraison en jeu (boutique) ------------------ */}
+      <section className="rounded-2xl border border-bord bg-charbon px-6 py-6">
+        <ChampCommandeLivraison
+          valeurInitiale={kit?.commandeLivraison}
+          exemple="kitadmin add {pseudo} kenshi"
+          erreurs={etat.champs?.commandeLivraison}
         />
       </section>
 

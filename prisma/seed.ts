@@ -585,8 +585,19 @@ async function peuplerKits() {
   for (const [index, kit] of KITS.entries()) {
     const { caracteristiques, ...champsDuKit } = kit
 
+    // La commande de livraison n'a de sens que pour les kits réellement
+    // vendus. Elle est déduite du slug plutôt que recopiée 21 fois : c'est
+    // une valeur de départ, éditable ensuite depuis l'admin.
+    const commandeLivraison = kit.achetable ? `kitadmin add {pseudo} ${kit.slug}` : ''
+
     // Champs communs à la création et à la mise à jour : le seed fait autorité.
-    const donnees = { ...champsDuKit, visible: true, bientot: false, ordre: index }
+    const donnees = {
+      ...champsDuKit,
+      commandeLivraison,
+      visible: true,
+      bientot: false,
+      ordre: index,
+    }
 
     await prisma.kit.upsert({
       where: { slug: kit.slug },
@@ -609,6 +620,159 @@ async function peuplerKits() {
   }
 
   console.log(`✔ ${KITS.length} kits en base.`)
+}
+
+
+/* -------------------------------------------------------------------------- */
+/* BOUTIQUE                                                                   */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Les trois grades, du moins cher au plus cher.
+ * L'index dans le tableau donne l'ordre, et `heriteDuPrecedent` s'appuie
+ * dessus pour afficher "Tout le grade X" sans champ de liaison.
+ *
+ * commandeLivraison : une commande par ligne, {pseudo} sera remplacé par le
+ * pseudo Minecraft de l'acheteur au moment de la livraison.
+ */
+const GRADES: {
+  slug: string
+  nom: string
+  kanji: string
+  sousTitre: string
+  etiquette: string | null
+  prixEurosCentimes: number
+  heriteDuPrecedent: boolean
+  commandeLivraison: string
+  avantages: string[]
+}[] = [
+  {
+    slug: 'ronin',
+    nom: 'Ronin',
+    kanji: '浪人',
+    sousTitre: 'le sans-maître',
+    etiquette: null,
+    prixEurosCentimes: 500,
+    heriteDuPrecedent: false,
+    commandeLivraison: 'lp user {pseudo} parent add ronin',
+    avantages: [
+      'Préfixe Ronin dans le chat et le TAB',
+      'Couleur de pseudo au choix',
+      'Particules à la mort de ta cible',
+      'Rôle Discord et salon réservé',
+    ],
+  },
+  {
+    slug: 'samourai',
+    nom: 'Samouraï',
+    kanji: '侍',
+    sousTitre: 'celui qui sert',
+    etiquette: 'Le plus pris',
+    prixEurosCentimes: 1000,
+    heriteDuPrecedent: true,
+    commandeLivraison: 'lp user {pseudo} parent add samourai',
+    avantages: [
+      'Message de mort personnalisé',
+      '3 placements enregistrés par kit',
+      'Statistiques détaillées par kit',
+      'Trail de particules en courant',
+    ],
+  },
+  {
+    slug: 'shogun',
+    nom: 'Shogun',
+    kanji: '将軍',
+    sousTitre: 'le commandant',
+    etiquette: null,
+    prixEurosCentimes: 2000,
+    heriteDuPrecedent: true,
+    commandeLivraison: 'lp user {pseudo} parent add shogun',
+    avantages: [
+      "Accès prioritaire quand c'est plein",
+      'Symbole unique à côté du pseudo',
+      "Animation d'arrivée au spawn",
+      "Ton nom gravé sur l'holo du spawn",
+    ],
+  },
+]
+
+/** Les slugs des kits exclusifs, source unique pour le pack. */
+const SLUGS_EXCLUSIFS = KITS.filter((kit) => kit.type === 'EXCLUSIF').map((kit) => kit.slug)
+
+const PACKS: {
+  slug: string
+  nom: string
+  description: string
+  prixEurosCentimes: number
+  prixBarreCentimes: number | null
+  slugsDesKits: string[]
+}[] = [
+  {
+    slug: 'pack-kits-exclusifs',
+    nom: 'Les six kits',
+    description: "Le pack complet, débloqué d'un coup sur ton compte.",
+    prixEurosCentimes: 1800,
+    prixBarreCentimes: 2400,
+    slugsDesKits: SLUGS_EXCLUSIFS,
+  },
+]
+
+async function peuplerGrades() {
+  for (const [index, grade] of GRADES.entries()) {
+    const { avantages, ...champsDuGrade } = grade
+    const donnees = { ...champsDuGrade, ordre: index, visible: true, achetable: true }
+
+    await prisma.grade.upsert({
+      where: { slug: grade.slug },
+      create: donnees,
+      update: donnees,
+    })
+
+    // Remplacement en bloc, comme les caractéristiques de kit.
+    await prisma.avantageGrade.deleteMany({ where: { grade: { slug: grade.slug } } })
+    const gradeEnBase = await prisma.grade.findUniqueOrThrow({ where: { slug: grade.slug } })
+    await prisma.avantageGrade.createMany({
+      data: avantages.map((texte, position) => ({
+        gradeId: gradeEnBase.id,
+        texte,
+        ordre: position,
+      })),
+    })
+  }
+
+  console.log(`✔ ${GRADES.length} grades en base.`)
+}
+
+async function peuplerPacks() {
+  for (const [index, pack] of PACKS.entries()) {
+    const { slugsDesKits, ...champsDuPack } = pack
+
+    // Une commande de livraison par kit inclus, une par ligne.
+    const commandeLivraison = slugsDesKits
+      .map((slug) => `kitadmin add {pseudo} ${slug}`)
+      .join('\n')
+
+    const donnees = {
+      ...champsDuPack,
+      commandeLivraison,
+      ordre: index,
+      visible: true,
+      achetable: true,
+    }
+
+    const references = slugsDesKits.map((slug) => ({ slug }))
+
+    await prisma.pack.upsert({
+      where: { slug: pack.slug },
+      // À la création la liste est vide : `connect` suffit.
+      create: { ...donnees, kits: { connect: references } },
+      // À la mise à jour, `set` REMPLACE la liste : le seed fait autorité sur
+      // le contenu du pack, y compris pour en retirer un kit.
+      update: { ...donnees, kits: { set: references } },
+    })
+  }
+
+  console.log(`✔ ${PACKS.length} pack(s) en base.`)
 }
 
 async function peuplerReglement() {
@@ -653,8 +817,30 @@ async function peuplerAdmin() {
   console.log(`✔ Compte admin prêt : ${email}`)
 }
 
+/**
+ * Deux modes :
+ *
+ *   npm run db:seed            tout le contenu de référence
+ *   npm run db:seed:boutique   grades et packs UNIQUEMENT
+ *
+ * Le second existe pour une raison précise : sur une base déjà en service, le
+ * seed complet réécrit les 21 kits et les 7 sections, donc annule les
+ * retouches faites depuis l'admin. Quand on ajoute la boutique à une base
+ * existante, on ne veut peupler que les nouvelles tables.
+ */
 async function main() {
+  const boutiqueSeulement = process.argv.includes('--boutique')
+
+  if (boutiqueSeulement) {
+    console.log('Mode boutique : les kits et le règlement ne seront pas touchés.')
+    await peuplerGrades()
+    await peuplerPacks()
+    return
+  }
+
   await peuplerKits()
+  await peuplerGrades()
+  await peuplerPacks()
   await peuplerReglement()
   await peuplerAdmin()
 }

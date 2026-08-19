@@ -128,3 +128,34 @@ export function BoutonSupprimer({
     </form>
   )
 }
+
+/**
+ * Bouton d'action simple posté vers une Server Action pré-liée.
+ * Sert aux changements de statut d'une commande.
+ */
+export function BoutonFormulaire({
+  action,
+  children,
+  variante = 'neutre',
+}: {
+  action: () => Promise<void>
+  children: React.ReactNode
+  variante?: 'principal' | 'neutre' | 'danger'
+}) {
+  const styles = {
+    principal:
+      'bg-linear-[135deg] from-soupe to-or text-[#1A1005] hover:shadow-[0_4px_18px_rgba(254,147,1,.35)]',
+    neutre: 'border border-bord text-gris hover:border-soupe hover:text-soupe',
+    danger: 'border border-bord text-gris hover:border-rouge hover:text-rouge',
+  }[variante]
+
+  return (
+    <form action={action}>
+      <BoutonEnvoi
+        className={`rounded-lg px-4 py-2.5 text-sm font-bold transition-all disabled:cursor-not-allowed disabled:opacity-60 ${styles}`}
+      >
+        {children}
+      </BoutonEnvoi>
+    </form>
+  )
+}

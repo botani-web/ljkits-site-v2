@@ -24,6 +24,7 @@ import { schemaKit } from '@/lib/validations'
 function revaliderPagesKits(slugs: string[]) {
   revalidatePath('/') // le compteur de kits de l'accueil
   revalidatePath('/kits')
+  revalidatePath('/boutique') // les kits exclusifs y sont vendus
   for (const slug of new Set(slugs)) {
     revalidatePath(`/kits/${slug}`)
   }
@@ -58,6 +59,7 @@ function lireFormulaireKit(formData: FormData) {
     achetable: formData.get('achetable') !== null,
     bientot: formData.get('bientot') !== null,
     kitDeDepart: formData.get('kitDeDepart') !== null,
+    commandeLivraison: String(formData.get('commandeLivraison') ?? ''),
     caracteristiques,
   })
 }

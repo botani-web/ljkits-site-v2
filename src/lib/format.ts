@@ -42,3 +42,19 @@ export function formaterDate(date: Date): string {
     year: 'numeric',
   })
 }
+
+/** 42 → "LJK-000042". Numéro de commande lisible, pour le support. */
+export function formaterNumeroCommande(numero: number): string {
+  return `LJK-${String(numero).padStart(6, '0')}`
+}
+
+/** Date + heure : "12 mars 2026 à 14:32". Utilisé dans l'admin. */
+export function formaterDateHeure(date: Date): string {
+  return date.toLocaleString('fr-FR', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+}

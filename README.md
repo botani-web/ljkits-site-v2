@@ -42,7 +42,7 @@ Puis remplis les valeurs :
 
 ```bash
 npm run db:push    # crée les tables d'après prisma/schema.prisma
-npm run db:seed    # 21 kits + 7 sections de règlement + compte admin
+npm run db:seed    # 21 kits, 3 grades, 1 pack, 7 sections, compte admin
 ```
 
 ### 4. Lancer
@@ -64,12 +64,16 @@ identifiants du seed.
 | `npm run build` | Build de production (lance `prisma generate` avant) |
 | `npm run start` | Sert le build de production |
 | `npm run db:push` | Aligne la base sur `schema.prisma`, sans migration |
-| `npm run db:seed` | (Re)peuple la base — **idempotent** |
+| `npm run db:seed` | (Re)peuple **tout** le contenu de référence — idempotent |
+| `npm run db:seed:boutique` | Peuple **uniquement** grades et packs, sans toucher aux kits ni au règlement |
 | `npm run db:studio` | Interface graphique Prisma sur la base |
 
 > ⚠ `db:seed` **réécrit** le contenu de référence : les 21 kits, leur ordre et
 > les 7 sections de règlement listés dans `prisma/seed.ts` reprennent leurs
 > valeurs d'origine. Les kits que tu as créés depuis l'admin ne sont pas touchés.
+>
+> Sur une base **déjà en service**, préfère `npm run db:seed:boutique` : il ne
+> crée que les grades et les packs et laisse les kits et le règlement tels quels.
 >
 > Un piège à connaître : l'upsert se fait sur le **slug**. Si tu as renommé un
 > kit d'origine depuis l'admin (`archer` → `archer-longue-portee`), le seed ne le
@@ -115,7 +119,7 @@ src/
 
 ---
 
-## Deux règles à ne pas casser
+## Les règles à ne pas casser
 
 ### 1. `exigerAdmin()` en tête de chaque Server Action
 
@@ -143,6 +147,75 @@ cache.
 
 ---
 
+### 3. `creerCommande` est la seule exception publique
+
+Toutes les Server Actions commencent par `await exigerAdmin()` — sauf deux, et
+pour de bonnes raisons :
+
+- `connecter()` dans `src/actions/auth.ts` : c’est elle qui **crée** la session.
+- `creerCommande()` dans `src/actions/commandes.ts` : c’est un **visiteur
+  anonyme** qui commande.
+
+Ce qui protège `creerCommande` à la place :
+
+1. **Les prix ne viennent jamais du navigateur.** Le panier client n’envoie que
+   des couples `{type, slug}` ; nom, prix et commande de livraison sont relus en
+   base et le total recalculé côté serveur. Sans ça, le pack s’achèterait à un
+   centime.
+2. Seuls les articles `visible` **et** `achetable` sont acceptés ; les kits
+   `bientot` sont refusés.
+3. Le pseudo est revalidé par zod : 3 à 16 caractères, `[A-Za-z0-9_]` uniquement.
+4. Panier plafonné à 10 articles, doublons écartés.
+5. Garde-fou anti-abus : refus si le même pseudo (à la casse près) a déjà
+   3 commandes `EN_ATTENTE` créées dans la dernière heure.
+
+**Si tu ajoutes une action publique un jour, reprends ces cinq points.**
+
+### 4. Limitation de débit à activer côté Vercel
+
+Le garde-fou du point 3 est par pseudo : il ne bloque pas un script qui change
+de pseudo à chaque requête. Le complément se règle dans le pare-feu Vercel,
+sans code ni dépendance.
+
+*Project → Firewall → Custom Rules → New Rule*
+
+| Champ | Valeur |
+|---|---|
+| Nom | `Limite commandes boutique` |
+| Condition 1 | Request Path — Equals — `/boutique` |
+| Condition 2 | Request Method — Equals — `POST` |
+| Action | Rate Limit |
+| Requêtes / fenêtre | 10 par 60 s |
+| Clé | IP Address |
+| Dépassement | Deny (ou Challenge pour laisser une chance) |
+
+Les Server Actions sont des `POST` vers l’URL de la page : cette règle couvre
+donc la création de commande, et rien d’autre.
+
+> Vérifie que le *rate limiting* est disponible sur ton plan Vercel — les règles
+> WAF personnalisées ne le sont pas sur tous. À défaut, le garde-fou en base
+> reste actif.
+
+---
+
+## Phase 3 — ce qui est déjà en place
+
+- `src/app/api/webhooks/paiement/route.ts` : emplacement réservé du webhook
+  (répond 501). Le fichier documente la séquence attendue — vérification de
+  signature, idempotence, passage en `PAYEE`, déclenchement de la livraison.
+- `src/lib/livraison.ts` : `construireCommandes()` transforme les lignes d’une
+  commande en commandes console avec le pseudo substitué. Déjà utilisé par
+  `/admin/commandes/[id]` pour la livraison manuelle ; le worker RCON
+  consommera la même fonction.
+- `Commande.referenceExterne` est `UNIQUE` : un même paiement ne pourra pas être
+  traité deux fois.
+
+⚠ RCON est un protocole TCP : il ne fonctionne pas depuis le runtime Edge et mal
+depuis une fonction serverless. La piste la plus sûre est un petit service
+tournant à côté du serveur Minecraft, qui vient chercher les commandes à
+exécuter — le port RCON n’a alors jamais besoin d’être exposé.
+
+---
 ## Déploiement sur Vercel
 
 1. Renseigner `DATABASE_URL`, `AUTH_SECRET` et `NEXT_PUBLIC_SITE_URL` dans
@@ -151,21 +224,6 @@ cache.
 3. Le compte admin se crée en lançant le seed une fois avec `ADMIN_EMAIL` et
    `ADMIN_MOT_DE_PASSE` renseignés (depuis la machine locale pointée sur la base
    de production, ou depuis la console Vercel).
-
----
-
-## Phase 2 — ce qui est déjà prévu
-
-Le schéma est pensé pour accueillir la boutique sans migration destructrice :
-
-- `Kit.achetable` et `Kit.prixEurosCentimes` portent déjà l'information de vente ;
-- `Kit.id` est un cuid stable : une future ligne de commande pointera dessus, pas
-  sur le slug, qui reste modifiable ;
-- les prix en euros sont stockés **en centimes**, format attendu par les
-  prestataires de paiement.
-
-Restera à ajouter des tables autonomes (`Grade`, `Pack`, `Commande`,
-`LigneCommande`) et une relation inverse sur `Kit`.
 
 ---
 

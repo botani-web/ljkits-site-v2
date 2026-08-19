@@ -3,9 +3,12 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
-/** Les deux sections de l'administration. */
+/** Les sections de l'administration. */
 const ONGLETS = [
   { href: '/admin/kits', label: 'Kits' },
+  { href: '/admin/grades', label: 'Grades' },
+  { href: '/admin/packs', label: 'Packs' },
+  { href: '/admin/commandes', label: 'Commandes' },
   { href: '/admin/reglement', label: 'Règlement' },
 ]
 

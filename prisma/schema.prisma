@@ -1,7 +1,7 @@
 // ---------------------------------------------------------------------------
 // Schéma de la base LJKITS.
-// Trois domaines seulement : les kits, le règlement, le compte admin.
-// La boutique (phase 2) viendra s'ajouter à côté, sans toucher à ces tables.
+// Quatre domaines : les kits, le règlement, le compte admin, et la boutique
+// (grades, packs, commandes).
 // ---------------------------------------------------------------------------
 
 generator client {
@@ -26,9 +26,9 @@ model Kit {
   id String @id @default(cuid())
 
   /// Identifiant dans l'URL : /kits/kitsune. Modifiable depuis l'admin.
-  slug String @unique
+  slug  String  @unique
   /// Nom affiché : "Kitsune".
-  nom  String
+  nom   String
   /// Idéogramme décoratif, kits exclusifs uniquement : "狐".
   kanji String?
   /// Surtitre de la carte : "Tromperie", "Mobilité"…
@@ -40,7 +40,7 @@ model Kit {
   descriptionLongue String @db.Text
 
   /// Prix en coins gagnés en jeu. 0 = offert.
-  prixCoins Int @default(0)
+  prixCoins         Int  @default(0)
   /// Prix en euros, en CENTIMES (400 = 4 €). null = pas de prix en euros.
   /// Les centimes évitent les arrondis flottants et sont déjà le format
   /// attendu par les prestataires de paiement en phase 2.
@@ -49,11 +49,11 @@ model Kit {
   type TypeKit @default(GRATUIT)
 
   /// Affiché sur le site public. false = brouillon, visible en admin seulement.
-  visible Boolean @default(true)
+  visible     Boolean @default(true)
   /// Proposé à l'achat en euros (boutique, phase 2).
-  achetable Boolean @default(false)
+  achetable   Boolean @default(false)
   /// Badge "Bientôt disponible" : le kit est annoncé mais pas encore jouable.
-  bientot Boolean @default(false)
+  bientot     Boolean @default(false)
   /// Badge "Kit de départ" : offert à l'arrivée sur le serveur.
   /// Champ à part et non déduit de prixCoins, pour pouvoir offrir un kit
   /// temporairement (événement) sans le faire passer pour un kit de départ.
@@ -67,7 +67,13 @@ model Kit {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  /// Commande console exécutée à la livraison, avec {pseudo} comme marqueur.
+  /// Ex : "kitadmin add {pseudo} kenshi". Vide tant que le kit n'est pas vendu.
+  commandeLivraison String @default("")
+
   caracteristiques CaracteristiqueKit[]
+  packs            Pack[]
+  lignesCommande   LigneCommande[]
 
   @@index([visible, ordre])
   @@index([ordre])
@@ -90,11 +96,11 @@ model CaracteristiqueKit {
 /// Pas de table "Reglement" englobante : la date de dernière mise à jour
 /// affichée côté public est le max(updatedAt) des sections publiées.
 model SectionReglement {
-  id      String @id @default(cuid())
+  id      String  @id @default(cuid())
   /// Titre de la section : "Triche — tolérance zéro".
   titre   String
   /// Corps de la section, en Markdown.
-  contenu String @db.Text
+  contenu String  @db.Text
   /// Position dans la page, sert aussi de numéro affiché (1, 2, 3…).
   ordre   Int
   /// false = brouillon : la section reste invisible côté public.
@@ -112,4 +118,173 @@ model Admin {
   email          String   @unique
   motDePasseHash String
   createdAt      DateTime @default(now())
+}
+
+// ---------------------------------------------------------------------------
+// BOUTIQUE (phase 2)
+//
+// Trois choses à vendre — un grade, un kit exclusif, un pack — et les
+// commandes qui en découlent. Tous les prix sont en CENTIMES entiers.
+// ---------------------------------------------------------------------------
+
+/// Un rang cosmétique acheté à vie : préfixe, couleur, rôle Discord.
+/// Aucun avantage en combat, c'est la promesse affichée sur la boutique.
+model Grade {
+  id String @id @default(cuid())
+
+  /// Identifiant stable, sert de clé au panier et au seed.
+  slug      String  @unique
+  /// "Ronin"
+  nom       String
+  /// Idéogramme décoratif : "浪人".
+  kanji     String?
+  /// Glose française affichée après le kanji : "le sans-maître".
+  sousTitre String?
+  /// Bandeau de mise en avant, ex : "Le plus pris".
+  /// null = carte normale ; du texte = carte mise en avant avec ce libellé.
+  etiquette String?
+
+  prixEurosCentimes Int
+
+  ordre     Int
+  visible   Boolean @default(true)
+  achetable Boolean @default(true)
+
+  /// Affiche "↳ Tout le grade X" en tête des avantages. X est déduit du grade
+  /// qui précède dans l'ordre : pas de champ de liaison à maintenir.
+  heriteDuPrecedent Boolean @default(false)
+
+  /// Commande console de livraison, avec {pseudo} comme marqueur.
+  /// Ex : "lp user {pseudo} parent add ronin".
+  commandeLivraison String @default("")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  avantages      AvantageGrade[]
+  lignesCommande LigneCommande[]
+
+  @@index([visible, ordre])
+  @@index([ordre])
+}
+
+/// Une ligne de la liste d'avantages d'un grade.
+model AvantageGrade {
+  id      String @id @default(cuid())
+  gradeId String
+  texte   String
+  ordre   Int
+
+  grade Grade @relation(fields: [gradeId], references: [id], onDelete: Cascade)
+
+  @@index([gradeId, ordre])
+}
+
+/// Un lot de kits vendu à prix réduit.
+model Pack {
+  id String @id @default(cuid())
+
+  slug        String @unique
+  nom         String
+  description String
+
+  prixEurosCentimes Int
+  /// Prix affiché barré à côté du prix réel. null = pas de prix barré.
+  prixBarreCentimes Int?
+
+  ordre     Int
+  visible   Boolean @default(true)
+  achetable Boolean @default(true)
+
+  commandeLivraison String @default("")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  /// Relation implicite : Prisma gère la table de jointure. Suffisant tant
+  /// qu'on n'a besoin ni d'ordonner ni d'annoter les kits d'un pack.
+  kits Kit[]
+
+  lignesCommande LigneCommande[]
+
+  @@index([visible, ordre])
+  @@index([ordre])
+}
+
+/// Cycle de vie d'une commande.
+/// EN_ATTENTE : créée sur le site, pas encore payée.
+/// PAYEE      : le prestataire a confirmé le paiement (webhook, phase 3).
+/// LIVREE     : le contenu a été appliqué sur le compte du joueur.
+/// ECHOUEE    : paiement refusé ou abandonné.
+/// REMBOURSEE : remboursement effectué après coup.
+enum StatutCommande {
+  EN_ATTENTE
+  PAYEE
+  LIVREE
+  ECHOUEE
+  REMBOURSEE
+}
+
+enum TypeArticle {
+  KIT
+  GRADE
+  PACK
+}
+
+model Commande {
+  /// Identifiant non devinable : c'est lui qui sert d'URL de confirmation.
+  id String @id @default(cuid())
+
+  /// Numéro lisible, affiché au client et utilisé au support : LJK-000042.
+  /// Séquentiel, donc jamais mis dans une URL — ce serait énumérable.
+  numero Int @unique @default(autoincrement())
+
+  /// Pseudo Minecraft de livraison, saisi par l'acheteur.
+  pseudoMinecraft String
+
+  /// Total recalculé côté serveur à partir des prix en base, jamais depuis
+  /// ce que le navigateur a envoyé.
+  montantTotalCentimes Int
+
+  statut StatutCommande @default(EN_ATTENTE)
+
+  /// Id de transaction du prestataire de paiement.
+  /// Unique : rend le futur webhook idempotent, un même paiement ne peut pas
+  /// être traité deux fois. Plusieurs NULL restent autorisés en PostgreSQL.
+  referenceExterne String? @unique
+
+  createdAt DateTime  @default(now())
+  payeeAt   DateTime?
+  livreeAt  DateTime?
+
+  lignes LigneCommande[]
+
+  @@index([statut, createdAt])
+  /// Sert au garde-fou anti-abus : compter les commandes non payées d'un
+  /// même pseudo sur la dernière heure.
+  @@index([pseudoMinecraft, statut, createdAt])
+}
+
+model LigneCommande {
+  id         String      @id @default(cuid())
+  commandeId String
+  type       TypeArticle
+
+  /// Un seul des trois est renseigné, selon `type`.
+  kitId   String?
+  gradeId String?
+  packId  String?
+
+  /// Instantanés pris AU MOMENT de l'achat. C'est ce qui permet de supprimer
+  /// ou de repricer un article dans l'admin sans réécrire l'historique.
+  libelle           String
+  prixCentimes      Int
+  commandeLivraison String
+
+  commande Commande @relation(fields: [commandeId], references: [id], onDelete: Cascade)
+  kit      Kit?     @relation(fields: [kitId], references: [id], onDelete: SetNull)
+  grade    Grade?   @relation(fields: [gradeId], references: [id], onDelete: SetNull)
+  pack     Pack?    @relation(fields: [packId], references: [id], onDelete: SetNull)
+
+  @@index([commandeId])
 }

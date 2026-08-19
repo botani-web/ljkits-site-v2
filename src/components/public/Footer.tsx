@@ -34,6 +34,7 @@ export function Footer() {
           <ColonneFooter titre="Serveur">
             <LienFooter href="/#jouer">Comment jouer</LienFooter>
             <LienFooter href="/kits">Les kits</LienFooter>
+            <LienFooter href="/boutique">Boutique</LienFooter>
             <LienFooter href="/#vote">Voter</LienFooter>
             <LienFooter href="/#classement">Classement</LienFooter>
           </ColonneFooter>
