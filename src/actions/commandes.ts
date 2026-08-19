@@ -1,12 +1,15 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
+import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import type { Prisma, StatutCommande } from '@prisma/client'
 
 import type { EtatFormulaire } from '@/actions/etat'
 import { exigerAdmin } from '@/actions/garde'
 import { prisma } from '@/lib/prisma'
+import { SITE } from '@/lib/site'
+import { creerPanierTebex, ErreurTebex } from '@/lib/tebex'
 import { schemaCommande } from '@/lib/validations'
 
 /* -------------------------------------------------------------------------- */
@@ -105,6 +108,8 @@ export async function creerCommande(
 
   /* ---- résolution en base : c'est ici que les vrais prix sont lus ---- */
   const lignes: Prisma.LigneCommandeCreateWithoutCommandeInput[] = []
+  /// Les packages Tebex correspondants, collectés au fil de la résolution.
+  const packageIds: number[] = []
 
   for (const article of articlesUniques) {
     if (article.type === 'KIT') {
@@ -120,13 +125,18 @@ export async function creerCommande(
       if (!kit || kit.prixEurosCentimes === null) {
         return { erreur: `Le kit « ${article.slug} » n’est plus disponible à l’achat.` }
       }
+      if (kit.tebexPackageId === null) {
+        return { erreur: `Le kit « ${kit.nom} » n’est pas encore configuré pour le paiement.` }
+      }
       lignes.push({
         type: 'KIT',
         kit: { connect: { id: kit.id } },
         libelle: `Kit ${kit.nom}`,
         prixCentimes: kit.prixEurosCentimes,
         commandeLivraison: kit.commandeLivraison,
+        commandeRetrait: kit.commandeRetrait,
       })
+      packageIds.push(kit.tebexPackageId)
       continue
     }
 
@@ -137,13 +147,20 @@ export async function creerCommande(
       if (!grade) {
         return { erreur: `Le grade « ${article.slug} » n’est plus disponible à l’achat.` }
       }
+      if (grade.tebexPackageId === null) {
+        return {
+          erreur: `Le grade « ${grade.nom} » n’est pas encore configuré pour le paiement.`,
+        }
+      }
       lignes.push({
         type: 'GRADE',
         grade: { connect: { id: grade.id } },
         libelle: `Grade ${grade.nom}`,
         prixCentimes: grade.prixEurosCentimes,
         commandeLivraison: grade.commandeLivraison,
+        commandeRetrait: grade.commandeRetrait,
       })
+      packageIds.push(grade.tebexPackageId)
       continue
     }
 
@@ -153,13 +170,18 @@ export async function creerCommande(
     if (!pack) {
       return { erreur: `Le pack « ${article.slug} » n’est plus disponible à l’achat.` }
     }
+    if (pack.tebexPackageId === null) {
+      return { erreur: `Le pack « ${pack.nom} » n’est pas encore configuré pour le paiement.` }
+    }
     lignes.push({
       type: 'PACK',
       pack: { connect: { id: pack.id } },
       libelle: pack.nom,
       prixCentimes: pack.prixEurosCentimes,
       commandeLivraison: pack.commandeLivraison,
+      commandeRetrait: pack.commandeRetrait,
     })
+    packageIds.push(pack.tebexPackageId)
   }
 
   // Total calculé à partir des prix relus, jamais de ceux du navigateur.
@@ -174,12 +196,67 @@ export async function creerCommande(
     },
   })
 
+  /* ---- création du panier chez Tebex ---- */
+  //
+  // La commande est écrite en base AVANT l'appel à Tebex, parce que son id
+  // doit voyager dans le `custom` du panier : c'est lui qui, au retour du
+  // webhook, permettra de retrouver quoi livrer.
+  //
+  // Si Tebex échoue, la commande est marquée ECHOUEE avec la raison, plutôt
+  // que supprimée : une trace visible dans l'admin vaut mieux qu'un échec
+  // silencieux.
+  let urlCheckout: string
+  try {
+    const entetes = await headers()
+    // Sur Vercel, l'IP réelle du visiteur est en tête de x-forwarded-for.
+    const ipClient =
+      entetes.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+      entetes.get('x-real-ip')?.trim() ||
+      '0.0.0.0'
+
+    const panier = await creerPanierTebex({
+      pseudoMinecraft,
+      packageIds,
+      commandeId: commande.id,
+      ipClient,
+      urlRetour: `${SITE.url}/boutique/commande/${commande.id}`,
+      urlAnnulation: `${SITE.url}/boutique`,
+    })
+
+    await prisma.commande.update({
+      where: { id: commande.id },
+      data: { referenceExterne: panier.ident, derniereErreur: null },
+    })
+
+    urlCheckout = panier.urlCheckout
+  } catch (erreur) {
+    const message =
+      erreur instanceof ErreurTebex
+        ? erreur.message
+        : 'Erreur inattendue à la création du panier de paiement.'
+
+    await prisma.commande.update({
+      where: { id: commande.id },
+      data: { statut: 'ECHOUEE', derniereErreur: message },
+    })
+
+    // La trace complète part dans les logs Vercel ; le visiteur, lui, ne voit
+    // qu'un message générique — l'erreur d'un prestataire ne le concerne pas.
+    console.error('[boutique] création du panier Tebex impossible :', erreur)
+
+    revalidatePath('/admin/commandes')
+    return {
+      erreur:
+        'Le paiement est momentanément indisponible. Réessaie dans quelques minutes, ou passe sur le Discord.',
+    }
+  }
+
   revalidatePath('/admin/commandes')
 
-  // Phase 3 : c'est ici que viendra la redirection vers le prestataire de
-  // paiement, avec l'id de commande en référence. Pour l'instant, on affiche
-  // directement la page de confirmation.
-  redirect(`/boutique/commande/${commande.id}`)
+  // Redirection vers la page de paiement Tebex. `redirect()` accepte une URL
+  // externe absolue. Le retour se fera sur /boutique/commande/[id], que Tebex
+  // connaît via complete_url.
+  redirect(urlCheckout)
 }
 
 /* -------------------------------------------------------------------------- */

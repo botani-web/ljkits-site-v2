@@ -13,6 +13,13 @@ function revaliderBoutique() {
   revalidatePath('/boutique')
 }
 
+/** Champ « ID Tebex » du formulaire : vide → null, sinon un entier. */
+function lireTebexPackageId(formData: FormData): number | null {
+  const brut = String(formData.get('tebexPackageId') ?? '').trim()
+  if (brut === '') return null
+  return Number(brut)
+}
+
 function lireFormulairePack(formData: FormData) {
   return schemaPack.safeParse({
     slug: String(formData.get('slug') ?? ''),
@@ -23,6 +30,8 @@ function lireFormulairePack(formData: FormData) {
     visible: formData.get('visible') !== null,
     achetable: formData.get('achetable') !== null,
     commandeLivraison: String(formData.get('commandeLivraison') ?? ''),
+    commandeRetrait: String(formData.get('commandeRetrait') ?? ''),
+    tebexPackageId: lireTebexPackageId(formData),
     // Une case cochée par kit inclus.
     kitIds: formData.getAll('kitId').map(String),
   })

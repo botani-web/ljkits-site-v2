@@ -10,6 +10,10 @@
  * modifications seront écrasées pour les entrées listées ici. C'est un outil
  * d'amorçage, pas une sauvegarde.
  *
+ * Les identifiants de package Tebex (`tebexPackageId`) ne sont PAS peuplés :
+ * ils dépendent de ta boutique Tebex et se saisissent depuis l'admin. Le seed
+ * ne les écrase donc jamais.
+ *
  * Cas particulier à connaître : l'upsert se fait sur le SLUG. Si tu as renommé
  * un kit d'origine depuis l'admin (par exemple archer → archer-longue-portee),
  * le seed ne le retrouve plus et en RECRÉE un sous l'ancien slug — tu te
@@ -589,11 +593,15 @@ async function peuplerKits() {
     // vendus. Elle est déduite du slug plutôt que recopiée 21 fois : c'est
     // une valeur de départ, éditable ensuite depuis l'admin.
     const commandeLivraison = kit.achetable ? `kitadmin add {pseudo} ${kit.slug}` : ''
+    const commandeRetrait = kit.achetable ? `kitadmin remove {pseudo} ${kit.slug}` : ''
 
     // Champs communs à la création et à la mise à jour : le seed fait autorité.
+    // `tebexPackageId` n'est jamais touché : il dépend de la boutique Tebex et
+    // se saisit depuis l'admin.
     const donnees = {
       ...champsDuKit,
       commandeLivraison,
+      commandeRetrait,
       visible: true,
       bientot: false,
       ordre: index,
@@ -644,6 +652,7 @@ const GRADES: {
   prixEurosCentimes: number
   heriteDuPrecedent: boolean
   commandeLivraison: string
+  commandeRetrait: string
   avantages: string[]
 }[] = [
   {
@@ -655,6 +664,7 @@ const GRADES: {
     prixEurosCentimes: 500,
     heriteDuPrecedent: false,
     commandeLivraison: 'lp user {pseudo} parent add ronin',
+    commandeRetrait: 'lp user {pseudo} parent remove ronin',
     avantages: [
       'Préfixe Ronin dans le chat et le TAB',
       'Couleur de pseudo au choix',
@@ -671,6 +681,7 @@ const GRADES: {
     prixEurosCentimes: 1000,
     heriteDuPrecedent: true,
     commandeLivraison: 'lp user {pseudo} parent add samourai',
+    commandeRetrait: 'lp user {pseudo} parent remove samourai',
     avantages: [
       'Message de mort personnalisé',
       '3 placements enregistrés par kit',
@@ -687,6 +698,7 @@ const GRADES: {
     prixEurosCentimes: 2000,
     heriteDuPrecedent: true,
     commandeLivraison: 'lp user {pseudo} parent add shogun',
+    commandeRetrait: 'lp user {pseudo} parent remove shogun',
     avantages: [
       "Accès prioritaire quand c'est plein",
       'Symbole unique à côté du pseudo',
@@ -751,10 +763,14 @@ async function peuplerPacks() {
     const commandeLivraison = slugsDesKits
       .map((slug) => `kitadmin add {pseudo} ${slug}`)
       .join('\n')
+    const commandeRetrait = slugsDesKits
+      .map((slug) => `kitadmin remove {pseudo} ${slug}`)
+      .join('\n')
 
     const donnees = {
       ...champsDuPack,
       commandeLivraison,
+      commandeRetrait,
       ordre: index,
       visible: true,
       achetable: true,

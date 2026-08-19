@@ -6,7 +6,7 @@ import { useActionState } from 'react'
 import { ETAT_VIDE, type EtatFormulaire } from '@/actions/etat'
 import { BoutonSoumettre } from '@/components/admin/BoutonSoumettre'
 import { ChampCase, ChampTexte, MessageErreurGlobale } from '@/components/admin/Champs'
-import { ChampCommandeLivraison } from '@/components/admin/ChampCommandeLivraison'
+import { ChampsVenteEtLivraison } from '@/components/admin/ChampsTebex'
 import { ListeAvantages } from '@/components/admin/ListeAvantages'
 import { centimesVersEuros } from '@/lib/format'
 
@@ -21,6 +21,8 @@ export type GradeEnEdition = {
   achetable: boolean
   heriteDuPrecedent: boolean
   commandeLivraison: string
+  commandeRetrait: string
+  tebexPackageId: number | null
   avantages: string[]
 }
 
@@ -132,10 +134,14 @@ export function FormulaireGrade({
       </section>
 
       <section className="rounded-2xl border border-bord bg-charbon px-6 py-6">
-        <ChampCommandeLivraison
-          valeurInitiale={grade?.commandeLivraison}
-          exemple="lp user {pseudo} parent add ronin"
-          erreurs={etat.champs?.commandeLivraison}
+        <h2 className="mb-4 font-titre text-base uppercase">Vente et livraison</h2>
+        <ChampsVenteEtLivraison
+          tebexPackageId={grade?.tebexPackageId}
+          commandeLivraison={grade?.commandeLivraison}
+          commandeRetrait={grade?.commandeRetrait}
+          exempleLivraison="lp user {pseudo} parent add ronin"
+          exempleRetrait="lp user {pseudo} parent remove ronin"
+          erreurs={etat.champs}
         />
       </section>
 

@@ -37,11 +37,14 @@ Puis remplis les valeurs :
 | `NEXT_PUBLIC_SITE_URL` | URL publique, pour les métadonnées Open Graph absolues |
 | `ADMIN_EMAIL` | E-mail du compte admin (utilisé **uniquement** par le seed) |
 | `ADMIN_MOT_DE_PASSE` | Mot de passe du compte admin (utilisé **uniquement** par le seed) |
+| `TEBEX_PUBLIC_TOKEN` | Public Token Tebex — création des paniers (API Headless) |
+| `TEBEX_WEBHOOK_SECRET` | Secret Key du webhook Tebex — vérification de signature |
+| `LIVRAISON_TOKEN` | Jeton partagé avec le bot de livraison. `openssl rand -hex 32` |
 
 ### 3. Créer les tables et peupler la base
 
 ```bash
-npm run db:push    # crée les tables d'après prisma/schema.prisma
+npm run db:migrate # crée les tables via prisma/migrations
 npm run db:seed    # 21 kits, 3 grades, 1 pack, 7 sections, compte admin
 ```
 
@@ -63,7 +66,10 @@ identifiants du seed.
 | `npm run dev` | Serveur de développement |
 | `npm run build` | Build de production (lance `prisma generate` avant) |
 | `npm run start` | Sert le build de production |
-| `npm run db:push` | Aligne la base sur `schema.prisma`, sans migration |
+| `npm run db:migrate:status` | Où en est la base par rapport aux migrations |
+| `npm run db:migrate:new -- <nom>` | Crée une migration à partir du schéma (refuse les DROP) |
+| `npm run db:migrate` | Applique les migrations en attente |
+| `npm run db:diff` | Affiche l'écart entre la base et le schéma, sans rien exécuter |
 | `npm run db:seed` | (Re)peuple **tout** le contenu de référence — idempotent |
 | `npm run db:seed:boutique` | Peuple **uniquement** grades et packs, sans toucher aux kits ni au règlement |
 | `npm run db:studio` | Interface graphique Prisma sur la base |
@@ -116,6 +122,146 @@ src/
     validations.ts   schémas zod
     format.ts        formatage des prix et des dates
 ```
+
+---
+
+## Les migrations
+
+La base est gérée par **Prisma Migrate**, pas par `prisma db push`.
+
+`db push` synchronise la base sur le schéma en **supprimant tout ce qu'il n'y
+trouve pas**. Sur une base partagée avec le serveur Minecraft, c'est une bombe :
+il a déjà détruit la table `joueur`. La commande a donc été retirée du
+`package.json` — si tu la lances un jour à la main, tu sais ce que tu fais.
+
+Une migration, à l'inverse, est un fichier SQL versionné : elle ne fait que ce
+qui y est écrit, et ne touche jamais à ce qu'elle ne connaît pas.
+
+### Le quotidien
+
+```bash
+npm run db:migrate:status          # où en est la base
+npm run db:migrate:new -- mon-nom  # crée une migration à partir du schéma
+npm run db:migrate                 # applique les migrations en attente
+```
+
+Cycle type quand tu modifies `prisma/schema.prisma` :
+
+1. `npm run db:migrate:new -- ajoute-champ-machin`
+   → écrit `prisma/migrations/<horodatage>_ajoute-champ-machin/migration.sql`
+   et affiche le SQL ;
+2. **relis le SQL** ;
+3. `npm run db:migrate` pour l'appliquer ;
+4. commite le dossier de migration avec le reste.
+
+### Le garde-fou
+
+`db:migrate:new` **refuse** d'écrire une migration contenant `DROP TABLE`,
+`DROP COLUMN`, `DROP INDEX` ou `DROP CONSTRAINT` :
+
+```
+⛔ MIGRATION DESTRUCTRICE — rien n'a été écrit.
+Opérations détectées : DROP TABLE
+```
+
+Dans neuf cas sur dix, ce message ne veut pas dire « je veux supprimer », mais
+**« un objet de la base manque au schéma »** — une table ou un index créé par
+skript-db. Vérifie d'abord, et n'utilise `--force` que si la suppression est
+réellement voulue.
+
+### Pourquoi pas `prisma migrate dev`
+
+`migrate dev` a besoin d'une *shadow database* qu'il crée et détruit lui-même.
+Neon ne l'autorise pas sur l'endpoint mutualisé. `db:migrate:new` compare donc
+directement la base au schéma, ce qui ne demande aucune base supplémentaire.
+
+Conséquence : le SQL produit décrit l'écart avec la base **telle qu'elle est**.
+Elle doit être à jour de toutes les migrations précédentes — lance
+`npm run db:migrate` avant, en cas de doute.
+
+### La migration de référence
+
+`prisma/migrations/0_init/` décrit la base entière au moment de la bascule. Elle
+a été **marquée comme déjà appliquée** en production
+(`prisma migrate resolve --applied 0_init`) : les tables existaient déjà, elle
+n'a rien exécuté.
+
+Sur une base **vierge** (une branche Neon de développement, par exemple), elle
+crée tout, `joueur` comprise. Si tu montes un environnement de développement,
+applique-la **avant** de brancher le serveur Minecraft dessus : si skript-db
+crée `joueur` en premier, `migrate deploy` échouera sur un « relation already
+exists ».
+
+### Sur Vercel
+
+Le build ne lance **pas** les migrations : `npm run build` se limite à
+`prisma generate && next build`. C'est délibéré — une migration qui part toute
+seule pendant un déploiement, sur une base partagée avec le serveur Minecraft,
+est exactement ce qu'on cherche à éviter.
+
+Applique-les à la main depuis ta machine, pointée sur la production :
+
+```bash
+npm run db:migrate:status   # vérifier
+npm run db:migrate          # appliquer
+```
+
+Fais-le **avant** de pousser le code qui en dépend, sinon le site déployé
+interrogera des colonnes qui n'existent pas encore.
+
+---
+
+## ⚠ La table `joueur` appartient au serveur Minecraft
+
+`joueur` est créée et alimentée par **skript-db**, côté serveur Minecraft. Le
+site ne fait que la lire. Elle est pourtant déclarée dans `prisma/schema.prisma`,
+et c'est délibéré :
+
+> **`prisma db push` SUPPRIME toute table de la base qui n'apparaît pas dans le
+> schéma.** Sans le modèle `Joueur`, un `db push` détruit la table et ses
+> données. C'est déjà arrivé une fois.
+
+Le modèle reproduit la table **à l'identique** — types, valeurs par défaut,
+précision du `timestamptz`, et les trois index descendants des classements
+(`idx_kills`, `idx_hebdo`, `idx_mensuel`). Toute divergence ferait proposer un
+`ALTER TABLE` ou un `DROP INDEX` sur une table dont le serveur est propriétaire.
+
+### Les trois règles
+
+1. **Ne rien écrire dedans depuis le site.** Aucune Server Action, aucune route
+   ne doit faire de `create` / `update` / `delete` sur `Joueur`. Lecture seule.
+2. **Ne pas modifier le modèle** sans que la vraie table ait changé.
+3. **Si skript-db fait évoluer la table**, réintrospecter plutôt que d'écrire à
+   la main :
+   ```bash
+   cp prisma/schema.prisma /tmp/introspect.prisma
+   npx prisma db pull --schema=/tmp/introspect.prisma
+   ```
+   puis recopier le modèle obtenu, en gardant les `@map` et le `@@map`.
+
+### Toujours regarder le SQL avant d'appliquer
+
+`npm run db:migrate:new` affiche le SQL qu'il vient d'écrire, et refuse tout
+net les opérations destructrices. `npm run db:diff` montre l'écart sans rien
+écrire ni exécuter.
+
+Si tu vois un `DROP TABLE`, un `DROP INDEX` ou un `DROP COLUMN` que tu n'as pas
+demandé, c'est qu'un objet de la base manque au schéma.
+
+### Vérifier qu'aucune table n'est laissée sans protection
+
+Après toute évolution côté serveur Minecraft, compare les tables réelles à
+celles du schéma :
+
+```sql
+SELECT c.relname
+FROM pg_class c
+JOIN pg_namespace n ON n.oid = c.relnamespace
+WHERE n.nspname = 'public' AND c.relkind = 'r'
+ORDER BY c.relname;
+```
+
+Toute table absente de `prisma/schema.prisma` disparaîtra au prochain `db push`.
 
 ---
 
@@ -198,32 +344,178 @@ donc la création de commande, et rien d’autre.
 
 ---
 
-## Phase 3 — ce qui est déjà en place
+## Du paiement à la livraison
 
-- `src/app/api/webhooks/paiement/route.ts` : emplacement réservé du webhook
-  (répond 501). Le fichier documente la séquence attendue — vérification de
-  signature, idempotence, passage en `PAYEE`, déclenchement de la livraison.
-- `src/lib/livraison.ts` : `construireCommandes()` transforme les lignes d’une
-  commande en commandes console avec le pseudo substitué. Déjà utilisé par
-  `/admin/commandes/[id]` pour la livraison manuelle ; le worker RCON
-  consommera la même fonction.
-- `Commande.referenceExterne` est `UNIQUE` : un même paiement ne pourra pas être
-  traité deux fois.
+Le site ne parle jamais au serveur Minecraft. Il dépose des commandes console
+dans une file ; un bot qui tourne à côté du serveur vient les chercher et les
+exécute en RCON. Le port RCON n'est donc jamais exposé sur Internet.
 
-⚠ RCON est un protocole TCP : il ne fonctionne pas depuis le runtime Edge et mal
-depuis une fonction serverless. La piste la plus sûre est un petit service
-tournant à côté du serveur Minecraft, qui vient chercher les commandes à
-exécuter — le port RCON n’a alors jamais besoin d’être exposé.
+```
+  Joueur                Site                      Tebex              Bot VPS
+    │                     │                         │                   │
+    ├─ valide le panier ─▶│                         │                   │
+    │                     ├─ crée la commande       │                   │
+    │                     │  (EN_ATTENTE)           │                   │
+    │                     ├─ POST /baskets ────────▶│                   │
+    │                     │  username + custom      │                   │
+    │                     │  {commandeId}           │                   │
+    │                     │◀─ ident + checkout ─────┤                   │
+    │◀─ redirection ──────┤                         │                   │
+    │                                               │                   │
+    ├─ paie ──────────────────────────────────────▶ │                   │
+    │                     │◀─ webhook ──────────────┤                   │
+    │                     │  payment.completed      │                   │
+    │                     ├─ signature vérifiée     │                   │
+    │                     ├─ statut PAYEE           │                   │
+    │                     ├─ LigneLivraison × n     │                   │
+    │                     │                         │                   │
+    │                     │◀─ GET /api/livraison/file ───────────────────┤
+    │                     ├─ 20 lignes EN_ATTENTE ─────────────────────▶│
+    │                     │                         │      exécute RCON │
+    │                     │◀─ POST /api/livraison/confirmer ─────────────┤
+    │                     ├─ EXECUTEE, et LIVREE    │                   │
+    │                     │  quand tout est passé   │                   │
+```
 
----
+### La signature du webhook
+
+Tebex signe chaque webhook dans l'en-tête `X-Signature` :
+
+```
+signature = HMAC_SHA256( clé = TEBEX_WEBHOOK_SECRET,
+                         message = SHA256_hex(corps brut) )
+```
+
+Deux pièges, tous deux traités dans `src/lib/tebex.ts` :
+
+1. le message du HMAC est la représentation **hexadécimale** du condensat du
+   corps, pas ses octets bruts ;
+2. il faut le corps **brut**. La route lit `await requete.text()` et jamais
+   `requete.json()` : re-sérialiser changerait les octets et ferait échouer la
+   vérification.
+
+### Les évènements traités
+
+| Évènement Tebex | Effet |
+|---|---|
+| `validation.webhook` | Répond `{ "id": … }` — c'est ce qui valide l'endpoint dans Tebex |
+| `payment.completed` | Statut `PAYEE`, `payeeAt`, et les commandes de **livraison** entrent en file |
+| `payment.refunded` | Statut `REMBOURSEE`, et les commandes de **retrait** entrent en file |
+| `payment.dispute.lost` | Idem remboursement |
+| `payment.dispute.opened` | Statut `LITIGE`, **rien n'est retiré** : l'arbitrage n'est pas tranché |
+
+**Idempotence.** Chaque webhook traité est enregistré dans `EvenementTebex`,
+avec l'id fourni par Tebex en clé primaire. Un même évènement reçu deux fois
+échoue à l'insertion et repart en 200 sans rien refaire. C'est bien l'id du
+webhook qui sert de clé — une commande reçoit plusieurs évènements légitimes
+(paiement, puis éventuellement remboursement).
+
+### Les deux routes du bot
+
+Elles ne sont **pas** protégées par `exigerAdmin()` : l'appelant est un bot, pas
+un navigateur avec une session. Leur authentification est `LIVRAISON_TOKEN`,
+comparé à temps constant (`src/lib/jeton.ts`).
+
+```http
+GET /api/livraison/file
+Authorization: Bearer <LIVRAISON_TOKEN>
+```
+
+```json
+{
+  "lignes": [
+    {
+      "id": "cmsz…",
+      "commande": "kitadmin add Lestoo kenshi",
+      "type": "LIVRAISON",
+      "tentatives": 0,
+      "pseudo": "Lestoo",
+      "numeroCommande": 42
+    }
+  ]
+}
+```
+
+Au plus 20 lignes, les plus anciennes d'abord, et uniquement celles ayant moins
+de 5 tentatives.
+
+```http
+POST /api/livraison/confirmer
+Authorization: Bearer <LIVRAISON_TOKEN>
+Content-Type: application/json
+```
+
+```json
+{
+  "resultats": [
+    { "id": "cmsz…", "succes": true },
+    { "id": "cmsz…", "succes": false, "erreur": "Unknown command" }
+  ]
+}
+```
+
+Réponse :
+
+```json
+{ "recu": 2, "traitees": 2, "executees": 1, "echouees": 1, "commandesLivrees": 0 }
+```
+
+Quand toutes les lignes de **livraison** d'une commande sont exécutées, la
+commande passe en `LIVREE`.
+
+### ⚠ La livraison est « au moins une fois »
+
+Une ligne reste `EN_ATTENTE` jusqu'à confirmation. Si le bot exécute une
+commande puis meurt avant de confirmer, **elle sera resservie et exécutée une
+seconde fois**. C'est inévitable sans transaction distribuée entre le site et le
+serveur Minecraft.
+
+**Les commandes console doivent donc supporter d'être rejouées.** `kitadmin add`
+et `lp user … parent add` le supportent : rejouer n'ajoute rien de plus. Si tu
+ajoutes un jour une commande qui ne le supporte pas — un `give` d'objet, un
+crédit de monnaie — enveloppe-la côté serveur dans une vérification « est-ce
+déjà fait ? », sinon un joueur pourra être servi deux fois.
+
+### Quand une ligne bloque
+
+Après 5 tentatives, une ligne sort de la file : `/api/livraison/file` ne la
+renvoie plus. Sans ce plafond, une commande erronée serait resservie
+indéfiniment. La page de la commande dans l'admin l'affiche en rouge, avec deux
+boutons :
+
+- **Relancer** : remet la ligne en attente et repart de zéro tentative ;
+- **Régénérer la file** : repart des articles de la commande et remplace les
+  lignes en attente ou en échec — utile après avoir corrigé la commande console
+  sur la fiche d'un article. Les lignes déjà exécutées ne bougent pas.
+
+### Relier le catalogue à Tebex
+
+Chaque kit, grade et pack vendu doit porter le `tebexPackageId` du package
+correspondant chez Tebex. Sans lui, l'article est refusé à la mise au panier
+avec un message clair, et l'admin le signale en rouge dans la liste.
+
+Les commandes de **retrait** (`kitadmin remove …`) sont facultatives : un article
+sans commande de retrait sera bien remboursé, simplement rien ne sera retiré du
+compte. L'admin le signale également.
+
 ## Déploiement sur Vercel
 
-1. Renseigner `DATABASE_URL`, `AUTH_SECRET` et `NEXT_PUBLIC_SITE_URL` dans
-   *Settings → Environment Variables*.
+1. Renseigner les variables d'environnement dans *Settings → Environment
+   Variables* : `DATABASE_URL`, `AUTH_SECRET`, `NEXT_PUBLIC_SITE_URL`,
+   `TEBEX_PUBLIC_TOKEN`, `TEBEX_WEBHOOK_SECRET`, `LIVRAISON_TOKEN`.
 2. `npm run build` lance `prisma generate` : rien d'autre à configurer.
-3. Le compte admin se crée en lançant le seed une fois avec `ADMIN_EMAIL` et
-   `ADMIN_MOT_DE_PASSE` renseignés (depuis la machine locale pointée sur la base
-   de production, ou depuis la console Vercel).
+3. **Appliquer les migrations AVANT de pousser** le code qui en dépend, depuis
+   ta machine pointée sur la production :
+   ```bash
+   npm run db:migrate:status
+   npm run db:migrate
+   ```
+   Le build Vercel ne les lance pas : une migration déclenchée automatiquement
+   sur une base partagée avec le serveur Minecraft est précisément ce qu'on
+   cherche à éviter.
+4. Le compte admin se crée en lançant le seed une fois avec `ADMIN_EMAIL` et
+   `ADMIN_MOT_DE_PASSE` renseignés, depuis la machine locale pointée sur la
+   base de production.
 
 ---
 

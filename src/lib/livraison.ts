@@ -60,3 +60,37 @@ export function construireCommandes(
 export function commandesAPlat(lignes: LigneLivrable[], pseudo: string): string[] {
   return construireCommandes(lignes, pseudo).flatMap((ligne) => ligne.commandes)
 }
+
+/* -------------------------------------------------------------------------- */
+/* File de livraison (phase 3)                                                */
+/* -------------------------------------------------------------------------- */
+
+/** Ce dont on a besoin pour fabriquer les lignes de livraison d'une commande. */
+type LigneAchetee = {
+  libelle: string
+  commandeLivraison: string
+  commandeRetrait: string
+}
+
+/**
+ * Transforme les lignes d'une commande en commandes console prêtes à exécuter.
+ *
+ * `sens` décide de la colonne lue :
+ *  - LIVRAISON : `commandeLivraison`, à la réception du paiement ;
+ *  - RETRAIT   : `commandeRetrait`, après un remboursement ou un litige perdu.
+ *
+ * Les articles dont la commande correspondante est vide ne produisent aucune
+ * ligne — c'est volontaire, et l'admin le signale en rouge.
+ */
+export function lignesAExecuter(
+  lignes: LigneAchetee[],
+  pseudo: string,
+  sens: 'LIVRAISON' | 'RETRAIT',
+): string[] {
+  const source = lignes.map((ligne) => ({
+    libelle: ligne.libelle,
+    commandeLivraison: sens === 'LIVRAISON' ? ligne.commandeLivraison : ligne.commandeRetrait,
+  }))
+
+  return commandesAPlat(source, pseudo)
+}

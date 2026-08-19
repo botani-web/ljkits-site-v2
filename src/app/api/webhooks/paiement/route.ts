@@ -1,67 +1,219 @@
+import type { Prisma, StatutCommande, TypeLivraison } from '@prisma/client'
+
+import { lignesAExecuter } from '@/lib/livraison'
+import { prisma } from '@/lib/prisma'
+import {
+  extraireCommandeId,
+  extraireIdentPanier,
+  extraireTransaction,
+  signatureWebhookValide,
+  TYPE_LITIGE_OUVERT,
+  TYPE_LITIGE_PERDU,
+  TYPE_PAIEMENT_COMPLETE,
+  TYPE_PAIEMENT_REMBOURSE,
+  TYPE_VALIDATION,
+  type WebhookTebex,
+} from '@/lib/tebex'
+
 /**
- * EMPLACEMENT RÉSERVÉ — webhook du prestataire de paiement (phase 3).
+ * Webhook Tebex — le point d'entrée qui déclenche la livraison.
  *
- * Cette route existe pour que l'URL soit stable et connue d'avance :
- *   https://ljkits.eu/api/webhooks/paiement
+ * C'est la route la plus sensible du site : quelqu'un qui saurait la
+ * déclencher se ferait livrer gratuitement. D'où l'ordre strict ci-dessous —
+ * la signature est vérifiée AVANT toute lecture du contenu.
  *
- * Elle ne fait RIEN pour l'instant et répond 501. Tant que la phase 3 n'est
- * pas faite, les commandes sont traitées à la main depuis /admin/commandes.
- *
- * ---------------------------------------------------------------------------
- * CE QU'ELLE DEVRA FAIRE
- * ---------------------------------------------------------------------------
- *
- * 1. VÉRIFIER LA SIGNATURE, avant toute autre chose.
- *    Tebex signe ses webhooks (en-tête `X-Signature`) : HMAC-SHA256 du corps
- *    brut avec le secret du webhook. Il faut donc lire `await request.text()`
- *    et NON `request.json()`, puis comparer en temps constant
- *    (`crypto.timingSafeEqual`). Une requête non signée est rejetée en 401 —
- *    sans ça, n'importe qui pourrait déclarer ses commandes payées.
- *
- * 2. RÉPONDRE VITE.
- *    Les prestataires réessaient si la réponse tarde. Valider, écrire le
- *    statut, répondre 200. La livraison RCON ne doit pas bloquer la réponse.
- *
- * 3. ÊTRE IDEMPOTENT.
- *    Un même webhook peut arriver plusieurs fois. `Commande.referenceExterne`
- *    est UNIQUE en base : écrire l'id de transaction du prestataire dessus
- *    fait échouer proprement le deuxième traitement du même paiement.
- *
- * 4. FAIRE AVANCER LA COMMANDE.
- *    Retrouver la commande (son id sera passé au prestataire à la création du
- *    panier), passer `statut` à PAYEE et poser `payeeAt`.
- *
- * 5. DÉCLENCHER LA LIVRAISON.
- *    `commandesAPlat(commande.lignes, commande.pseudoMinecraft)` — déjà écrit
- *    dans src/lib/livraison.ts et déjà utilisé par l'admin — donne la liste
- *    exacte des commandes console à exécuter. Il restera à ouvrir une
- *    connexion RCON vers le serveur Minecraft 1.8.8, les envoyer, puis passer
- *    la commande en LIVREE avec `livreeAt`.
- *
- *    ⚠ RCON est un protocole TCP : il ne fonctionne PAS depuis le runtime
- *    Edge, et mal depuis une fonction serverless (connexion sortante vers un
- *    port arbitraire, IP de sortie non fixe). Deux pistes à trancher le
- *    moment venu :
- *      - un petit service qui tourne à côté du serveur Minecraft et interroge
- *        une route de ce site pour récupérer les commandes à exécuter ;
- *      - ou un plugin côté serveur qui fait la même chose.
- *    C'est la piste la plus sûre : le port RCON n'a alors jamais besoin
- *    d'être exposé sur Internet.
- *
- * 6. EN CAS D'ÉCHEC DE PAIEMENT : statut ECHOUEE, rien à livrer.
+ * Toujours répondre 2XX quand l'évènement a été reçu et compris, même s'il a
+ * déjà été traité : un code d'erreur ferait réessayer Tebex indéfiniment.
  */
 
-export async function POST() {
-  return Response.json(
-    { erreur: 'Webhook de paiement pas encore implémenté.' },
-    { status: 501 },
-  )
+// Jamais de cache, jamais de pré-rendu : chaque requête doit être exécutée.
+export const dynamic = 'force-dynamic'
+
+export async function POST(requete: Request) {
+  /* ---- 1. le corps BRUT, avant tout ---- */
+  // Impératif : la signature porte sur ces octets exacts. Passer par
+  // requete.json() puis re-sérialiser changerait le texte et invaliderait
+  // la vérification.
+  const corpsBrut = await requete.text()
+  const signature = requete.headers.get('x-signature') ?? ''
+
+  if (!signatureWebhookValide(corpsBrut, signature)) {
+    console.warn('[webhook] signature invalide, requête rejetée')
+    return Response.json({ erreur: 'Signature invalide.' }, { status: 401 })
+  }
+
+  /* ---- 2. lecture du contenu ---- */
+  let evenement: WebhookTebex
+  try {
+    evenement = JSON.parse(corpsBrut)
+  } catch {
+    return Response.json({ erreur: 'Corps illisible.' }, { status: 400 })
+  }
+
+  if (!evenement?.id || !evenement?.type) {
+    return Response.json({ erreur: 'Évènement incomplet.' }, { status: 400 })
+  }
+
+  /* ---- 3. validation de l'endpoint ---- */
+  // Tebex envoie ce type au moment où l'on enregistre l'URL dans le tableau
+  // de bord. Il attend un 200 contenant exactement l'id reçu.
+  if (evenement.type === TYPE_VALIDATION) {
+    return Response.json({ id: evenement.id }, { status: 200 })
+  }
+
+  /* ---- 4. idempotence ---- */
+  // On pose la marque AVANT de traiter. Si l'insertion échoue sur la clé
+  // primaire, c'est que l'évènement est déjà passé : on répond 200 sans rien
+  // refaire. Une même commande reçoit plusieurs évènements légitimes, c'est
+  // bien l'id du webhook — et non la commande — qui sert de clé.
+  const commandeId = extraireCommandeId(evenement.subject)
+
+  try {
+    await prisma.evenementTebex.create({
+      data: { id: evenement.id, type: evenement.type, commandeId },
+    })
+  } catch {
+    console.info(`[webhook] évènement ${evenement.id} déjà traité, ignoré`)
+    return Response.json({ recu: true, deja: true }, { status: 200 })
+  }
+
+  /* ---- 5. retrouver la commande ---- */
+  const commande = await retrouverCommande(evenement)
+
+  if (!commande) {
+    // On répond 200 : renvoyer une erreur ferait réessayer Tebex en boucle
+    // pour une commande qui n'existera jamais. La trace part dans les logs.
+    console.error(
+      `[webhook] commande introuvable pour ${evenement.type} (${evenement.id})`,
+      JSON.stringify(evenement.subject)?.slice(0, 800),
+    )
+    return Response.json({ recu: true, commande: null }, { status: 200 })
+  }
+
+  /* ---- 6. traitement ---- */
+  try {
+    switch (evenement.type) {
+      case TYPE_PAIEMENT_COMPLETE:
+        await marquerPayeeEtLivrer(commande.id, extraireTransaction(evenement.subject))
+        break
+
+      case TYPE_PAIEMENT_REMBOURSE:
+      case TYPE_LITIGE_PERDU:
+        await marquerRembourseeEtRetirer(commande.id)
+        break
+
+      case TYPE_LITIGE_OUVERT:
+        // Un litige ouvert ne retire rien : l'arbitrage n'est pas tranché.
+        // `livreeAt` reste posé, c'est lui qui dira si la commande avait été
+        // livrée avant la contestation.
+        await prisma.commande.update({
+          where: { id: commande.id },
+          data: { statut: 'LITIGE' },
+        })
+        break
+
+      default:
+        console.info(`[webhook] type non géré : ${evenement.type}`)
+    }
+  } catch (erreur) {
+    console.error(`[webhook] échec du traitement de ${evenement.id} :`, erreur)
+    await prisma.commande.update({
+      where: { id: commande.id },
+      data: {
+        derniereErreur: `Webhook ${evenement.type} : ${
+          erreur instanceof Error ? erreur.message : 'erreur inconnue'
+        }`,
+      },
+    })
+    // 500 : là, un réessai de Tebex a du sens — l'évènement était valide,
+    // c'est notre traitement qui a échoué.
+    return Response.json({ erreur: 'Traitement impossible.' }, { status: 500 })
+  }
+
+  return Response.json({ recu: true }, { status: 200 })
 }
 
-/** Utile pour vérifier depuis un navigateur que la route est bien déployée. */
-export async function GET() {
-  return Response.json(
-    { statut: 'emplacement réservé', phase: 'non implémenté' },
-    { status: 501 },
+/* -------------------------------------------------------------------------- */
+/* Outils                                                                     */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Deux voies pour identifier la commande, dans l'ordre de fiabilité :
+ * le `custom.commandeId` qu'on a nous-mêmes placé dans le panier, puis
+ * l'ident du panier stocké dans `referenceExterne`.
+ */
+async function retrouverCommande(evenement: WebhookTebex) {
+  const commandeId = extraireCommandeId(evenement.subject)
+  if (commandeId) {
+    const parId = await prisma.commande.findUnique({ where: { id: commandeId } })
+    if (parId) return parId
+  }
+
+  const identPanier = extraireIdentPanier(evenement.subject)
+  if (identPanier) {
+    return prisma.commande.findUnique({ where: { referenceExterne: identPanier } })
+  }
+
+  return null
+}
+
+/** Passe la commande en PAYEE et remplit la file de livraison. */
+async function marquerPayeeEtLivrer(commandeId: string, transaction: string | null) {
+  await creerLignesEtChangerStatut(commandeId, 'LIVRAISON', 'PAYEE', {
+    payeeAt: new Date(),
+    transactionTebex: transaction,
+    derniereErreur: null,
+  })
+}
+
+/** Passe la commande en REMBOURSEE et met les commandes de retrait en file. */
+async function marquerRembourseeEtRetirer(commandeId: string) {
+  await creerLignesEtChangerStatut(commandeId, 'RETRAIT', 'REMBOURSEE', {})
+}
+
+/**
+ * Change le statut d'une commande et lui ajoute ses lignes de livraison,
+ * en une seule transaction : soit la commande avance et la file est remplie,
+ * soit rien ne bouge.
+ */
+async function creerLignesEtChangerStatut(
+  commandeId: string,
+  sens: TypeLivraison,
+  statut: StatutCommande,
+  champsSupplementaires: Prisma.CommandeUpdateInput,
+) {
+  const commande = await prisma.commande.findUniqueOrThrow({
+    where: { id: commandeId },
+    include: { lignes: true },
+  })
+
+  const commandes = lignesAExecuter(
+    commande.lignes,
+    commande.pseudoMinecraft,
+    sens === 'LIVRAISON' ? 'LIVRAISON' : 'RETRAIT',
   )
+
+  await prisma.$transaction([
+    prisma.commande.update({
+      where: { id: commandeId },
+      data: { statut, ...champsSupplementaires },
+    }),
+    prisma.ligneLivraison.createMany({
+      data: commandes.map((texte) => ({ commandeId, type: sens, commande: texte })),
+    }),
+  ])
+
+  if (commandes.length === 0) {
+    console.warn(
+      `[webhook] commande ${commandeId} : aucune commande console à exécuter en ${sens}`,
+    )
+  }
+}
+
+/**
+ * Utile pour vérifier depuis un navigateur que la route est déployée.
+ * Ne révèle rien : ni la configuration, ni l'existence du secret.
+ */
+export async function GET() {
+  return Response.json({ statut: 'en ligne', methode: 'POST attendu' }, { status: 200 })
 }

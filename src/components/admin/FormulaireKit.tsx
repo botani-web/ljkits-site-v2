@@ -11,7 +11,7 @@ import {
   ChampTexte,
   MessageErreurGlobale,
 } from '@/components/admin/Champs'
-import { ChampCommandeLivraison } from '@/components/admin/ChampCommandeLivraison'
+import { ChampsVenteEtLivraison } from '@/components/admin/ChampsTebex'
 import { EditeurMarkdown } from '@/components/admin/EditeurMarkdown'
 import { ListeCaracteristiques } from '@/components/admin/ListeCaracteristiques'
 import { centimesVersEuros } from '@/lib/format'
@@ -32,6 +32,8 @@ export type KitEnEdition = {
   bientot: boolean
   kitDeDepart: boolean
   commandeLivraison: string
+  commandeRetrait: string
+  tebexPackageId: number | null
   caracteristiques: { libelle: string; valeur: string }[]
 }
 
@@ -175,12 +177,16 @@ export function FormulaireKit({
         />
       </section>
 
-      {/* --------------------- livraison en jeu (boutique) ------------------ */}
+      {/* --------------------- vente et livraison en jeu -------------------- */}
       <section className="rounded-2xl border border-bord bg-charbon px-6 py-6">
-        <ChampCommandeLivraison
-          valeurInitiale={kit?.commandeLivraison}
-          exemple="kitadmin add {pseudo} kenshi"
-          erreurs={etat.champs?.commandeLivraison}
+        <h2 className="mb-4 font-titre text-base uppercase">Vente et livraison</h2>
+        <ChampsVenteEtLivraison
+          tebexPackageId={kit?.tebexPackageId}
+          commandeLivraison={kit?.commandeLivraison}
+          commandeRetrait={kit?.commandeRetrait}
+          exempleLivraison="kitadmin add {pseudo} kenshi"
+          exempleRetrait="kitadmin remove {pseudo} kenshi"
+          erreurs={etat.champs}
         />
       </section>
 

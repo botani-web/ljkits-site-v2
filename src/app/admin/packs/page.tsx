@@ -66,8 +66,11 @@ export default async function TableauDeBordPacks() {
                 <h2 className="font-titre text-[17px] uppercase">{pack.nom}</h2>
                 <p className="font-mono text-[11px] tracking-wide text-gris">
                   {pack.slug} · {pack._count.kits} kit{pack._count.kits > 1 ? 's' : ''} inclus
-                  {pack.commandeLivraison.trim() === '' && (
+                  {pack.achetable && pack.commandeLivraison.trim() === '' && (
                     <span className="text-rouge"> · pas de commande de livraison</span>
+                  )}
+                  {pack.achetable && pack.tebexPackageId === null && (
+                    <span className="text-rouge"> · pas d’ID Tebex</span>
                   )}
                 </p>
               </div>

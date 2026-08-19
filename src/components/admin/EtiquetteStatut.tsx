@@ -7,6 +7,7 @@ export const STATUTS: Record<StatutCommande, { label: string; classes: string }>
   LIVREE: { label: 'Livrée', classes: 'border-vert/50 bg-vert/12 text-vert' },
   ECHOUEE: { label: 'Échouée', classes: 'border-rouge/50 bg-rouge/12 text-rouge' },
   REMBOURSEE: { label: 'Remboursée', classes: 'border-bord bg-braise text-gris' },
+  LITIGE: { label: 'Litige', classes: 'border-oni bg-oni/15 text-oni' },
 }
 
 export function EtiquetteStatut({ statut }: { statut: StatutCommande }) {

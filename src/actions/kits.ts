@@ -30,6 +30,14 @@ function revaliderPagesKits(slugs: string[]) {
   }
 }
 
+
+/** Champ « ID Tebex » du formulaire : vide → null, sinon un entier. */
+function lireTebexPackageId(formData: FormData): number | null {
+  const brut = String(formData.get('tebexPackageId') ?? '').trim()
+  if (brut === '') return null
+  return Number(brut)
+}
+
 /**
  * Reconstruit l'objet « kit » à partir du formulaire, puis le valide.
  * Les cases à cocher sont absentes du FormData quand elles ne sont pas
@@ -60,6 +68,8 @@ function lireFormulaireKit(formData: FormData) {
     bientot: formData.get('bientot') !== null,
     kitDeDepart: formData.get('kitDeDepart') !== null,
     commandeLivraison: String(formData.get('commandeLivraison') ?? ''),
+    commandeRetrait: String(formData.get('commandeRetrait') ?? ''),
+    tebexPackageId: lireTebexPackageId(formData),
     caracteristiques,
   })
 }

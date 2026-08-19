@@ -86,6 +86,12 @@ export default async function TableauDeBordKits() {
                 <p className="font-mono text-[11px] tracking-wide text-gris">
                   /kits/{kit.slug} · {kit.role} · {kit._count.caracteristiques} ligne
                   {kit._count.caracteristiques > 1 ? 's' : ''} de fiche
+                  {kit.achetable && kit.commandeLivraison.trim() === '' && (
+                    <span className="text-rouge"> · pas de commande de livraison</span>
+                  )}
+                  {kit.achetable && kit.tebexPackageId === null && (
+                    <span className="text-rouge"> · pas d’ID Tebex</span>
+                  )}
                 </p>
               </div>
 

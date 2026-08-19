@@ -70,6 +70,12 @@ model Kit {
   /// Commande console exécutée à la livraison, avec {pseudo} comme marqueur.
   /// Ex : "kitadmin add {pseudo} kenshi". Vide tant que le kit n'est pas vendu.
   commandeLivraison String @default("")
+  /// Commande console exécutée en cas de remboursement ou de litige perdu.
+  /// Ex : "kitadmin remove {pseudo} kenshi". Vide = rien à retirer.
+  commandeRetrait   String @default("")
+  /// Identifiant numérique du package correspondant chez Tebex.
+  /// Obligatoire pour qu'un article achetable puisse entrer dans un panier.
+  tebexPackageId    Int?   @unique
 
   caracteristiques CaracteristiqueKit[]
   packs            Pack[]
@@ -157,6 +163,10 @@ model Grade {
   /// Commande console de livraison, avec {pseudo} comme marqueur.
   /// Ex : "lp user {pseudo} parent add ronin".
   commandeLivraison String @default("")
+  /// Commande console de retrait, en cas de remboursement ou de litige perdu.
+  commandeRetrait   String @default("")
+  /// Identifiant numérique du package correspondant chez Tebex.
+  tebexPackageId    Int?   @unique
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -197,6 +207,10 @@ model Pack {
   achetable Boolean @default(true)
 
   commandeLivraison String @default("")
+  /// Commande console de retrait, en cas de remboursement ou de litige perdu.
+  commandeRetrait   String @default("")
+  /// Identifiant numérique du package correspondant chez Tebex.
+  tebexPackageId    Int?   @unique
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -215,14 +229,18 @@ model Pack {
 /// EN_ATTENTE : créée sur le site, pas encore payée.
 /// PAYEE      : le prestataire a confirmé le paiement (webhook, phase 3).
 /// LIVREE     : le contenu a été appliqué sur le compte du joueur.
-/// ECHOUEE    : paiement refusé ou abandonné.
-/// REMBOURSEE : remboursement effectué après coup.
+/// ECHOUEE    : paiement refusé, abandonné, ou panier Tebex non créé.
+/// REMBOURSEE : remboursement effectué, ou litige perdu.
+/// LITIGE     : litige ouvert par le client, en cours d'arbitrage. La commande
+///              a le plus souvent déjà été livrée — `livreeAt` reste posé,
+///              c'est lui qui permet de le savoir.
 enum StatutCommande {
   EN_ATTENTE
   PAYEE
   LIVREE
   ECHOUEE
   REMBOURSEE
+  LITIGE
 }
 
 enum TypeArticle {
@@ -248,16 +266,26 @@ model Commande {
 
   statut StatutCommande @default(EN_ATTENTE)
 
-  /// Id de transaction du prestataire de paiement.
-  /// Unique : rend le futur webhook idempotent, un même paiement ne peut pas
-  /// être traité deux fois. Plusieurs NULL restent autorisés en PostgreSQL.
+  /// Ident du panier Tebex, posé à la création de la commande.
+  /// Unique, et c'est par lui qu'on retrouve la commande si le `custom` du
+  /// webhook venait à manquer.
   referenceExterne String? @unique
+
+  /// Id de transaction Tebex ("tbx-…"), posé par le webhook de paiement.
+  /// C'est ce que le client voit sur son relevé et cite au support.
+  transactionTebex String?
+
+  /// Dernière erreur technique rencontrée (création du panier Tebex, webhook).
+  /// Affichée dans l'admin : une commande qui échoue ne doit pas le faire
+  /// en silence.
+  derniereErreur String?
 
   createdAt DateTime  @default(now())
   payeeAt   DateTime?
   livreeAt  DateTime?
 
-  lignes LigneCommande[]
+  lignes          LigneCommande[]
+  lignesLivraison LigneLivraison[]
 
   @@index([statut, createdAt])
   /// Sert au garde-fou anti-abus : compter les commandes non payées d'un
@@ -280,6 +308,7 @@ model LigneCommande {
   libelle           String
   prixCentimes      Int
   commandeLivraison String
+  commandeRetrait   String @default("")
 
   commande Commande @relation(fields: [commandeId], references: [id], onDelete: Cascade)
   kit      Kit?     @relation(fields: [kitId], references: [id], onDelete: SetNull)
@@ -287,4 +316,123 @@ model LigneCommande {
   pack     Pack?    @relation(fields: [packId], references: [id], onDelete: SetNull)
 
   @@index([commandeId])
+}
+
+// ---------------------------------------------------------------------------
+// LIVRAISON (phase 3)
+//
+// Le site ne parle jamais au serveur Minecraft. Il dépose des commandes
+// console dans une file ; un bot qui tourne à côté du serveur vient les
+// chercher (GET /api/livraison/file), les exécute en RCON, puis rend compte
+// (POST /api/livraison/confirmer). Le port RCON n'est donc jamais exposé.
+// ---------------------------------------------------------------------------
+
+enum StatutLigneLivraison {
+  EN_ATTENTE
+  EXECUTEE
+  ECHOUEE
+}
+
+/// Sens de l'opération : livrer ce qui a été acheté, ou le retirer après un
+/// remboursement ou un litige perdu.
+enum TypeLivraison {
+  LIVRAISON
+  RETRAIT
+}
+
+model LigneLivraison {
+  id         String        @id @default(cuid())
+  commandeId String
+  type       TypeLivraison @default(LIVRAISON)
+
+  /// Commande console prête à exécuter, pseudo DÉJÀ substitué.
+  /// On ne stocke pas le marqueur {pseudo} ici : le bot n'a aucune
+  /// substitution à faire, il exécute la chaîne telle quelle.
+  commande String
+
+  statut     StatutLigneLivraison @default(EN_ATTENTE)
+  /// Nombre d'exécutions tentées. Au-delà de 5, la ligne sort de la file et
+  /// attend une relance manuelle depuis l'admin : une commande erronée ne
+  /// doit pas être resservie indéfiniment au bot.
+  tentatives Int                  @default(0)
+
+  createdAt      DateTime  @default(now())
+  executeeAt     DateTime?
+  derniereErreur String?
+
+  commandeClient Commande @relation(fields: [commandeId], references: [id], onDelete: Cascade)
+
+  /// La requête du bot : les lignes en attente, les plus anciennes d'abord.
+  @@index([statut, tentatives, createdAt])
+  @@index([commandeId])
+}
+
+/// Journal des webhooks Tebex déjà traités.
+///
+/// C'est le mécanisme d'idempotence : `id` est l'identifiant du webhook fourni
+/// par Tebex. On insère AVANT de traiter ; si l'insertion viole la contrainte
+/// de clé primaire, l'évènement a déjà été traité et on répond 200 sans rien
+/// refaire. Une même commande reçoit plusieurs évènements légitimes
+/// (completed, puis refunded…), ce qu'un simple champ unique sur Commande
+/// n'aurait pas su distinguer.
+model EvenementTebex {
+  id         String   @id
+  type       String
+  commandeId String?
+  recuLe     DateTime @default(now())
+
+  @@index([commandeId])
+}
+
+// ---------------------------------------------------------------------------
+// ⚠⚠⚠  TABLE EXTERNE — NE JAMAIS MODIFIER NI SUPPRIMER  ⚠⚠⚠
+//
+// `joueur` appartient au SERVEUR MINECRAFT. Elle est créée et alimentée par
+// skript-db, pas par Prisma. Le site ne fait que la LIRE (classements,
+// statistiques, solde de coins).
+//
+// Elle est déclarée ici pour une seule raison : `prisma db push` SUPPRIME
+// toute table de la base qui n'apparaît pas dans ce fichier. Sans ce modèle,
+// la table et ses données disparaissent au prochain push.
+//
+// RÈGLES :
+//   1. Ne change aucun champ, aucun type, aucune valeur par défaut. Toute
+//      divergence ferait proposer un ALTER TABLE par db push — c'est-à-dire
+//      une modification d'une table dont le serveur Minecraft est propriétaire.
+//   2. N'écris jamais dedans depuis le site. Aucune Server Action, aucune
+//      route ne doit faire de create/update/delete sur ce modèle.
+//   3. Si skript-db fait évoluer la table, refais une introspection
+//      (`npx prisma db pull` dans un fichier à part) et recopie le résultat
+//      ici À L'IDENTIQUE.
+//
+// La structure ci-dessous est le résultat exact d'une introspection Prisma
+// de la vraie table : types, précision du timestamp et valeurs par défaut
+// compris. Vérifié avec `npm run db:diff` : aucune modification proposée.
+// ---------------------------------------------------------------------------
+model Joueur {
+  /// UUID Minecraft du joueur, tel que le serveur l'écrit.
+  uuid   String @id
+  pseudo String
+
+  kills  Int @default(0)
+  morts  Int @default(0)
+  points Int @default(0)
+  coins  Int @default(0)
+
+  recordSerie   Int @default(0) @map("record_serie")
+  hebdoPoints   Int @default(0) @map("hebdo_points")
+  mensuelPoints Int @default(0) @map("mensuel_points")
+
+  /// timestamptz(6) côté PostgreSQL : la précision doit rester explicite,
+  /// sinon Prisma proposerait de la ramener à 3.
+  derniereMaj DateTime @default(now()) @map("derniere_maj") @db.Timestamptz(6)
+
+  // Index créés par skript-db pour les classements. `map:` reprend leur nom
+  // exact et `sort: Desc` leur sens : sans ces trois lignes, db push les
+  // SUPPRIMERAIT, et les requêtes de classement du serveur passeraient en
+  // parcours complet de table sans que rien ne le signale.
+  @@index([kills(sort: Desc)], map: "idx_kills")
+  @@index([hebdoPoints(sort: Desc)], map: "idx_hebdo")
+  @@index([mensuelPoints(sort: Desc)], map: "idx_mensuel")
+  @@map("joueur")
 }

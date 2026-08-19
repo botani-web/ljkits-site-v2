@@ -8,10 +8,13 @@
     "start": "next start",
     "lint": "next lint",
     "postinstall": "prisma generate",
-    "db:push": "prisma db push",
+    "db:diff": "prisma migrate diff --from-schema-datasource prisma/schema.prisma --to-schema-datamodel prisma/schema.prisma --script",
+    "db:migrate": "prisma migrate deploy",
+    "db:migrate:new": "node scripts/nouvelle-migration.mjs",
+    "db:migrate:status": "prisma migrate status",
     "db:seed": "tsx prisma/seed.ts",
-    "db:studio": "prisma studio",
-    "db:seed:boutique": "tsx prisma/seed.ts --boutique"
+    "db:seed:boutique": "tsx prisma/seed.ts --boutique",
+    "db:studio": "prisma studio"
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",

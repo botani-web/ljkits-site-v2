@@ -46,6 +46,8 @@ export default async function PageModifierGrade({
           achetable: grade.achetable,
           heriteDuPrecedent: grade.heriteDuPrecedent,
           commandeLivraison: grade.commandeLivraison,
+          commandeRetrait: grade.commandeRetrait,
+          tebexPackageId: grade.tebexPackageId,
           avantages: grade.avantages.map((avantage) => avantage.texte),
         }}
         libelleBouton="Enregistrer les modifications"

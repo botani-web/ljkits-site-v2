@@ -24,6 +24,16 @@ const texteFacultatif = z
   .trim()
   .transform((valeur) => (valeur === '' ? null : valeur))
 
+/**
+ * Identifiant numérique du package Tebex. Vide = article pas encore relié,
+ * donc non achetable tant que ce n'est pas renseigné.
+ */
+const tebexPackageId = z
+  .number({ error: 'L’identifiant Tebex doit être un nombre.' })
+  .int('L’identifiant Tebex est un entier.')
+  .positive('L’identifiant Tebex doit être positif.')
+  .nullable()
+
 export const schemaKit = z.object({
   slug,
   nom: z.string().trim().min(1, 'Le nom est obligatoire.').max(40, 'Nom trop long.'),
@@ -53,6 +63,9 @@ export const schemaKit = z.object({
   kitDeDepart: z.boolean(),
   /** Commande console de livraison, avec {pseudo} comme marqueur. */
   commandeLivraison: z.string().trim().max(2000, 'Commande de livraison trop longue.'),
+  /** Commande console de retrait, jouée en cas de remboursement. */
+  commandeRetrait: z.string().trim().max(2000, 'Commande de retrait trop longue.'),
+  tebexPackageId: tebexPackageId,
   /**
    * Les lignes de la fiche technique, déjà appariées libellé/valeur.
    * Les lignes entièrement vides sont écartées en amont (cf. actions/kits.ts) :
@@ -122,6 +135,8 @@ export const schemaGrade = z.object({
   achetable: z.boolean(),
   heriteDuPrecedent: z.boolean(),
   commandeLivraison: z.string().trim().max(2000, 'Commande de livraison trop longue.'),
+  commandeRetrait: z.string().trim().max(2000, 'Commande de retrait trop longue.'),
+  tebexPackageId: tebexPackageId,
   avantages: z
     .array(z.string().trim().min(1, 'Un avantage vide n’a pas de sens.').max(120))
     .max(12, 'Douze avantages au maximum par grade.'),
@@ -146,6 +161,8 @@ export const schemaPack = z.object({
   visible: z.boolean(),
   achetable: z.boolean(),
   commandeLivraison: z.string().trim().max(2000, 'Commande de livraison trop longue.'),
+  commandeRetrait: z.string().trim().max(2000, 'Commande de retrait trop longue.'),
+  tebexPackageId: tebexPackageId,
   /// Les ids des kits inclus, cochés dans le formulaire.
   kitIds: z.array(z.string().min(1)).max(30, 'Trente kits au maximum par pack.'),
 })

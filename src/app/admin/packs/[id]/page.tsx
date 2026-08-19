@@ -51,6 +51,8 @@ export default async function PageModifierPack({
           visible: pack.visible,
           achetable: pack.achetable,
           commandeLivraison: pack.commandeLivraison,
+          commandeRetrait: pack.commandeRetrait,
+          tebexPackageId: pack.tebexPackageId,
           kitIds: pack.kits.map((kit) => kit.id),
         }}
         libelleBouton="Enregistrer les modifications"

@@ -14,6 +14,13 @@ function revaliderBoutique() {
   revalidatePath('/boutique')
 }
 
+/** Champ « ID Tebex » du formulaire : vide → null, sinon un entier. */
+function lireTebexPackageId(formData: FormData): number | null {
+  const brut = String(formData.get('tebexPackageId') ?? '').trim()
+  if (brut === '') return null
+  return Number(brut)
+}
+
 function lireFormulaireGrade(formData: FormData) {
   // Les avantages arrivent comme une liste de champs de même nom.
   const avantages = formData
@@ -32,6 +39,8 @@ function lireFormulaireGrade(formData: FormData) {
     achetable: formData.get('achetable') !== null,
     heriteDuPrecedent: formData.get('heriteDuPrecedent') !== null,
     commandeLivraison: String(formData.get('commandeLivraison') ?? ''),
+    commandeRetrait: String(formData.get('commandeRetrait') ?? ''),
+    tebexPackageId: lireTebexPackageId(formData),
     avantages,
   })
 }

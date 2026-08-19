@@ -11,7 +11,7 @@ import {
   ChampZoneTexte,
   MessageErreurGlobale,
 } from '@/components/admin/Champs'
-import { ChampCommandeLivraison } from '@/components/admin/ChampCommandeLivraison'
+import { ChampsVenteEtLivraison } from '@/components/admin/ChampsTebex'
 import { centimesVersEuros, formaterEuros } from '@/lib/format'
 
 export type PackEnEdition = {
@@ -23,6 +23,8 @@ export type PackEnEdition = {
   visible: boolean
   achetable: boolean
   commandeLivraison: string
+  commandeRetrait: string
+  tebexPackageId: number | null
   kitIds: string[]
 }
 
@@ -171,10 +173,14 @@ export function FormulairePack({
       </section>
 
       <section className="rounded-2xl border border-bord bg-charbon px-6 py-6">
-        <ChampCommandeLivraison
-          valeurInitiale={pack?.commandeLivraison}
-          exemple={'kitadmin add {pseudo} yumi\nkitadmin add {pseudo} kitsune'}
-          erreurs={etat.champs?.commandeLivraison}
+        <h2 className="mb-4 font-titre text-base uppercase">Vente et livraison</h2>
+        <ChampsVenteEtLivraison
+          tebexPackageId={pack?.tebexPackageId}
+          commandeLivraison={pack?.commandeLivraison}
+          commandeRetrait={pack?.commandeRetrait}
+          exempleLivraison={'kitadmin add {pseudo} yumi\nkitadmin add {pseudo} kitsune'}
+          exempleRetrait={'kitadmin remove {pseudo} yumi\nkitadmin remove {pseudo} kitsune'}
+          erreurs={etat.champs}
         />
       </section>
 

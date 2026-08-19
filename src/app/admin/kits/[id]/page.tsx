@@ -64,6 +64,8 @@ export default async function PageModifierKit({
           bientot: kit.bientot,
           kitDeDepart: kit.kitDeDepart,
           commandeLivraison: kit.commandeLivraison,
+          commandeRetrait: kit.commandeRetrait,
+          tebexPackageId: kit.tebexPackageId,
           caracteristiques: kit.caracteristiques.map((carac) => ({
             libelle: carac.libelle,
             valeur: carac.valeur,
