@@ -4,7 +4,7 @@ import { BoutonCopieIp } from '@/components/public/CopieIp'
 import { GrilleKits } from '@/components/public/GrilleKits'
 import { PagePublique } from '@/components/public/PagePublique'
 import { prisma } from '@/lib/prisma'
-import { IMAGE_OG, SITE } from '@/lib/site'
+import { IMAGE_OG, reperes, SITE } from '@/lib/site'
 
 export const revalidate = 3600 // une heure
 
@@ -19,13 +19,8 @@ export const metadata: Metadata = {
   },
 }
 
-/** Les quatre chiffres clés du soup 1.8, repris de la maquette. */
-const REGLES_DU_JEU = [
-  { valeur: '3,5 ❤', label: 'Une soupe' },
-  { valeur: '2 ❤', label: 'Épée en pierre' },
-  { valeur: '0', label: 'Cooldown d’attaque' },
-  { valeur: '1.8', label: 'Knockback d’époque' },
-]
+/** Les quatre chiffres clés affichés par la maquette d'origine. */
+const REGLES_DU_JEU = reperes('soupe', 'epee', 'cooldown', 'knockback')
 
 export default async function PageKits() {
   const kits = await prisma.kit.findMany({

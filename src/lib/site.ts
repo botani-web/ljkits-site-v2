@@ -53,3 +53,24 @@ export const SITE = {
  * partagés sur Discord s'affichent nus.
  */
 export const IMAGE_OG = [{ url: '/og.png', width: 1080, height: 1080 }]
+
+/**
+ * Les repères chiffrés du soup 1.8, partagés par /kits et /kits/[slug].
+ *
+ * Ce ne sont pas des données de configuration mais des constantes de jeu :
+ * elles ne changeraient que si l'équilibrage du serveur changeait. Chaque page
+ * choisit les repères qu'elle affiche via `cle`, parce que la grille de /kits
+ * n'en tient que quatre (celle de la maquette d'origine).
+ */
+export const REPERES_DE_JEU = [
+  { cle: 'soupe', valeur: '3,5 ❤', label: 'Une soupe' },
+  { cle: 'epee', valeur: '2 ❤', label: 'Épée en pierre' },
+  { cle: 'cooldown', valeur: '0', label: 'Cooldown d’attaque' },
+  { cle: 'armure', valeur: 'Aucune', label: 'Armure' },
+  { cle: 'knockback', valeur: '1.8', label: 'Knockback d’époque' },
+] as const
+
+/** Renvoie les repères demandés, dans l'ordre des clés fournies. */
+export function reperes(...cles: string[]) {
+  return cles.map((cle) => REPERES_DE_JEU.find((repere) => repere.cle === cle)!)
+}
