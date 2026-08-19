@@ -36,7 +36,7 @@ export function Footer() {
             <LienFooter href="/kits">Les kits</LienFooter>
             <LienFooter href="/boutique">Boutique</LienFooter>
             <LienFooter href="/#vote">Voter</LienFooter>
-            <LienFooter href="/#classement">Classement</LienFooter>
+            <LienFooter href="/classement">Classement</LienFooter>
           </ColonneFooter>
 
           <ColonneFooter titre="Communauté">

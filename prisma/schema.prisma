@@ -436,3 +436,26 @@ model Joueur {
   @@index([mensuelPoints(sort: Desc)], map: "idx_mensuel")
   @@map("joueur")
 }
+
+/// Dates de remise à zéro des classements.
+///
+/// Table créée par Prisma (elle est dans les migrations) mais ÉCRITE par le
+/// SERVEUR MINECRAFT, en SQL brut : c'est lui qui sait quand il remet les
+/// compteurs à zéro. Le site ne fait que la lire.
+///
+/// Le @@map en snake_case n'est pas cosmétique : sans lui, PostgreSQL rendrait
+/// le nom sensible à la casse et skript-db devrait écrire
+/// `INSERT INTO "ConfigClassement"` avec les guillemets. Là, un simple
+/// `INSERT INTO config_classement (cle, valeur) VALUES ('hebdo_fin', 1755648000)`
+/// suffit.
+model ConfigClassement {
+  /// "hebdo_fin" ou "mensuel_fin".
+  cle String @id
+
+  /// Timestamp unix en SECONDES de la prochaine remise à zéro.
+  /// BigInt côté base ; converti en Number avant d'être envoyé au composant
+  /// client, qui ne saurait pas sérialiser un BigInt.
+  valeur BigInt
+
+  @@map("config_classement")
+}

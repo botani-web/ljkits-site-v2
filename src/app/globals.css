@@ -28,6 +28,13 @@
   --color-creme: #f2e8d9;
   --color-gris: #9e93ac;
 
+  /* --- podium du classement --- */
+  /* L'or existe déjà plus haut (--color-or). L'argent est un gris froid, lisible
+     sur le fond nuit ; le bronze est volontairement plus brun que --color-soupe
+     pour qu'on ne les confonde pas côte à côte. */
+  --color-argent: #c9d1dc;
+  --color-bronze: #b87333;
+
   /* --- états --- */
   --color-vert: #5be06b;
   --color-rouge: #e05b5b;

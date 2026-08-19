@@ -1,7 +1,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 
-import { Classement } from '@/components/public/Classement'
+import { ClassementVotes } from '@/components/public/ClassementVotes'
 import { BoutonCopieIp } from '@/components/public/CopieIp'
 import { IconeDiscord } from '@/components/public/IconeDiscord'
 import { PagePublique } from '@/components/public/PagePublique'
@@ -135,9 +135,9 @@ export default async function Accueil() {
                 icone={<IconeDiscord className="size-6 fill-white" />}
               />
               <Tuile
-                href="/#classement"
+                href="/classement"
                 titre="Classement"
-                sousTitre="Top votants du mois"
+                sousTitre="Les meilleurs joueurs"
                 className="border border-or/40 bg-charbon text-creme"
                 icone={
                   <svg
@@ -335,13 +335,18 @@ export default async function Accueil() {
       <section id="classement" className="bg-charbon px-6 py-24">
         <div className="mx-auto max-w-contenu">
           <EnTeteSection
-            surtitre="Classement du mois"
+            surtitre="Soutenir le serveur"
             titre="Les meilleurs votants"
             sousTitre="Le top 3 de chaque mois est immortalisé au spawn — et repart avec un bonus de coins."
           />
-          <Classement />
+          <ClassementVotes />
           <p className="mt-5.5 text-center text-sm text-gris">
-            Le classement se réinitialise le 1ᵉʳ de chaque mois.
+            Le classement des votes se réinitialise le 1ᵉʳ de chaque mois. Tu cherches le
+            classement des joueurs ?{' '}
+            <Link href="/classement" className="text-or underline underline-offset-2">
+              Il est par ici
+            </Link>
+            .
           </p>
         </div>
       </section>

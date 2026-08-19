@@ -92,17 +92,21 @@ identifiants du seed.
 
 ```
 prisma/
-  schema.prisma      modèles Kit, CaracteristiqueKit, SectionReglement, Admin
-  seed.ts            contenu de référence (21 kits, règlement, admin)
+  schema.prisma      Kit, Grade, Pack, Commande, Joueur (lecture seule)…
+  migrations/        les migrations SQL versionnées
+  seed.ts            contenu de référence (21 kits, 3 grades, 1 pack, règlement)
 
 src/
   app/               les routes (App Router)
     page.tsx         /             accueil
     kits/            /kits et /kits/[slug]
+    classement/      /classement — lecture seule de la table joueur
     reglement/       /reglement
     connexion/       formulaire de connexion admin
     admin/           panneau d'administration (protégé)
     api/auth/        point d'entrée NextAuth
+    api/webhooks/    webhook de paiement Tebex
+    api/livraison/   file de livraison, lue par le bot RCON
 
   actions/           Server Actions — toute écriture en base passe par là
     garde.ts         exigerAdmin() — appelé en 1ʳᵉ ligne de chaque action
@@ -120,7 +124,10 @@ src/
     auth.ts          configuration NextAuth
     markdown.ts      Markdown → HTML, HTML brut échappé
     validations.ts   schémas zod
-    format.ts        formatage des prix et des dates
+    format.ts        formatage des prix, dates et ratios
+    classement.ts    lecture du classement (table joueur)
+    tebex.ts         panier Headless et signature des webhooks
+    livraison.ts     construction des commandes console
 ```
 
 ---
@@ -341,6 +348,67 @@ donc la création de commande, et rien d’autre.
 > Vérifie que le *rate limiting* est disponible sur ton plan Vercel — les règles
 > WAF personnalisées ne le sont pas sur tous. À défaut, le garde-fou en base
 > reste actif.
+
+---
+
+## Le classement des joueurs
+
+`/classement` lit la table `joueur` du serveur Minecraft. Trois onglets :
+**Semaine** (`hebdo_points`), **Mois** (`mensuel_points`), **À vie** (`kills`,
+avec ratio K/D et record de série).
+
+La page est statique, régénérée au plus toutes les **60 secondes**. Les trois
+classements sont envoyés ensemble au navigateur : changer d'onglet ne provoque
+aucun aller-retour.
+
+**Lecture seule.** Ni la page ni aucune action n'écrit dans `joueur` ou dans
+`config_classement`. Les seules écritures viennent du serveur Minecraft.
+
+Seuls les joueurs dont la valeur est **supérieure à zéro** sont classés : une
+liste de cinquante zéros en début de semaine n'apprend rien. Si personne n'a
+encore marqué, la page affiche « Aucun joueur classé pour le moment ».
+
+### Ce que le serveur Minecraft doit écrire
+
+Le compte à rebours affiché sur les onglets Semaine et Mois lit la table
+`config_classement`, créée par Prisma mais **alimentée par skript-db**. Deux
+lignes, avec un timestamp unix en **secondes** :
+
+| `cle` | `valeur` |
+|---|---|
+| `hebdo_fin` | date de la prochaine remise à zéro hebdomadaire |
+| `mensuel_fin` | date de la prochaine remise à zéro du cycle de 30 jours |
+
+À chaque remise à zéro, le serveur repousse la date correspondante :
+
+```sql
+INSERT INTO config_classement (cle, valeur)
+VALUES ('mensuel_fin', extract(epoch from now())::bigint + 30 * 86400)
+ON CONFLICT (cle) DO UPDATE SET valeur = excluded.valeur;
+```
+
+Le nom de table est en minuscules (`@@map("config_classement")`) précisément
+pour que ce SQL fonctionne sans guillemets.
+
+### Si les dates sont absentes
+
+Le site ne plante pas et n'affiche pas d'erreur, il calcule une valeur par
+défaut :
+
+| Clé manquante | Valeur calculée |
+|---|---|
+| `hebdo_fin` | prochain **lundi 00:00 UTC** |
+| `mensuel_fin` | **maintenant + 30 jours** (cycle glissant, pas le 1er du mois) |
+
+Si la date stockée est **déjà passée** — le serveur ne l'a pas repoussée — le
+compte à rebours affiche « imminente » plutôt qu'un décompte négatif.
+
+### Deux classements, à ne pas confondre
+
+- **`/classement`** : les joueurs, alimenté par le serveur Minecraft. Réel.
+- **Section « Les meilleurs votants » de l'accueil** : les votes.
+  ⚠ **Données factices** — aucun système de vote n'est encore installé.
+  L'avertissement est en tête de `src/components/public/ClassementVotes.tsx`.
 
 ---
 

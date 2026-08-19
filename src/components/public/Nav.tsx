@@ -21,8 +21,10 @@ import { SITE } from '@/lib/site'
 const LIENS = [
   { href: '/#jouer', label: 'Jouer' },
   { href: '/kits', label: 'Kits' },
+  { href: '/classement', label: 'Classement' },
   { href: '/boutique', label: 'Boutique' },
-  { href: '/#vote', label: 'Voter' },
+  // « Voter » a été retiré de la barre pour ne pas la surcharger : la section
+  // reste atteignable par la tuile du bento de l'accueil et par le pied de page.
   { href: '/reglement', label: 'Règlement' },
 ]
 

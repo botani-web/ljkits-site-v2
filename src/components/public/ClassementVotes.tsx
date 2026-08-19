@@ -1,13 +1,27 @@
 import Image from 'next/image'
 
-import { SITE } from '@/lib/site'
+import { urlAvatar } from '@/lib/avatar'
 
 /**
- * TODO (phase 2) : données factices, comme dans la maquette.
- * Pour brancher les vrais chiffres il suffira de remplacer ce tableau par un
- * appel qui renvoie le même format — [{ pseudo, votes }] — et de le passer
- * en props à <Classement>. Le rendu ci-dessous n'a pas à changer.
+ * ⚠⚠⚠  DONNÉES FACTICES — AUCUN SYSTÈME DE VOTE N'EST INSTALLÉ  ⚠⚠⚠
+ *
+ * Ce classement est celui des VOTES, pas celui des joueurs. Le vrai classement
+ * (kills, points, K/D) est une page à part : /classement, alimentée par la
+ * table `joueur` du serveur Minecraft.
+ *
+ * Les pseudos et les nombres ci-dessous sont INVENTÉS. Le serveur n'est encore
+ * inscrit sur aucun site de vote (cf. SITE.sitesDeVote, dont les URL valent
+ * toutes '#'). Tant que ce n'est pas fait, cette section montre au visiteur un
+ * classement qui n'existe pas.
+ *
+ * À FAIRE avant d'annoncer le vote :
+ *   1. inscrire le serveur sur les trois sites et renseigner leurs URL ;
+ *   2. brancher l'API de vote et remplacer CLASSEMENT_FACTICE par un appel
+ *      renvoyant le même format : [{ pseudo, votes }].
+ * Le rendu ci-dessous n'aura pas à changer.
  */
+
+/** Données inventées — cf. l'avertissement en tête de fichier. */
 const CLASSEMENT_FACTICE = [
   { pseudo: 'Lestoo', votes: 89 },
   { pseudo: 'Byslide_', votes: 74 },
@@ -19,15 +33,11 @@ const CLASSEMENT_FACTICE = [
   { pseudo: 'MushWay_Fan', votes: 29 },
 ]
 
-function urlAvatar(pseudo: string, taille: number) {
-  return `${SITE.apiAvatar}${encodeURIComponent(pseudo)}/${taille}`
-}
-
 function pluriel(votes: number) {
   return votes > 1 ? 'votes' : 'vote'
 }
 
-export function Classement() {
+export function ClassementVotes() {
   const trie = [...CLASSEMENT_FACTICE].sort((a, b) => b.votes - a.votes)
   const podium = trie.slice(0, 3)
   const reste = trie.slice(3)

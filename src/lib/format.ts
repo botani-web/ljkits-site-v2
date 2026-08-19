@@ -58,3 +58,12 @@ export function formaterDateHeure(date: Date): string {
     minute: '2-digit',
   })
 }
+
+/**
+ * Ratio kills / morts, à deux décimales.
+ * Les morts sont plancherées à 1 : un joueur qui n'est jamais mort donnerait
+ * sinon une division par zéro.
+ */
+export function formaterRatio(kills: number, morts: number): string {
+  return (kills / Math.max(morts, 1)).toFixed(2).replace('.', ',')
+}

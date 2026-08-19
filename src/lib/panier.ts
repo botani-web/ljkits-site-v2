@@ -133,7 +133,6 @@ export function ecrirePseudoStocke(pseudo: string | null) {
   }
 }
 
-/** URL de l'avatar Minecraft. mc-heads.net est autorisé dans next.config.ts. */
-export function urlAvatar(pseudo: string, taille: number) {
-  return `https://mc-heads.net/avatar/${encodeURIComponent(pseudo)}/${taille}`
-}
+// L'URL des têtes vit dans lib/avatar.ts : elle sert aussi au classement.
+// Réexportée ici pour ne pas casser les imports existants de la boutique.
+export { urlAvatar } from '@/lib/avatar'
