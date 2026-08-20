@@ -41,11 +41,13 @@ export function FormulaireKit({
   action,
   kit,
   libelleBouton,
+  discord,
 }: {
   /** Server Action déjà liée : creerKit, ou modifierKit.bind(null, id). */
   action: (etat: EtatFormulaire, formData: FormData) => Promise<EtatFormulaire>
   kit?: KitEnEdition
   libelleBouton: string
+  discord: string
 }) {
   const [etat, envoyer] = useActionState(action, ETAT_VIDE)
 
@@ -197,6 +199,7 @@ export function FormulaireKit({
           label="Description longue (page du kit)"
           valeurInitiale={kit?.descriptionLongue ?? ''}
           erreurs={etat.champs?.descriptionLongue}
+          discord={discord}
         />
       </section>
 

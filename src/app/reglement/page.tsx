@@ -5,6 +5,7 @@ import { PagePublique } from '@/components/public/PagePublique'
 import { formaterDate } from '@/lib/format'
 import { markdownVersHtml } from '@/lib/markdown'
 import { prisma } from '@/lib/prisma'
+import { lireReglages } from '@/lib/reglages'
 import { IMAGE_OG } from '@/lib/site'
 
 export const revalidate = 3600 // une heure
@@ -25,6 +26,8 @@ export const metadata: Metadata = {
 
 export default async function PageReglement() {
   // Seules les sections publiées sont lues : les brouillons restent en admin.
+  const { discord } = await lireReglages()
+
   const sections = await prisma.sectionReglement.findMany({
     where: { publie: true },
     orderBy: { ordre: 'asc' },
@@ -84,7 +87,7 @@ export default async function PageReglement() {
 
               <div
                 className="markdown"
-                dangerouslySetInnerHTML={{ __html: markdownVersHtml(section.contenu) }}
+                dangerouslySetInnerHTML={{ __html: markdownVersHtml(section.contenu, { discord }) }}
               />
             </section>
           ))

@@ -119,7 +119,8 @@ src/
     admin/           composants du panneau d'administration
 
   lib/
-    site.ts          IP, Discord, sites de vote — tout ce qui change ici
+    site.ts          constantes de code (API tierces, image OG, repères de jeu)
+    reglages.ts      IP, Discord, URL de vote — modifiables depuis /admin/reglages
     prisma.ts        client Prisma partagé
     auth.ts          configuration NextAuth
     markdown.ts      Markdown → HTML, HTML brut échappé
@@ -348,6 +349,72 @@ donc la création de commande, et rien d’autre.
 > Vérifie que le *rate limiting* est disponible sur ton plan Vercel — les règles
 > WAF personnalisées ne le sont pas sur tous. À défaut, le garde-fou en base
 > reste actif.
+
+---
+
+## Les réglages du site
+
+**`/admin/reglages`** — tout ce qui change au fil du temps sans mériter un
+déploiement :
+
+| Réglage | Où il apparaît |
+|---|---|
+| Adresse du serveur | Barre de navigation, accueil, kits, classement, boutique, pied de page — partout où l'IP est affichée ou copiable |
+| Lien Discord | Navigation, pied de page, boutique, pages de commande, et le règlement via `{discord}` |
+| URL des trois sites de vote | Section « Voter » de l'accueil |
+
+Avant, ces valeurs étaient en dur dans `src/lib/site.ts` : les changer
+demandait une modification de code et un déploiement.
+
+### Comment ça marche
+
+La table `reglages` n'a **qu'une seule ligne**, d'id `1`, toujours upsertée sur
+cet id. Si elle n'existe pas — base fraîche, seed pas encore lancé — le site
+retombe sur les valeurs de `src/lib/site.ts` plutôt que de planter.
+
+Les composants **serveur** appellent `lireReglages()`, dont le `cache()` de
+React déduplique l'appel à l'intérieur d'un même rendu. Les composants
+**client** (barre de navigation, bouton de copie de l'IP, statut du serveur)
+ne peuvent pas interroger la base : ils reçoivent les réglages par le contexte
+`FournisseurReglages`, monté une fois dans `<PagePublique>`.
+
+### La revalidation
+
+L'IP et le Discord apparaissent sur presque toutes les pages, qui sont en rendu
+statique. L'action d'enregistrement appelle donc :
+
+```ts
+revalidatePath('/', 'layout')
+```
+
+Ce qui invalide la mise en page racine **et toutes les pages qui en
+descendent** — pas seulement une. Les pages publiques sont à jour dès
+l'enregistrement, sans redéploiement.
+
+### Le marqueur `{discord}`
+
+Dans le règlement et les descriptions longues de kits, écris `{discord}` plutôt
+que de recopier l'adresse :
+
+```markdown
+Ouvre un ticket sur le [Discord]({discord})
+```
+
+Il est remplacé par le lien courant au moment de l'affichage — même idée que le
+`{pseudo}` des commandes de livraison. Changer le lien dans les réglages le met
+alors à jour jusque dans le texte du règlement, sans rouvrir chaque section.
+L'aperçu de l'éditeur Markdown fait la même substitution : ce que tu vois est ce
+qui sera publié.
+
+### Ce qui reste dans le code
+
+`src/lib/site.ts` garde ce qui ne se modifie pas sans toucher au code de toute
+façon : le nom du site, l'URL des API tierces (mcstatus.io, mc-heads.net),
+l'image Open Graph, les repères de jeu, et les noms et sigles des sites de vote
+— seules leurs URL sont modifiables.
+
+`SITE.url` vient de `NEXT_PUBLIC_SITE_URL` et sert aux métadonnées Open Graph
+absolues : c'est une variable d'environnement, pas un réglage.
 
 ---
 

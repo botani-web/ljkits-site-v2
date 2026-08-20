@@ -4,7 +4,8 @@ import { BoutonCopieIp } from '@/components/public/CopieIp'
 import { GrilleKits } from '@/components/public/GrilleKits'
 import { PagePublique } from '@/components/public/PagePublique'
 import { prisma } from '@/lib/prisma'
-import { IMAGE_OG, reperes, SITE } from '@/lib/site'
+import { lireReglages } from '@/lib/reglages'
+import { IMAGE_OG, reperes } from '@/lib/site'
 
 export const revalidate = 3600 // une heure
 
@@ -45,6 +46,7 @@ export default async function PageKits() {
   })
 
   const nombreExclusifs = kits.filter((kit) => kit.type === 'EXCLUSIF').length
+  const { ip } = await lireReglages()
 
   return (
     <PagePublique>
@@ -133,10 +135,10 @@ export default async function PageKits() {
             suffisent pour le débloquer.
           </p>
           <BoutonCopieIp
-            aria-label={`Copier l’adresse du serveur, ${SITE.ip}`}
+            aria-label={`Copier l’adresse du serveur, ${ip}`}
             className="inline-block rounded-lg bg-soupe px-6.5 py-3 font-mono text-[15px] font-bold text-[#1a0f00] transition-all hover:-translate-y-px hover:bg-or"
           >
-            {SITE.ip}
+            {ip}
           </BoutonCopieIp>
         </div>
       </main>

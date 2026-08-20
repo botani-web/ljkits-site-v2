@@ -560,7 +560,7 @@ Pseudos et skins offensants **interdits**.`,
   {
     id: 'regle-bugs',
     titre: 'Bugs et exploits',
-    contenu: `Tu trouves un bug ? **Signale-le sur le [Discord](https://discord.gg/9KYbUznDr7)** — les signalements utiles sont récompensés.
+    contenu: `Tu trouves un bug ? **Signale-le sur le [Discord]({discord})** — les signalements utiles sont récompensés.
 
 L'exploiter à ton avantage, c'est la **sanction assurée**.`,
   },
@@ -581,7 +581,7 @@ Le chat est en français ou en anglais.`,
     titre: 'Le staff',
     contenu: `Les décisions du staff s'appliquent **immédiatement**.
 
-Tu contestes une sanction ? **Ouvre un ticket sur le [Discord](https://discord.gg/9KYbUznDr7)** — pas de débat dans le chat du serveur.`,
+Tu contestes une sanction ? **Ouvre un ticket sur le [Discord]({discord})** — pas de débat dans le chat du serveur.`,
   },
 ]
 
@@ -791,6 +791,27 @@ async function peuplerPacks() {
   console.log(`✔ ${PACKS.length} pack(s) en base.`)
 }
 
+/**
+ * Réglages du site — créés seulement s'ils n'existent pas.
+ *
+ * Contrairement au reste du seed, cette fonction n'ÉCRASE PAS les valeurs
+ * existantes : ce sont des réglages que tu modifies depuis l'admin, il serait
+ * absurde qu'un seed les remette à leur valeur d'origine.
+ */
+async function peuplerReglages() {
+  const existants = await prisma.reglages.findUnique({ where: { id: 1 } })
+
+  if (existants) {
+    console.log('↷ Réglages déjà présents, laissés tels quels.')
+    return
+  }
+
+  await prisma.reglages.create({
+    data: { id: 1, ip: 'mc.ljkits.eu', discord: 'https://discord.gg/ljkits' },
+  })
+  console.log('✔ Réglages du site créés.')
+}
+
 async function peuplerReglement() {
   for (const [index, section] of SECTIONS.entries()) {
     const donnees = {
@@ -854,6 +875,7 @@ async function main() {
     return
   }
 
+  await peuplerReglages()
   await peuplerKits()
   await peuplerGrades()
   await peuplerPacks()

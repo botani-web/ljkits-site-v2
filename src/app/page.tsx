@@ -7,7 +7,7 @@ import { IconeDiscord } from '@/components/public/IconeDiscord'
 import { PagePublique } from '@/components/public/PagePublique'
 import { StatutServeur } from '@/components/public/StatutServeur'
 import { prisma } from '@/lib/prisma'
-import { SITE } from '@/lib/site'
+import { lireReglages } from '@/lib/reglages'
 
 // Page statique, régénérée au plus toutes les heures. Les Server Actions de
 // l'admin appellent revalidatePath('/') dès qu'un kit change, pour que le
@@ -18,6 +18,7 @@ export default async function Accueil() {
   // Le nombre de kits est lu en base plutôt qu'écrit en dur : la maquette
   // annonçait « 15 kits » à un endroit et « 21 » à un autre.
   const nombreKits = await prisma.kit.count({ where: { visible: true } })
+  const { ip, discord, sitesDeVote } = await lireReglages()
 
   return (
     <PagePublique>
@@ -84,7 +85,7 @@ export default async function Accueil() {
             </div>
 
             <BoutonCopieIp
-              aria-label={`Copier l’adresse du serveur, ${SITE.ip}`}
+              aria-label={`Copier l’adresse du serveur, ${ip}`}
               className="relative z-2 inline-flex items-center gap-3 self-start rounded-xl bg-linear-[135deg] from-soupe to-or px-6.5 py-3.5 font-mono text-[17px] font-bold text-[#1A1005] shadow-[0_6px_26px_rgba(254,147,1,.35)] transition-all hover:-translate-y-0.5 hover:shadow-[0_8px_34px_rgba(254,147,1,.55)]"
             >
               <svg
@@ -98,7 +99,7 @@ export default async function Accueil() {
                 <rect x="9" y="9" width="12" height="12" rx="2" />
                 <path d="M5 15V5a2 2 0 0 1 2-2h10" />
               </svg>
-              {SITE.ip}
+              {ip}
             </BoutonCopieIp>
           </div>
 
@@ -127,7 +128,7 @@ export default async function Accueil() {
 
             <div className="grid gap-5 sm:grid-cols-2">
               <Tuile
-                href={SITE.discord}
+                href={discord}
                 externe
                 titre="Discord"
                 sousTitre="Rejoins la Marmite"
@@ -231,7 +232,7 @@ export default async function Accueil() {
               <p>
                 Multijoueur → Ajouter un serveur → colle l’adresse{' '}
                 <code className="rounded-md bg-braise px-2 py-0.5 font-mono text-sm text-or">
-                  {SITE.ip}
+                  {ip}
                 </code>{' '}
                 et rejoins.
               </p>
@@ -285,7 +286,7 @@ export default async function Accueil() {
           </div>
 
           <div className="flex flex-col gap-4">
-            {SITE.sitesDeVote.map((site) => {
+            {sitesDeVote.map((site) => {
               // Tant que l'URL vaut '#', le serveur n'est pas encore inscrit :
               // le bouton reste affiché mais devient inerte.
               const inscrit = site.url !== '#'

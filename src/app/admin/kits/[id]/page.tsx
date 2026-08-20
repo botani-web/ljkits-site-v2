@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation'
 import { modifierKit } from '@/actions/kits'
 import { FormulaireKit } from '@/components/admin/FormulaireKit'
 import { prisma } from '@/lib/prisma'
+import { lireReglages } from '@/lib/reglages'
 
 export const metadata = { title: 'Modifier un kit' }
 
@@ -20,6 +21,8 @@ export default async function PageModifierKit({
   })
 
   if (!kit) notFound()
+
+  const { discord } = await lireReglages()
 
   return (
     <>
@@ -72,6 +75,7 @@ export default async function PageModifierKit({
           })),
         }}
         libelleBouton="Enregistrer les modifications"
+        discord={discord}
       />
     </>
   )

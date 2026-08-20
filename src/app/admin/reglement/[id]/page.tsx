@@ -5,6 +5,7 @@ import { modifierSection } from '@/actions/reglement'
 import { FormulaireSection } from '@/components/admin/FormulaireSection'
 import { formaterDate } from '@/lib/format'
 import { prisma } from '@/lib/prisma'
+import { lireReglages } from '@/lib/reglages'
 
 export const metadata = { title: 'Modifier une section' }
 
@@ -17,6 +18,8 @@ export default async function PageModifierSection({
 
   const section = await prisma.sectionReglement.findUnique({ where: { id } })
   if (!section) notFound()
+
+  const { discord } = await lireReglages()
 
   return (
     <>
@@ -42,6 +45,7 @@ export default async function PageModifierSection({
           publie: section.publie,
         }}
         libelleBouton="Enregistrer les modifications"
+        discord={discord}
       />
     </>
   )

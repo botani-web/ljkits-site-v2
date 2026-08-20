@@ -22,6 +22,7 @@ const AIDE_MARKDOWN = [
   { syntaxe: '> encart', effet: 'encart orange (callout)' },
   { syntaxe: '[texte](https://…)', effet: 'lien' },
   { syntaxe: '`code`', effet: 'commande en jeu, ex /discord' },
+  { syntaxe: '{discord}', effet: 'le lien Discord, tenu à jour depuis Réglages' },
 ]
 
 export function EditeurMarkdown({
@@ -30,12 +31,15 @@ export function EditeurMarkdown({
   valeurInitiale = '',
   erreurs,
   lignes = 16,
+  discord,
 }: {
   nom: string
   label: string
   valeurInitiale?: string
   erreurs?: string[]
   lignes?: number
+  /** Lien Discord courant : l'aperçu substitue {discord} comme le fera le site. */
+  discord?: string
 }) {
   const [contenu, setContenu] = useState(valeurInitiale)
   const [onglet, setOnglet] = useState<'ecrire' | 'apercu'>('ecrire')
@@ -80,7 +84,7 @@ export function EditeurMarkdown({
           ) : (
             <div
               className="markdown"
-              dangerouslySetInnerHTML={{ __html: markdownVersHtml(contenu) }}
+              dangerouslySetInnerHTML={{ __html: markdownVersHtml(contenu, { discord }) }}
             />
           )}
         </div>

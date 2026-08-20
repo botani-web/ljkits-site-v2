@@ -9,7 +9,8 @@ import { PagePublique } from '@/components/public/PagePublique'
 import { formaterCoins, formaterEuros } from '@/lib/format'
 import { markdownVersHtml } from '@/lib/markdown'
 import { prisma } from '@/lib/prisma'
-import { IMAGE_OG, reperes, SITE } from '@/lib/site'
+import { lireReglages } from '@/lib/reglages'
+import { IMAGE_OG, reperes } from '@/lib/site'
 
 export const revalidate = 3600 // une heure
 
@@ -149,6 +150,7 @@ export default async function PageKit({ params }: { params: Promise<{ slug: stri
     .filter((s): s is KitEnCarte => s !== undefined)
 
   const exclusif = kit.type === 'EXCLUSIF'
+  const { ip, discord } = await lireReglages()
 
   return (
     <PagePublique>
@@ -212,7 +214,7 @@ export default async function PageKit({ params }: { params: Promise<{ slug: stri
           <div className="flex flex-col gap-5">
             <article
               className="markdown rounded-2xl border border-bord bg-charbon px-7 py-7"
-              dangerouslySetInnerHTML={{ __html: markdownVersHtml(kit.descriptionLongue) }}
+              dangerouslySetInnerHTML={{ __html: markdownVersHtml(kit.descriptionLongue, { discord }) }}
             />
 
             {exclusif && (
@@ -378,14 +380,14 @@ export default async function PageKit({ params }: { params: Promise<{ slug: stri
 
           <div className="flex flex-wrap items-center justify-center gap-3">
             <BoutonCopieIp
-              aria-label={`Copier l’adresse du serveur, ${SITE.ip}`}
+              aria-label={`Copier l’adresse du serveur, ${ip}`}
               className="rounded-lg bg-soupe px-6.5 py-3 font-mono text-[15px] font-bold text-[#1a0f00] transition-all hover:-translate-y-px hover:bg-or"
             >
-              {SITE.ip}
+              {ip}
             </BoutonCopieIp>
 
             <a
-              href={SITE.discord}
+              href={discord}
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-2 rounded-lg bg-discord px-5 py-3 text-[15px] font-bold text-white transition-all hover:bg-[#6a76f5] hover:shadow-[0_4px_18px_rgba(88,101,242,.35)]"

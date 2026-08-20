@@ -2,10 +2,13 @@ import Link from 'next/link'
 
 import { creerKit } from '@/actions/kits'
 import { FormulaireKit } from '@/components/admin/FormulaireKit'
+import { lireReglages } from '@/lib/reglages'
 
 export const metadata = { title: 'Nouveau kit' }
 
-export default function PageNouveauKit() {
+export default async function PageNouveauKit() {
+  const { discord } = await lireReglages()
+
   return (
     <>
       <div className="mb-6">
@@ -22,7 +25,7 @@ export default function PageNouveauKit() {
         </p>
       </div>
 
-      <FormulaireKit action={creerKit} libelleBouton="Créer le kit" />
+      <FormulaireKit action={creerKit} libelleBouton="Créer le kit" discord={discord} />
     </>
   )
 }

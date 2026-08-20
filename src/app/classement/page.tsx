@@ -5,7 +5,8 @@ import { BoutonCopieIp } from '@/components/public/CopieIp'
 import { PagePublique } from '@/components/public/PagePublique'
 import { lireClassements, lireDatesDeReset, lireDerniereMiseAJour } from '@/lib/classement'
 import { formaterDateHeure } from '@/lib/format'
-import { IMAGE_OG, SITE } from '@/lib/site'
+import { lireReglages } from '@/lib/reglages'
+import { IMAGE_OG } from '@/lib/site'
 
 /**
  * Le classement des joueurs.
@@ -46,6 +47,8 @@ export default async function PageClassement() {
     lireDatesDeReset(),
     lireDerniereMiseAJour(),
   ])
+
+  const { ip } = await lireReglages()
 
   const nombreClasses = new Set(
     [...classements.semaine, ...classements.mois, ...classements.vie].map((l) => l.pseudo),
@@ -92,10 +95,10 @@ export default async function PageClassement() {
             le haut du tableau.
           </p>
           <BoutonCopieIp
-            aria-label={`Copier l’adresse du serveur, ${SITE.ip}`}
+            aria-label={`Copier l’adresse du serveur, ${ip}`}
             className="inline-block rounded-lg bg-soupe px-6.5 py-3 font-mono text-[15px] font-bold text-[#1a0f00] transition-all hover:-translate-y-px hover:bg-or"
           >
-            {SITE.ip}
+            {ip}
           </BoutonCopieIp>
         </div>
       </main>

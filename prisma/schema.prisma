@@ -459,3 +459,33 @@ model ConfigClassement {
 
   @@map("config_classement")
 }
+
+/// Les réglages du site, modifiables depuis l'admin.
+///
+/// Tout ce qui change au fil du temps sans mériter un déploiement : l'adresse
+/// du serveur, le lien Discord, les URL de vote. Avant, c'était en dur dans
+/// src/lib/site.ts — donc chaque changement demandait une modification de code.
+///
+/// Table à UNE SEULE LIGNE, d'id 1. On l'upserte toujours sur cet id : pas de
+/// création accidentelle d'une seconde ligne de réglages qui ne servirait
+/// jamais. Si la ligne n'existe pas, le site retombe sur les valeurs par défaut
+/// de src/lib/site.ts plutôt que de planter.
+model Reglages {
+  id Int @id @default(1)
+
+  /// Adresse du serveur Minecraft, affichée et copiée partout.
+  ip String
+
+  /// Invitation Discord. Reprise aussi dans le règlement via {discord}.
+  discord String
+
+  /// URL de vote. Vide = le serveur n'est pas encore inscrit sur ce site,
+  /// le bouton reste affiché mais inerte.
+  urlServeurPrive      String @default("")
+  urlTopServeurs       String @default("")
+  urlServeursMinecraft String @default("")
+
+  updatedAt DateTime @updatedAt
+
+  @@map("reglages")
+}

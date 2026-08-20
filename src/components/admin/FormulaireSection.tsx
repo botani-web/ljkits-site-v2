@@ -18,11 +18,13 @@ export function FormulaireSection({
   action,
   section,
   libelleBouton,
+  discord,
 }: {
   /** Server Action déjà liée : creerSection, ou modifierSection.bind(null, id). */
   action: (etat: EtatFormulaire, formData: FormData) => Promise<EtatFormulaire>
   section?: SectionEnEdition
   libelleBouton: string
+  discord: string
 }) {
   const [etat, envoyer] = useActionState(action, ETAT_VIDE)
 
@@ -56,6 +58,7 @@ export function FormulaireSection({
           valeurInitiale={section?.contenu ?? ''}
           erreurs={etat.champs?.contenu}
           lignes={18}
+          discord={discord}
         />
       </section>
 

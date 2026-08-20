@@ -10,6 +10,7 @@ const ONGLETS = [
   { href: '/admin/packs', label: 'Packs' },
   { href: '/admin/commandes', label: 'Commandes' },
   { href: '/admin/reglement', label: 'Règlement' },
+  { href: '/admin/reglages', label: 'Réglages' },
 ]
 
 export function OngletsAdmin() {

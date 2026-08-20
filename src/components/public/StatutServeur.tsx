@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 
+import { useReglages } from '@/components/public/ContexteReglages'
 import { SITE } from '@/lib/site'
 
 type Statut = { enLigne: boolean; joueurs: number }
@@ -14,6 +15,7 @@ type Statut = { enLigne: boolean; joueurs: number }
  * en rendu statique, un fetch au build afficherait un chiffre figé.
  */
 export function StatutServeur() {
+  const { ip } = useReglages()
   const [statut, setStatut] = useState<Statut | null>(null)
 
   useEffect(() => {
@@ -21,7 +23,7 @@ export function StatutServeur() {
 
     async function rafraichir() {
       try {
-        const reponse = await fetch(SITE.apiStatut + SITE.ip, { cache: 'no-store' })
+        const reponse = await fetch(SITE.apiStatut + ip, { cache: 'no-store' })
         if (!reponse.ok) throw new Error(`HTTP ${reponse.status}`)
 
         const donnees = await reponse.json()
@@ -44,7 +46,7 @@ export function StatutServeur() {
       annule = true
       clearInterval(minuteur)
     }
-  }, [])
+  }, [ip])
 
   // statut === null : première requête en cours, on n'affiche encore rien.
   const enLigne = statut?.enLigne ?? false

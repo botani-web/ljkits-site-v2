@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 
-import { SITE } from '@/lib/site'
+import { useReglages } from '@/components/public/ContexteReglages'
 
 /**
  * Copie de l'adresse du serveur dans le presse-papier.
@@ -27,9 +27,11 @@ export function BoutonCopieIp({
   children: React.ReactNode
   'aria-label'?: string
 }) {
+  const { ip } = useReglages()
+
   async function copier() {
     try {
-      await navigator.clipboard.writeText(SITE.ip)
+      await navigator.clipboard.writeText(ip)
     } catch {
       // Presse-papier refusé (page non sécurisée, permission) : on affiche
       // quand même le toast, l'adresse y est lisible et sélectionnable.
@@ -46,6 +48,7 @@ export function BoutonCopieIp({
 
 /** Le toast « Adresse copiée ». À monter une seule fois par page. */
 export function ToastCopie() {
+  const { ip } = useReglages()
   const [visible, setVisible] = useState(false)
 
   useEffect(() => {
@@ -72,7 +75,7 @@ export function ToastCopie() {
         visible ? 'translate-y-0' : 'pointer-events-none translate-y-20'
       }`}
     >
-      Adresse copiée : {SITE.ip}
+      Adresse copiée : {ip}
     </div>
   )
 }

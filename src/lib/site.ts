@@ -7,9 +7,17 @@
  */
 export const SITE = {
   nom: 'LJKITS',
-  /** Adresse du serveur Minecraft, affichée et copiée un peu partout. */
+  /**
+   * VALEURS DE REPLI UNIQUEMENT.
+   *
+   * L'adresse du serveur et le lien Discord se modifient dans /admin/reglages
+   * et sont lus en base — cf. src/lib/reglages.ts. Ce qui suit ne sert que
+   * tant que la ligne de réglages n'existe pas : base fraîche, seed pas encore
+   * lancé. Modifier ces valeurs ici n'a aucun effet sur un site déjà en
+   * service.
+   */
   ip: 'mc.ljkits.eu',
-  discord: 'https://discord.gg/9KYbUznDr7',
+  discord: 'https://discord.gg/ljkits',
 
   /**
    * URL publique du site. Sert à construire les URL absolues des

@@ -2,10 +2,13 @@ import Link from 'next/link'
 
 import { creerSection } from '@/actions/reglement'
 import { FormulaireSection } from '@/components/admin/FormulaireSection'
+import { lireReglages } from '@/lib/reglages'
 
 export const metadata = { title: 'Nouvelle section' }
 
-export default function PageNouvelleSection() {
+export default async function PageNouvelleSection() {
+  const { discord } = await lireReglages()
+
   return (
     <>
       <div className="mb-6">
@@ -21,7 +24,7 @@ export default function PageNouvelleSection() {
         </p>
       </div>
 
-      <FormulaireSection action={creerSection} libelleBouton="Créer la section" />
+      <FormulaireSection action={creerSection} libelleBouton="Créer la section" discord={discord} />
     </>
   )
 }

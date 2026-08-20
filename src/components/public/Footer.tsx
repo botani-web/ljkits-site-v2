@@ -2,13 +2,14 @@ import Image from 'next/image'
 import Link from 'next/link'
 
 import { BoutonCopieIp, ToastCopie } from '@/components/public/CopieIp'
-import { SITE } from '@/lib/site'
+import { lireReglages } from '@/lib/reglages'
 
 /**
  * Pied de page commun à toutes les pages publiques.
  * Il embarque le toast de copie d'IP, monté une seule fois par page.
  */
-export function Footer() {
+export async function Footer() {
+  const { ip, discord } = await lireReglages()
   const annee = new Date().getFullYear()
 
   return (
@@ -41,7 +42,7 @@ export function Footer() {
 
           <ColonneFooter titre="Communauté">
             <a
-              href={SITE.discord}
+              href={discord}
               target="_blank"
               rel="noopener noreferrer"
               className="mb-2.5 block text-[15px] text-creme opacity-85 transition hover:text-or hover:opacity-100"
@@ -53,7 +54,7 @@ export function Footer() {
 
           <ColonneFooter titre="Jouer">
             <BoutonCopieIp className="mb-2.5 block text-left text-[15px] text-creme opacity-85 transition hover:text-or hover:opacity-100">
-              {SITE.ip}
+              {ip}
             </BoutonCopieIp>
             <span className="block text-[15px] text-creme opacity-85">Java 1.8 → 1.21+</span>
           </ColonneFooter>

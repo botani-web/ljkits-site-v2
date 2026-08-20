@@ -20,7 +20,7 @@ import {
   type ArticleAffiche,
   type ArticlePanier,
 } from '@/lib/panier'
-import { SITE } from '@/lib/site'
+import { useReglages } from '@/components/public/ContexteReglages'
 
 type Onglet = 'grades' | 'kits' | 'aide'
 
@@ -46,6 +46,7 @@ export function Boutique({
   kits: KitBoutique[]
   packs: PackBoutique[]
 }) {
+  const { discord } = useReglages()
   const [onglet, setOnglet] = useState<Onglet>('grades')
   const [panier, setPanier] = useState<ArticlePanier[]>([])
   const [pseudo, setPseudo] = useState<string | null>(null)
@@ -209,7 +210,7 @@ export function Boutique({
           )}
 
           {/* ---------------------- VUE : COMMENT ÇA MARCHE ---------------- */}
-          {onglet === 'aide' && <Aide />}
+          {onglet === 'aide' && <Aide discord={discord} />}
         </div>
 
         {/* ------------------------------ PANIER ---------------------------- */}
@@ -267,7 +268,7 @@ function Vide({ children }: { children: React.ReactNode }) {
   )
 }
 
-function Aide() {
+function Aide({ discord }: { discord: string }) {
   return (
     <section>
       <EnTeteRayon titre="Comment ça marche">
@@ -293,7 +294,7 @@ function Aide() {
         <Info titre="Un souci de livraison ?">
           Ouvre un ticket sur le{' '}
           <a
-            href={SITE.discord}
+            href={discord}
             target="_blank"
             rel="noopener noreferrer"
             className="text-soupe underline underline-offset-2"

@@ -196,3 +196,51 @@ export const schemaCommande = z.object({
 })
 
 export type DonneesCommande = z.infer<typeof schemaCommande>
+
+/* -------------------------------------------------------------------------- */
+/* RÉGLAGES DU SITE                                                           */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Une URL de vote. Vide est autorisé : ça signifie « pas encore inscrit sur
+ * ce site », et le bouton reste alors inerte côté public.
+ */
+const urlFacultative = z
+  .string()
+  .trim()
+  .refine(
+    (valeur) => valeur === '' || /^https?:\/\/.+/.test(valeur),
+    'L’adresse doit commencer par http:// ou https://, ou rester vide.',
+  )
+  .max(300, 'Adresse trop longue.')
+
+export const schemaReglages = z.object({
+  /**
+   * Adresse du serveur Minecraft. Un nom d'hôte, éventuellement suivi d'un
+   * port — pas une URL : c'est ce qu'on colle dans le client Minecraft.
+   */
+  ip: z
+    .string()
+    .trim()
+    .min(1, 'L’adresse du serveur est obligatoire.')
+    .max(100, 'Adresse trop longue.')
+    .regex(
+      /^[a-zA-Z0-9.-]+(?::\d{1,5})?$/,
+      'Adresse invalide : un nom d’hôte comme mc.ljkits.eu, sans http:// ni barre oblique.',
+    ),
+
+  /** Invitation Discord. On accepte n'importe quelle URL https, pas seulement
+   *  discord.gg : un lien personnalisé de serveur reste valable. */
+  discord: z
+    .string()
+    .trim()
+    .min(1, 'Le lien Discord est obligatoire.')
+    .max(300, 'Lien trop long.')
+    .regex(/^https:\/\/.+/, 'Le lien Discord doit commencer par https://.'),
+
+  urlServeurPrive: urlFacultative,
+  urlTopServeurs: urlFacultative,
+  urlServeursMinecraft: urlFacultative,
+})
+
+export type DonneesReglages = z.infer<typeof schemaReglages>

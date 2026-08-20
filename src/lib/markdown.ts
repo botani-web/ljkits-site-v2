@@ -59,7 +59,25 @@ moteur.use({
   },
 })
 
+/**
+ * Marqueurs remplacés avant le rendu.
+ *
+ * Même idée que le {pseudo} des commandes de livraison : le règlement et les
+ * descriptions de kits peuvent écrire {discord} plutôt que de recopier l'URL.
+ * Changer le lien dans /admin/reglages le met alors à jour partout, sans avoir
+ * à rouvrir chaque section.
+ */
+export type MarqueursMarkdown = { discord?: string }
+
+function appliquerMarqueurs(markdown: string, marqueurs: MarqueursMarkdown): string {
+  if (!marqueurs.discord) return markdown
+  return markdown.replaceAll('{discord}', marqueurs.discord)
+}
+
 /** Convertit du Markdown en HTML prêt à être injecté. */
-export function markdownVersHtml(markdown: string): string {
-  return moteur.parse(markdown, { async: false })
+export function markdownVersHtml(
+  markdown: string,
+  marqueurs: MarqueursMarkdown = {},
+): string {
+  return moteur.parse(appliquerMarqueurs(markdown, marqueurs), { async: false })
 }

@@ -4,9 +4,9 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
+import { useReglages } from '@/components/public/ContexteReglages'
 import { BoutonCopieIp } from '@/components/public/CopieIp'
 import { IconeDiscord } from '@/components/public/IconeDiscord'
-import { SITE } from '@/lib/site'
 
 /**
  * Barre de navigation du site public — la barre flottante d'index.html.
@@ -30,6 +30,7 @@ const LIENS = [
 
 export function Nav() {
   const chemin = usePathname()
+  const { ip, discord } = useReglages()
 
   return (
     <nav className="fixed inset-x-4 top-4 z-[100] mx-auto flex max-w-contenu items-center justify-between rounded-2xl border border-bord bg-nuit/85 px-5.5 py-3 backdrop-blur-xl">
@@ -59,7 +60,7 @@ export function Nav() {
 
       <div className="flex items-center gap-2.5">
         <a
-          href={SITE.discord}
+          href={discord}
           target="_blank"
           rel="noopener noreferrer"
           className="flex items-center gap-2 rounded-[10px] bg-discord px-4.5 py-2.5 text-sm font-bold text-white transition-all hover:bg-[#6a76f5] hover:shadow-[0_4px_18px_rgba(88,101,242,.35)]"
@@ -69,7 +70,7 @@ export function Nav() {
         </a>
 
         <BoutonCopieIp
-          aria-label={`Copier l’adresse du serveur, ${SITE.ip}`}
+          aria-label={`Copier l’adresse du serveur, ${ip}`}
           className="rounded-[10px] bg-linear-[135deg] from-soupe to-or px-5 py-2.5 text-sm font-extrabold tracking-wide text-[#1A1005] transition-shadow hover:shadow-[0_4px_18px_rgba(254,147,1,.45)]"
         >
           JOUER

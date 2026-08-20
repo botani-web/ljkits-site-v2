@@ -3,6 +3,8 @@
  * C'est ce que reçoit `useActionState` côté client pour afficher les erreurs.
  */
 export type EtatFormulaire = {
+  /** Message de confirmation, pour les formulaires qui ne redirigent pas. */
+  succes?: string
   /** Message d'erreur global (slug déjà pris, action refusée…). */
   erreur?: string
   /** Erreurs de validation, par nom de champ. */

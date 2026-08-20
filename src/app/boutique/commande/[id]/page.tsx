@@ -6,7 +6,7 @@ import { notFound } from 'next/navigation'
 import { PagePublique } from '@/components/public/PagePublique'
 import { formaterEuros, formaterNumeroCommande } from '@/lib/format'
 import { prisma } from '@/lib/prisma'
-import { SITE } from '@/lib/site'
+import { lireReglages } from '@/lib/reglages'
 
 export const metadata: Metadata = {
   title: 'Ta commande',
@@ -38,6 +38,8 @@ export default async function PageCommande({
   })
 
   if (!commande) notFound()
+
+  const { discord } = await lireReglages()
 
   return (
     <PagePublique>
@@ -83,7 +85,7 @@ export default async function PageCommande({
           </dl>
         </div>
 
-        <EtatDeLaCommande statut={commande.statut} />
+        <EtatDeLaCommande statut={commande.statut} discord={discord} />
 
         <div className="mt-8 flex flex-wrap justify-center gap-3">
           <Link
@@ -93,7 +95,7 @@ export default async function PageCommande({
             Retour à la boutique
           </Link>
           <a
-            href={SITE.discord}
+            href={discord}
             target="_blank"
             rel="noopener noreferrer"
             className="rounded-lg bg-discord px-5 py-2.5 text-sm font-bold text-white transition-all hover:bg-[#6a76f5]"
@@ -113,7 +115,13 @@ export default async function PageCommande({
  * été redirigé ici : un statut encore EN_ATTENTE n'est donc pas une anomalie,
  * et le message le dit plutôt que de laisser croire à un échec.
  */
-function EtatDeLaCommande({ statut }: { statut: StatutCommande }) {
+function EtatDeLaCommande({
+  statut,
+  discord,
+}: {
+  statut: StatutCommande
+  discord: string
+}) {
   const etats: Record<StatutCommande, { titre: string; texte: string; ton: string }> = {
     EN_ATTENTE: {
       titre: 'Paiement en cours de confirmation',
@@ -163,7 +171,7 @@ function EtatDeLaCommande({ statut }: { statut: StatutCommande }) {
       <p className="text-[14.5px] text-gris">
         {etat.texte}{' '}
         <a
-          href={SITE.discord}
+          href={discord}
           target="_blank"
           rel="noopener noreferrer"
           className="text-soupe underline underline-offset-2"
