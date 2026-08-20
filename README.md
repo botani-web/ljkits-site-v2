@@ -45,7 +45,7 @@ Puis remplis les valeurs :
 
 ```bash
 npm run db:migrate # crée les tables via prisma/migrations
-npm run db:seed    # 21 kits, 3 grades, 1 pack, 7 sections, compte admin
+npm run db:seed    # 29 kits, 3 grades, 1 pack, 7 sections, compte admin
 ```
 
 ### 4. Lancer
@@ -74,7 +74,7 @@ identifiants du seed.
 | `npm run db:seed:boutique` | Peuple **uniquement** grades et packs, sans toucher aux kits ni au règlement |
 | `npm run db:studio` | Interface graphique Prisma sur la base |
 
-> ⚠ `db:seed` **réécrit** le contenu de référence : les 21 kits, leur ordre et
+> ⚠ `db:seed` **réécrit** le contenu de référence : les 29 kits, leur ordre et
 > les 7 sections de règlement listés dans `prisma/seed.ts` reprennent leurs
 > valeurs d'origine. Les kits que tu as créés depuis l'admin ne sont pas touchés.
 >
@@ -94,7 +94,7 @@ identifiants du seed.
 prisma/
   schema.prisma      Kit, Grade, Pack, Commande, Joueur (lecture seule)…
   migrations/        les migrations SQL versionnées
-  seed.ts            contenu de référence (21 kits, 3 grades, 1 pack, règlement)
+  seed.ts            contenu de référence (29 kits, 3 grades, 1 pack, règlement)
 
 src/
   app/               les routes (App Router)

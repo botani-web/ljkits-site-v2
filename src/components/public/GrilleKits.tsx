@@ -8,7 +8,7 @@ import { CarteKit, type KitEnCarte } from '@/components/public/CarteKit'
  * La grille des kits et ses trois filtres.
  *
  * Composant client : le filtrage se fait dans le navigateur, sans aller-retour
- * serveur. Les 21 kits sont déjà tous dans la page, on ne fait que masquer.
+ * serveur. Tous les kits sont déjà dans la page, on ne fait que masquer.
  */
 type Filtre = 'tous' | 'GRATUIT' | 'EXCLUSIF'
 

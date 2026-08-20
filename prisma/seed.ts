@@ -48,9 +48,12 @@ type KitDeReference = {
 }
 
 /**
- * Les 21 kits, dans l'ordre de la maquette kits.html :
- * 15 kits classiques par prix croissant, puis 6 kits exclusifs.
+ * Les 29 kits : 23 kits en coins par prix croissant, puis 6 kits exclusifs.
  * L'index dans ce tableau donne le champ `ordre`.
+ *
+ * À prix égal, les kits historiques restent devant ceux ajoutés ensuite :
+ * l'ordre d'affichage de /kits bouge ainsi le moins possible d'une mise à
+ * jour du catalogue à l'autre.
  */
 const KITS: KitDeReference[] = [
   {
@@ -76,6 +79,27 @@ Si tu débutes sur LJKITS, reste dessus le temps de prendre les réflexes du sou
     ],
   },
   {
+    slug: 'antistomper',
+    nom: 'Anti-Stomper',
+    kanji: null,
+    role: 'Encaisse',
+    descriptionCourte:
+      "Aucun dégât de chute ni d'écrasement",
+    descriptionLongue: `Il ne prend aucun dégât de chute, et le Stomper qui lui saute dessus n'obtient rien. Sur une map d'îles flottantes où tout le monde tombe en permanence, c'est une tranquillité qui change la façon de se déplacer.
+
+Le contre direct d'un kit précis, gratuit pour que personne ne soit sans réponse.`,
+    prixCoins: 0,
+    prixEurosCentimes: null,
+    type: 'GRATUIT',
+    achetable: false,
+    kitDeDepart: false,
+    caracteristiques: [
+      { libelle: 'Chute', valeur: 'Annulée' },
+      { libelle: 'Stomp reçu', valeur: 'Annulé' },
+      { libelle: 'Prix', valeur: 'Gratuit' },
+    ],
+  },
+  {
     slug: 'archer',
     nom: 'Archer',
     kanji: null,
@@ -98,6 +122,27 @@ En mêlée, tu n'as que l'épée de base et aucun avantage. Garder ses distances
     ],
   },
   {
+    slug: 'fireman',
+    nom: 'Fireman',
+    kanji: null,
+    role: 'Immunité',
+    descriptionCourte:
+      'Immunisé au feu et à la lave',
+    descriptionLongue: `Le feu ne l'atteint pas, la lave non plus. Contre un Magma qui enflamme ses agresseurs, contre une foudre de Thor, ou simplement pour traverser ce que les autres contournent.
+
+Très situationnel, d'où son prix : sans source de feu en face, il joue un kit sans capacité.`,
+    prixCoins: 300,
+    prixEurosCentimes: null,
+    type: 'GRATUIT',
+    achetable: false,
+    kitDeDepart: false,
+    caracteristiques: [
+      { libelle: 'Feu', valeur: 'Immunisé' },
+      { libelle: 'Lave', valeur: 'Immunisé' },
+      { libelle: 'Combustion', valeur: 'Annulée' },
+    ],
+  },
+  {
     slug: 'fisherman',
     nom: 'Fisherman',
     kanji: null,
@@ -117,6 +162,27 @@ C'est un kit de contrôle : il ne fait presque aucun dégât, il décide juste o
     caracteristiques: [
       { libelle: 'Item', valeur: 'Canne à pêche' },
       { libelle: 'Cooldown', valeur: '3 s' },
+    ],
+  },
+  {
+    slug: 'camel',
+    nom: 'Camel',
+    kanji: null,
+    role: 'Terrain',
+    descriptionCourte:
+      'Court plus vite sur le sable',
+    descriptionLongue: `Vitesse II tant qu'il marche sur du sable ou du grès. Sur les zones sableuses de la map, il distance n'importe qui ; ailleurs il joue à armes égales.
+
+Un kit qui récompense la connaissance du terrain plutôt que le combat pur — savoir où l'attirer devient une compétence.`,
+    prixCoins: 400,
+    prixEurosCentimes: null,
+    type: 'GRATUIT',
+    achetable: false,
+    kitDeDepart: false,
+    caracteristiques: [
+      { libelle: 'Effet', valeur: 'Vitesse II' },
+      { libelle: 'Condition', valeur: 'Sable ou grès' },
+      { libelle: 'Ailleurs', valeur: 'Aucun bonus' },
     ],
   },
   {
@@ -208,6 +274,27 @@ C'est le kit qui punit le plus durement les joueurs habitués à décrocher dès
     ],
   },
   {
+    slug: 'sponger',
+    nom: 'Sponger',
+    kanji: null,
+    role: 'Mobilité',
+    descriptionCourte:
+      "Ses éponges le propulsent en l'air",
+    descriptionLongue: `Cinq éponges, cinq envolées. Chaque clic droit le projette vers le haut et consomme une éponge : de quoi rejoindre une île, échapper à une mêlée ou tomber sur quelqu'un par surprise.
+
+Les éponges ne se rechargent qu'en reprenant le kit. À utiliser au bon moment, pas en boucle.`,
+    prixCoins: 1000,
+    prixEurosCentimes: null,
+    type: 'GRATUIT',
+    achetable: false,
+    kitDeDepart: false,
+    caracteristiques: [
+      { libelle: 'Item', valeur: '5 éponges' },
+      { libelle: 'Effet', valeur: 'Propulsion verticale' },
+      { libelle: 'Recharge', valeur: 'Reprendre le kit' },
+    ],
+  },
+  {
     slug: 'stomper',
     nom: 'Stomper',
     kanji: null,
@@ -230,25 +317,24 @@ Sans dénivelé, c'est un kit PvP ordinaire — son intérêt dépend entièreme
     ],
   },
   {
-    slug: 'vampire',
-    nom: 'Vampire',
+    slug: 'monk',
+    nom: 'Monk',
     kanji: null,
-    role: 'Soin',
+    role: 'Disruption',
     descriptionCourte:
-      "Chaque coup porté te rend un peu de vie. Sur un combat long, l'écart devient énorme.",
-    descriptionLongue: `**+0,5 ❤** rendus à chaque coup porté en mêlée. C'est peu. Sur un combat de trente secondes, c'est une dizaine de soupes économisées.
+      "Mélange la barre d'objets de sa cible",
+    descriptionLongue: `Un clic droit sur les cisailles, et la barre d'objets de sa cible part en désordre. Ses soupes ne sont plus là où ses doigts les cherchent — et en soup, une demi-seconde d'hésitation suffit.
 
-Le Vampire récompense l'agressivité continue : plus tu touches, moins tu bois, et moins tu bois plus tu peux frapper. À l'inverse, un Vampire qui rate ses coups n'a strictement aucun avantage.
-
-Aucun effet à distance : seuls les coups d'épée déclenchent le vol de vie.`,
+Aucun dégât, aucun effet. Juste du chaos, au moment précis où l'autre en a le moins besoin.`,
     prixCoins: 1200,
     prixEurosCentimes: null,
     type: 'GRATUIT',
     achetable: false,
     kitDeDepart: false,
     caracteristiques: [
-      { libelle: 'Vol de vie', valeur: '+0,5 ❤ par coup' },
-      { libelle: 'Portée', valeur: 'Mêlée uniquement' },
+      { libelle: 'Item', valeur: 'Cisailles' },
+      { libelle: 'Portée', valeur: '5 blocs' },
+      { libelle: 'Cooldown', valeur: '25 s' },
     ],
   },
   {
@@ -296,6 +382,28 @@ C'est le kit le plus risqué de la liste, et un des plus rapides à conclure un 
     ],
   },
   {
+    slug: 'spiderman',
+    nom: 'Spiderman',
+    kanji: null,
+    role: 'Piège',
+    descriptionCourte:
+      'Piège ses cibles dans des toiles',
+    descriptionLongue: `Une toile apparaît sous les pieds de sa cible et la retient huit secondes. Elle reste attaquable — c'est même tout l'intérêt : elle ne peut plus reculer, plus fuir, plus gérer sa distance.
+
+Interdit dans les zones KOTH et les zones de contrôle : immobiliser quelqu'un sur un point à tenir serait trop décisif.`,
+    prixCoins: 1800,
+    prixEurosCentimes: null,
+    type: 'GRATUIT',
+    achetable: false,
+    kitDeDepart: false,
+    caracteristiques: [
+      { libelle: 'Item', valeur: 'Ficelle' },
+      { libelle: 'Durée', valeur: '8 s' },
+      { libelle: 'Cooldown', valeur: '20 s' },
+      { libelle: 'Interdit', valeur: 'KOTH et zones' },
+    ],
+  },
+  {
     slug: 'thor',
     nom: 'Thor',
     kanji: null,
@@ -316,6 +424,71 @@ Huit secondes, c'est long. Un Thor qui gâche sa foudre est un kit PvP ordinaire
       { libelle: 'Item', valeur: 'Hache en fer' },
       { libelle: 'Portée', valeur: '25 blocs · rayon 4' },
       { libelle: 'Cooldown', valeur: '8 s' },
+    ],
+  },
+  {
+    slug: 'vampire',
+    nom: 'Vampire',
+    kanji: null,
+    role: 'Soin',
+    descriptionCourte:
+      'Récupère toute sa vie en tuant',
+    descriptionLongue: `Chaque joueur tué lui rend **l'intégralité de sa vie**, instantanément. Pas un demi-cœur par coup : tout, d'un coup, à la mort de sa cible.
+
+En duel, ça ne change rien — le combat est déjà fini quand la capacité se déclenche. En mêlée, c'est autre chose : finir un adversaire à un cœur le remet à pleine vie face au suivant, sans toucher à ses soupes.
+
+Le Vampire ne survit pas aux mauvais combats, il enchaîne les bons.`,
+    prixCoins: 2000,
+    prixEurosCentimes: null,
+    type: 'GRATUIT',
+    achetable: false,
+    kitDeDepart: false,
+    caracteristiques: [
+      { libelle: 'Effet', valeur: 'Vie restaurée à 100 %' },
+      { libelle: 'Déclencheur', valeur: 'Un joueur tué' },
+      { libelle: 'Portée', valeur: 'Mêlée uniquement' },
+    ],
+  },
+  {
+    slug: 'reaper',
+    nom: 'Reaper',
+    kanji: null,
+    role: 'Corruption',
+    descriptionCourte:
+      'Sa faux inflige des dégâts de wither',
+    descriptionLongue: `Ses coups de houe appliquent le wither. Les dégâts continuent après le coup, et surtout la régénération est bloquée le temps de l'effet.
+
+Sur un serveur où tout le monde se soigne à la soupe en continu, empêcher l'autre de remonter change complètement l'échange.`,
+    prixCoins: 2000,
+    prixEurosCentimes: null,
+    type: 'GRATUIT',
+    achetable: false,
+    kitDeDepart: false,
+    caracteristiques: [
+      { libelle: 'Item', valeur: 'Houe en fer' },
+      { libelle: 'Effet', valeur: 'Wither I · 3 s' },
+      { libelle: 'Cooldown', valeur: '6 s' },
+    ],
+  },
+  {
+    slug: 'grandpa',
+    nom: 'Grand-Pa',
+    kanji: null,
+    role: 'Éjection',
+    descriptionCourte:
+      'Un bâton qui envoie très loin',
+    descriptionLongue: `Un simple bâton, enchanté Knockback II. Les dégâts sont ridicules, la projection ne l'est pas : sur une map d'îles flottantes, un bon coup au bord ne demande aucun autre argument.
+
+Le kit ne tue pas. Il fait tomber. C'est différent, et souvent plus efficace.`,
+    prixCoins: 2000,
+    prixEurosCentimes: null,
+    type: 'GRATUIT',
+    achetable: false,
+    kitDeDepart: false,
+    caracteristiques: [
+      { libelle: 'Item', valeur: 'Bâton Knockback II' },
+      { libelle: 'Dégâts', valeur: 'Très faibles' },
+      { libelle: 'Usage', valeur: 'Éjection' },
     ],
   },
   {
@@ -590,7 +763,7 @@ async function peuplerKits() {
     const { caracteristiques, ...champsDuKit } = kit
 
     // La commande de livraison n'a de sens que pour les kits réellement
-    // vendus. Elle est déduite du slug plutôt que recopiée 21 fois : c'est
+    // vendus. Elle est déduite du slug plutôt que recopiée à la main : c'est
     // une valeur de départ, éditable ensuite depuis l'admin.
     const commandeLivraison = kit.achetable ? `kitadmin add {pseudo} ${kit.slug}` : ''
     const commandeRetrait = kit.achetable ? `kitadmin remove {pseudo} ${kit.slug}` : ''
