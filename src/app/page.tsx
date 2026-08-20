@@ -1,7 +1,6 @@
 import Image from 'next/image'
 import Link from 'next/link'
 
-import { ClassementVotes } from '@/components/public/ClassementVotes'
 import { BoutonCopieIp } from '@/components/public/CopieIp'
 import { IconeDiscord } from '@/components/public/IconeDiscord'
 import { PagePublique } from '@/components/public/PagePublique'
@@ -332,25 +331,12 @@ export default async function Accueil() {
         </div>
       </section>
 
-      {/* ----------------------------- CLASSEMENT ---------------------------- */}
-      <section id="classement" className="bg-charbon px-6 py-24">
-        <div className="mx-auto max-w-contenu">
-          <EnTeteSection
-            surtitre="Soutenir le serveur"
-            titre="Les meilleurs votants"
-            sousTitre="Le top 3 de chaque mois est immortalisé au spawn — et repart avec un bonus de coins."
-          />
-          <ClassementVotes />
-          <p className="mt-5.5 text-center text-sm text-gris">
-            Le classement des votes se réinitialise le 1ᵉʳ de chaque mois. Tu cherches le
-            classement des joueurs ?{' '}
-            <Link href="/classement" className="text-or underline underline-offset-2">
-              Il est par ici
-            </Link>
-            .
-          </p>
-        </div>
-      </section>
+      {/*
+        La section « Les meilleurs votants » a été retirée : ses données étaient
+        inventées, aucun système de vote n'étant encore branché. À remettre le
+        jour où les votes remontent pour de vrai — le composant est récupérable
+        dans l'historique git (commit a4d829f, ClassementVotes.tsx).
+      */}
     </PagePublique>
   )
 }
