@@ -3,10 +3,11 @@
 import Link from 'next/link'
 import { useActionState, useEffect, useMemo, useState } from 'react'
 
-import { creerCommande } from '@/actions/commandes'
+import { creerCommande, type EtatCommande } from '@/actions/commandes'
 import { ETAT_VIDE } from '@/actions/etat'
 import { CarteGrade, CarteKitBoutique, CartePack } from '@/components/boutique/Cartes'
 import { ModaleRecapitulatif } from '@/components/boutique/ModaleRecapitulatif'
+import { PaiementTebex } from '@/components/boutique/PaiementTebex'
 import { Panier } from '@/components/boutique/Panier'
 import type { GradeBoutique, KitBoutique, PackBoutique } from '@/components/boutique/types'
 import {
@@ -101,7 +102,17 @@ export function Boutique({
   const total = articles.reduce((somme, article) => somme + article.prixCentimes, 0)
   const pretAPayer = articles.length > 0 && pseudo !== null
 
-  const [etat, envoyer] = useActionState(creerCommande, ETAT_VIDE)
+  const [etat, envoyer] = useActionState<EtatCommande, FormData>(creerCommande, ETAT_VIDE)
+
+  /**
+   * Le panier Tebex est prêt : on referme le récapitulatif pour laisser la
+   * place à la modale de paiement. Deux <dialog> superposés se disputeraient
+   * le focus.
+   */
+  const paiement = etat.paiement
+  useEffect(() => {
+    if (paiement) setModaleOuverte(false)
+  }, [paiement])
 
   function basculerArticle(article: ArticlePanier) {
     setPanier((actuel) => basculer(actuel, article))
@@ -231,6 +242,24 @@ export function Boutique({
           onPayer={() => setModaleOuverte(true)}
         />
       </div>
+
+      {/*
+        Le paiement s'affiche par-dessus la boutique, sans quitter ljkits.eu.
+        La clé force un remontage à chaque nouveau panier Tebex : sans elle, un
+        second paiement réutiliserait l'ident du premier.
+      */}
+      {paiement && (
+        <PaiementTebex
+          key={paiement.identPanier}
+          identPanier={paiement.identPanier}
+          commandeId={paiement.commandeId}
+          urlCheckout={paiement.urlCheckout}
+          onPaye={() => {
+            setPanier([])
+            ecrirePanierStocke([])
+          }}
+        />
+      )}
 
       {pseudo !== null && (
         <ModaleRecapitulatif

@@ -12,14 +12,27 @@ const BASE_HEADLESS = 'https://headless.tebex.io/api'
 /**
  * Erreur métier : `message` est destiné à l'affichage et à l'admin,
  * `contexte` aux seuls logs (il contient le corps brut de la réponse).
+ *
+ * `corrigeableParLeJoueur` distingue les deux familles d'échec :
+ *  - false (défaut) : panne côté prestataire ou configuration manquante. Le
+ *    visiteur voit un message générique, le détail reste dans les logs.
+ *  - true : le joueur peut y remédier seul (pseudo inexistant, par exemple).
+ *    Le message est alors affiché tel quel — lui cacher la raison le laisserait
+ *    réessayer indéfiniment.
  */
 export class ErreurTebex extends Error {
   readonly contexte: string | null
+  readonly corrigeableParLeJoueur: boolean
 
-  constructor(message: string, contexte: string | null = null) {
+  constructor(
+    message: string,
+    contexte: string | null = null,
+    corrigeableParLeJoueur = false,
+  ) {
     super(message)
     this.name = 'ErreurTebex'
     this.contexte = contexte
+    this.corrigeableParLeJoueur = corrigeableParLeJoueur
   }
 }
 
@@ -77,10 +90,16 @@ async function appeler<T>(
 
   if (!reponse.ok) {
     // Tebex renvoie en général { "title": …, "detail": … } ou { "message": … }.
+    // ⚠ Prendre le premier champ NON VIDE, pas le premier défini : Tebex
+    // renvoie souvent detail:"" en mettant le motif réel dans title. Un `??`
+    // retiendrait la chaîne vide et le message n'expliquerait plus rien.
     let detail = texte.slice(0, 300)
     try {
       const json = JSON.parse(texte)
-      detail = json.detail ?? json.message ?? json.title ?? detail
+      detail =
+        [json.detail, json.message, json.title].find(
+          (champ: unknown) => typeof champ === 'string' && champ.trim() !== '',
+        ) ?? detail
     } catch {
       // Réponse non-JSON : on garde le texte brut tronqué.
     }
@@ -154,13 +173,40 @@ export async function creerPanierTebex(parametres: {
     throw new ErreurTebex('Panier vide : aucun package à envoyer à Tebex.')
   }
 
-  const panier = await appeler<ReponsePanier>('compte', '/baskets', {
+  /**
+   * Tebex vérifie le pseudo auprès de Mojang et répond 404 « Invalid Username
+   * provided » s'il n'existe pas. C'est une faute de frappe du joueur, pas une
+   * panne : on le lui dit, plutôt que de lui servir « paiement indisponible,
+   * réessaie plus tard » qu'il pourrait réessayer cent fois.
+   */
+  const creerPanier = async (options: { methode: 'POST'; corps: unknown }) => {
+    try {
+      return await appeler<ReponsePanier>('compte', '/baskets', options)
+    } catch (erreur) {
+      if (erreur instanceof ErreurTebex && /invalid username/i.test(erreur.message)) {
+        throw new ErreurTebex(
+          `Le compte Minecraft « ${parametres.pseudoMinecraft} » est introuvable. Vérifie l'orthographe de ton pseudo.`,
+          erreur.contexte,
+          true,
+        )
+      }
+      throw erreur
+    }
+  }
+
+  const panier = await creerPanier({
     methode: 'POST',
     corps: {
       username: parametres.pseudoMinecraft,
       complete_url: parametres.urlRetour,
       cancel_url: parametres.urlAnnulation,
-      complete_auto_redirect: true,
+      // ⚠ FAUX volontairement. Le paiement s'affiche dans une modale Tebex.js
+      // posée sur ljkits.eu : si Tebex redirigeait tout seul vers complete_url,
+      // c'est l'IFRAME qui naviguerait, et le site s'afficherait imbriqué dans
+      // lui-même. La fin de paiement est donc gérée côté client, sur
+      // l'évènement payment:complete (cf. PaiementTebex.tsx).
+      // complete_url reste renseigné : il sert au repli plein écran.
+      complete_auto_redirect: false,
       custom: { commandeId: parametres.commandeId },
     },
   })

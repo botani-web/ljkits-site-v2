@@ -1,7 +1,6 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { redirect } from 'next/navigation'
 import type { Prisma, StatutCommande } from '@prisma/client'
 
 import type { EtatFormulaire } from '@/actions/etat'
@@ -49,6 +48,23 @@ async function tropDeCommandesEnAttente(pseudo: string) {
 /* -------------------------------------------------------------------------- */
 
 /**
+ * L'état rendu par `creerCommande`, lu par `useActionState` côté client.
+ *
+ * `paiement` n'est renseigné qu'en cas de succès : sa présence est le signal
+ * qui déclenche l'ouverture de la modale de paiement Tebex.
+ */
+export type EtatCommande = EtatFormulaire & {
+  paiement?: {
+    /** Identifiant du panier Tebex, ce que Tebex.js attend. */
+    identPanier: string
+    /** Notre commande, pour la page de suivi après paiement. */
+    commandeId: string
+    /** Page de paiement hébergée, repli si Tebex.js ne se charge pas. */
+    urlCheckout: string
+  }
+}
+
+/**
  * ⚠ SEULE action de mutation du projet, avec connecter(), qui n'appelle pas
  * exigerAdmin() : c'est un visiteur anonyme qui commande.
  *
@@ -65,9 +81,9 @@ async function tropDeCommandesEnAttente(pseudo: string) {
  *  5. Garde-fou anti-abus ci-dessus.
  */
 export async function creerCommande(
-  _etatPrecedent: EtatFormulaire,
+  _etatPrecedent: EtatCommande,
   formData: FormData,
-): Promise<EtatFormulaire> {
+): Promise<EtatCommande> {
   // Le panier voyage en JSON dans un champ caché : c'est un état React,
   // pas une suite de champs de formulaire.
   let articlesBruts: unknown = []
@@ -205,6 +221,7 @@ export async function creerCommande(
   // que supprimée : une trace visible dans l'admin vaut mieux qu'un échec
   // silencieux.
   let urlCheckout: string
+  let identPanier: string
   try {
     const panier = await creerPanierTebex({
       pseudoMinecraft,
@@ -220,6 +237,7 @@ export async function creerCommande(
     })
 
     urlCheckout = panier.urlCheckout
+    identPanier = panier.ident
   } catch (erreur) {
     const message =
       erreur instanceof ErreurTebex
@@ -244,18 +262,31 @@ export async function creerCommande(
     if (!(erreur instanceof ErreurTebex)) console.error(erreur)
 
     revalidatePath('/admin/commandes')
+
+    // Une erreur que le joueur peut corriger (pseudo inexistant) lui est
+    // montrée telle quelle. Tout le reste — panne, mauvaise configuration —
+    // reste générique : le détail est dans les logs, pas à l'écran.
     return {
       erreur:
-        'Le paiement est momentanément indisponible. Réessaie dans quelques minutes, ou passe sur le Discord.',
+        erreur instanceof ErreurTebex && erreur.corrigeableParLeJoueur
+          ? message
+          : 'Le paiement est momentanément indisponible. Réessaie dans quelques minutes, ou passe sur le Discord.',
     }
   }
 
   revalidatePath('/admin/commandes')
 
-  // Redirection vers la page de paiement Tebex. `redirect()` accepte une URL
-  // externe absolue. Le retour se fera sur /boutique/commande/[id], que Tebex
-  // connaît via complete_url.
-  redirect(urlCheckout)
+  // Pas de redirection : le paiement s'ouvre dans une modale posée sur le
+  // site. On rend au client ce qu'il faut pour la lancer — l'ident du panier
+  // pour Tebex.js, l'id de commande pour la page de suivi, et l'URL de
+  // checkout comme repli si le script de Tebex ne se charge pas.
+  return {
+    paiement: {
+      identPanier: identPanier,
+      commandeId: commande.id,
+      urlCheckout,
+    },
+  }
 }
 
 /* -------------------------------------------------------------------------- */
