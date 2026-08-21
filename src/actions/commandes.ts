@@ -1,7 +1,6 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import type { Prisma, StatutCommande } from '@prisma/client'
 
@@ -207,18 +206,10 @@ export async function creerCommande(
   // silencieux.
   let urlCheckout: string
   try {
-    const entetes = await headers()
-    // Sur Vercel, l'IP réelle du visiteur est en tête de x-forwarded-for.
-    const ipClient =
-      entetes.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-      entetes.get('x-real-ip')?.trim() ||
-      '0.0.0.0'
-
     const panier = await creerPanierTebex({
       pseudoMinecraft,
       packageIds,
       commandeId: commande.id,
-      ipClient,
       urlRetour: `${SITE.url}/boutique/commande/${commande.id}`,
       urlAnnulation: `${SITE.url}/boutique`,
     })
@@ -242,7 +233,15 @@ export async function creerCommande(
 
     // La trace complète part dans les logs Vercel ; le visiteur, lui, ne voit
     // qu'un message générique — l'erreur d'un prestataire ne le concerne pas.
-    console.error('[boutique] création du panier Tebex impossible :', erreur)
+    // `contexte` porte la route exacte et le corps brut renvoyé par Tebex :
+    // sans eux, un échec côté prestataire est indébogable depuis les logs.
+    console.error(
+      `[boutique] création du panier Tebex impossible (commande ${commande.id}) : ${message}`,
+    )
+    if (erreur instanceof ErreurTebex && erreur.contexte) {
+      console.error('[boutique] détail Tebex :', erreur.contexte)
+    }
+    if (!(erreur instanceof ErreurTebex)) console.error(erreur)
 
     revalidatePath('/admin/commandes')
     return {

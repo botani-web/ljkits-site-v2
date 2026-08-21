@@ -7,13 +7,19 @@ import { createHash, createHmac, timingSafeEqual } from 'node:crypto'
  * Aucune dépendance : `fetch` natif et `node:crypto` suffisent.
  */
 
-const BASE_HEADLESS = 'https://headless.tebex.io/api/accounts'
+const BASE_HEADLESS = 'https://headless.tebex.io/api'
 
-/** Erreur métier : le message est destiné à être affiché, pas une trace. */
+/**
+ * Erreur métier : `message` est destiné à l'affichage et à l'admin,
+ * `contexte` aux seuls logs (il contient le corps brut de la réponse).
+ */
 export class ErreurTebex extends Error {
-  constructor(message: string) {
+  readonly contexte: string | null
+
+  constructor(message: string, contexte: string | null = null) {
     super(message)
     this.name = 'ErreurTebex'
+    this.contexte = contexte
   }
 }
 
@@ -25,12 +31,30 @@ function jetonPublic(): string {
   return jeton.trim()
 }
 
-/** Appel HTTP vers l'API Headless, avec un message d'erreur exploitable. */
+/**
+ * Les deux familles de routes de l'API Headless. C'est LE piège de cette API :
+ *
+ *   'compte' → /api/accounts/{token}/…   créer un panier, le relire
+ *   'panier' → /api/baskets/{ident}/…    y ajouter un package
+ *
+ * La seconde n'a PAS le segment `accounts/{token}`. Le lui ajouter renvoie un
+ * 404 « The route … could not be found », pas une erreur d'authentification :
+ * si tu vois passer un 404 ici, c'est presque toujours une portée erronée.
+ */
+type PorteeTebex = 'compte' | 'panier'
+
+/** Appel HTTP vers l'API Headless, avec une erreur exploitable en cas d'échec. */
 async function appeler<T>(
+  portee: PorteeTebex,
   chemin: string,
   options: { methode: 'GET' | 'POST'; corps?: unknown },
 ): Promise<T> {
-  const url = `${BASE_HEADLESS}/${jetonPublic()}${chemin}`
+  const prefixe = portee === 'compte' ? `/accounts/${jetonPublic()}` : ''
+  const url = `${BASE_HEADLESS}${prefixe}${chemin}`
+
+  // Ce qui part dans les messages et les logs : le jeton n'y figure jamais,
+  // mais la route exacte oui — sans elle, un échec est indébogable.
+  const route = `${options.methode} ${portee === 'compte' ? '/accounts/{token}' : ''}${chemin}`
 
   let reponse: Response
   try {
@@ -45,9 +69,8 @@ async function appeler<T>(
       cache: 'no-store',
     })
   } catch (erreur) {
-    throw new ErreurTebex(
-      `Tebex est injoignable (${erreur instanceof Error ? erreur.message : 'erreur réseau'}).`,
-    )
+    const cause = erreur instanceof Error ? erreur.message : 'erreur réseau'
+    throw new ErreurTebex(`Tebex est injoignable sur ${route} (${cause}).`, `${route}\n${cause}`)
   }
 
   const texte = await reponse.text()
@@ -61,13 +84,19 @@ async function appeler<T>(
     } catch {
       // Réponse non-JSON : on garde le texte brut tronqué.
     }
-    throw new ErreurTebex(`Tebex a refusé la requête (HTTP ${reponse.status}) : ${detail}`)
+    throw new ErreurTebex(
+      `Tebex a refusé ${route} (HTTP ${reponse.status}) : ${detail}`,
+      `${route}\nHTTP ${reponse.status}\ncorps de la réponse : ${texte.slice(0, 1000)}`,
+    )
   }
 
   try {
     return JSON.parse(texte) as T
   } catch {
-    throw new ErreurTebex('Réponse illisible de Tebex.')
+    throw new ErreurTebex(
+      `Réponse illisible de Tebex sur ${route}.`,
+      `${route}\nHTTP ${reponse.status}\ncorps de la réponse : ${texte.slice(0, 1000)}`,
+    )
   }
 }
 
@@ -78,7 +107,12 @@ async function appeler<T>(
 type ReponsePanier = {
   data?: {
     ident?: string
-    links?: { checkout?: string }
+    /**
+     * ⚠ Tant que le panier est VIDE, Tebex renvoie `links: []` — un tableau,
+     * pas un objet. Le lien de paiement n'apparaît qu'une fois au moins un
+     * package ajouté. D'où le type large et le lecteur défensif ci-dessous.
+     */
+    links?: { checkout?: string } | unknown[]
   }
 }
 
@@ -87,12 +121,24 @@ export type PanierTebex = {
   urlCheckout: string
 }
 
+/** Extrait le lien de paiement, en tolérant le `links: []` du panier vide. */
+function lienDeCheckout(donnees: ReponsePanier['data']): string | null {
+  const liens = donnees?.links
+  if (!liens || Array.isArray(liens)) return null
+  return typeof liens.checkout === 'string' && liens.checkout !== '' ? liens.checkout : null
+}
+
 /**
  * Crée un panier chez Tebex et y ajoute les packages.
  *
- * `username` est obligatoire pour les boutiques Minecraft, `ip_address` pour
- * les intégrations appelées depuis un serveur — c'est notre cas, l'appel part
- * d'une Server Action et non du navigateur du joueur.
+ * `username` est obligatoire pour les boutiques Minecraft.
+ *
+ * ⚠ NE PAS envoyer `ip_address` : ce champ n'est accepté que sur une requête
+ * authentifiée en Basic auth avec la clé PRIVÉE. Avec le seul jeton public,
+ * Tebex répond « HTTP 422 : Basic auth credentials are required » — un message
+ * qui parle d'authentification alors que le problème est un champ de trop.
+ * On s'en passe sans rien perdre : le joueur est redirigé vers pay.tebex.io,
+ * où Tebex voit sa véritable IP.
  *
  * `custom` revient tel quel dans le webhook de paiement : c'est par lui qu'on
  * retrouve la commande. On y met l'id de la commande.
@@ -101,15 +147,17 @@ export async function creerPanierTebex(parametres: {
   pseudoMinecraft: string
   packageIds: number[]
   commandeId: string
-  ipClient: string
   urlRetour: string
   urlAnnulation: string
 }): Promise<PanierTebex> {
-  const panier = await appeler<ReponsePanier>('/baskets', {
+  if (parametres.packageIds.length === 0) {
+    throw new ErreurTebex('Panier vide : aucun package à envoyer à Tebex.')
+  }
+
+  const panier = await appeler<ReponsePanier>('compte', '/baskets', {
     methode: 'POST',
     corps: {
       username: parametres.pseudoMinecraft,
-      ip_address: parametres.ipClient,
       complete_url: parametres.urlRetour,
       cancel_url: parametres.urlAnnulation,
       complete_auto_redirect: true,
@@ -118,18 +166,33 @@ export async function creerPanierTebex(parametres: {
   })
 
   const ident = panier.data?.ident
-  const urlCheckout = panier.data?.links?.checkout
-
-  if (!ident || !urlCheckout) {
-    throw new ErreurTebex('Tebex n’a pas renvoyé d’identifiant de panier exploitable.')
+  if (!ident) {
+    throw new ErreurTebex('Tebex n’a pas renvoyé d’identifiant de panier.')
   }
 
   // Les packages sont ajoutés un par un : l'API Headless n'accepte pas de lot.
+  // Portée 'panier' : cette route n'a pas le segment accounts/{token}.
   for (const packageId of parametres.packageIds) {
-    await appeler(`/baskets/${encodeURIComponent(ident)}/packages`, {
+    await appeler('panier', `/baskets/${encodeURIComponent(ident)}/packages`, {
       methode: 'POST',
       corps: { package_id: packageId, quantity: 1 },
     })
+  }
+
+  // Le lien de paiement se lit APRÈS remplissage, jamais à la création : sur un
+  // panier vide il n'existe pas encore.
+  const rempli = await appeler<ReponsePanier>(
+    'compte',
+    `/baskets/${encodeURIComponent(ident)}`,
+    { methode: 'GET' },
+  )
+  const urlCheckout = lienDeCheckout(rempli.data)
+
+  if (!urlCheckout) {
+    throw new ErreurTebex(
+      `Tebex n’a pas renvoyé de lien de paiement pour le panier ${ident}.`,
+      `panier ${ident} rempli avec ${parametres.packageIds.length} package(s), links absent`,
+    )
   }
 
   return { ident, urlCheckout }
