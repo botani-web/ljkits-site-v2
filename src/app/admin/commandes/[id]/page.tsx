@@ -1,10 +1,7 @@
-import type { StatutLigneLivraison } from '@prisma/client'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
 import { changerStatutCommande } from '@/actions/commandes'
-import { regenererLignesLivraison, relancerLigneLivraison } from '@/actions/livraison'
-import { BoutonCopier } from '@/components/admin/BoutonCopier'
 import { BoutonFormulaire } from '@/components/admin/BoutonsAction'
 import { EtiquetteStatut } from '@/components/admin/EtiquetteStatut'
 import { formaterDateHeure, formaterEuros, formaterNumeroCommande } from '@/lib/format'
@@ -12,15 +9,6 @@ import { prisma } from '@/lib/prisma'
 import { urlAvatar } from '@/lib/panier'
 
 export const metadata = { title: 'Détail d’une commande' }
-
-/** Au-delà, la ligne sort de la file (même valeur que /api/livraison/file). */
-const TENTATIVES_MAX = 5
-
-const STATUT_LIGNE: Record<StatutLigneLivraison, { label: string; classes: string }> = {
-  EN_ATTENTE: { label: 'En attente', classes: 'border-soupe/50 bg-soupe/12 text-soupe' },
-  EXECUTEE: { label: 'Exécutée', classes: 'border-vert/50 bg-vert/12 text-vert' },
-  ECHOUEE: { label: 'Échouée', classes: 'border-rouge/50 bg-rouge/12 text-rouge' },
-}
 
 export default async function PageCommande({
   params,
@@ -33,16 +21,11 @@ export default async function PageCommande({
     where: { id },
     include: {
       lignes: true,
-      lignesLivraison: { orderBy: [{ type: 'asc' }, { createdAt: 'asc' }] },
     },
   })
 
   if (!commande) notFound()
 
-  const enAttente = commande.lignesLivraison.filter((l) => l.statut === 'EN_ATTENTE')
-  const echouees = commande.lignesLivraison.filter((l) => l.statut === 'ECHOUEE')
-  const executees = commande.lignesLivraison.filter((l) => l.statut === 'EXECUTEE')
-  const bloquees = enAttente.filter((l) => l.tentatives >= TENTATIVES_MAX)
 
   return (
     <>
@@ -71,8 +54,8 @@ export default async function PageCommande({
             {commande.livreeAt
               ? `La commande avait été livrée le ${formaterDateHeure(commande.livreeAt)}.`
               : 'Elle n’avait pas encore été livrée.'}{' '}
-            Si le litige est perdu, Tebex enverra un second évènement et les commandes de
-            retrait partiront automatiquement en file.
+            Si le litige est perdu, Tebex enverra un second évènement, la commande passera en
+            remboursée et le plugin retirera le contenu en jeu.
           </p>
         </div>
       )}
@@ -119,114 +102,15 @@ export default async function PageCommande({
             </dl>
           </section>
 
-          {/* ----------------------- FILE DE LIVRAISON --------------------- */}
-          <section className="rounded-2xl border border-bord bg-charbon px-6 py-6">
-            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-              <h2 className="font-mono text-[10.5px] font-bold tracking-[1.4px] text-gris uppercase">
-                File de livraison
-              </h2>
-              {commande.lignesLivraison.length > 0 && (
-                <BoutonCopier
-                  texte={commande.lignesLivraison.map((l) => l.commande).join('\n')}
-                  libelle="Tout copier"
-                />
-              )}
-            </div>
-
-            {commande.lignesLivraison.length === 0 ? (
-              <p className="rounded-lg border border-bord bg-nuit px-4 py-3 text-sm text-gris">
-                Rien en file. Les lignes sont créées automatiquement quand Tebex confirme le
-                paiement — ou le remboursement.
-              </p>
-            ) : (
-              <>
-                <p className="mb-4 text-[13px] text-gris">
-                  {executees.length} exécutée{executees.length > 1 ? 's' : ''} ·{' '}
-                  {enAttente.length} en attente · {echouees.length} en échec. Le bot vient les
-                  chercher tout seul ; le pseudo y est déjà substitué.
-                </p>
-
-                <div className="flex flex-col gap-2">
-                  {commande.lignesLivraison.map((ligne) => {
-                    const style = STATUT_LIGNE[ligne.statut]
-                    const bloquee =
-                      ligne.statut !== 'EXECUTEE' && ligne.tentatives >= TENTATIVES_MAX
-
-                    return (
-                      <div
-                        key={ligne.id}
-                        className="rounded-lg border border-bord bg-nuit px-4 py-3"
-                      >
-                        <div className="flex flex-wrap items-center gap-3">
-                          <code className="min-w-0 flex-1 font-mono text-[13px] break-all text-creme">
-                            {ligne.commande}
-                          </code>
-
-                          {ligne.type === 'RETRAIT' && (
-                            <span className="rounded border border-oni/50 bg-oni/12 px-2 py-1 font-mono text-[10px] font-bold tracking-wide text-oni uppercase">
-                              Retrait
-                            </span>
-                          )}
-
-                          <span
-                            className={`rounded border px-2.5 py-1 font-mono text-[10.5px] font-bold tracking-[1.2px] uppercase ${style.classes}`}
-                          >
-                            {style.label}
-                          </span>
-
-                          {ligne.statut !== 'EXECUTEE' && (
-                            <BoutonFormulaire
-                              action={relancerLigneLivraison.bind(null, ligne.id)}
-                              variante="neutre"
-                            >
-                              Relancer
-                            </BoutonFormulaire>
-                          )}
-                        </div>
-
-                        {(ligne.tentatives > 0 || ligne.executeeAt || ligne.derniereErreur) && (
-                          <p className="mt-2 font-mono text-[11px] text-gris">
-                            {ligne.tentatives} tentative{ligne.tentatives > 1 ? 's' : ''}
-                            {ligne.executeeAt && ` · exécutée le ${formaterDateHeure(ligne.executeeAt)}`}
-                            {bloquee && (
-                              <span className="text-rouge">
-                                {' '}
-                                · sortie de la file, relance manuelle nécessaire
-                              </span>
-                            )}
-                          </p>
-                        )}
-
-                        {ligne.derniereErreur && (
-                          <p className="mt-1.5 font-mono text-[11.5px] text-rouge">
-                            {ligne.derniereErreur}
-                          </p>
-                        )}
-                      </div>
-                    )
-                  })}
-                </div>
-
-                {bloquees.length > 0 && (
-                  <p className="mt-3 rounded-lg border border-rouge/40 bg-rouge/10 px-4 py-2.5 text-[13px] text-rouge">
-                    {bloquees.length} ligne{bloquees.length > 1 ? 's' : ''} a atteint{' '}
-                    {TENTATIVES_MAX} tentatives et ne sera plus servie au bot. Corrige la
-                    commande sur la fiche de l’article, puis relance.
-                  </p>
-                )}
-              </>
-            )}
-          </section>
-
           {/* --------------------------- ACTIONS --------------------------- */}
           <section className="rounded-2xl border border-bord bg-charbon px-6 py-6">
             <h2 className="mb-1.5 font-mono text-[10.5px] font-bold tracking-[1.4px] text-gris uppercase">
               Intervenir à la main
             </h2>
             <p className="mb-4 text-[13px] text-gris">
-              En temps normal, tout est automatique : Tebex confirme le paiement, les lignes
-              partent en file, le bot les exécute. Ces boutons servent quand quelque chose
-              coince.
+              En temps normal, tout est automatique : Tebex confirme le paiement, la commande
+              passe en livrée, et le plugin Tebex applique le contenu en jeu. Ces boutons
+              servent quand quelque chose coince.
             </p>
 
             <div className="flex flex-wrap gap-3">
@@ -236,15 +120,6 @@ export default async function PageCommande({
                   variante="principal"
                 >
                   Marquer comme livrée
-                </BoutonFormulaire>
-              )}
-
-              {commande.lignes.length > 0 && (
-                <BoutonFormulaire
-                  action={regenererLignesLivraison.bind(null, commande.id)}
-                  variante="neutre"
-                >
-                  Régénérer la file
                 </BoutonFormulaire>
               )}
 
@@ -276,8 +151,8 @@ export default async function PageCommande({
             </div>
 
             <p className="mt-3 text-[13px] text-gris">
-              « Régénérer la file » repart des articles de la commande et remplace les lignes
-              en attente ou en échec. Les lignes déjà exécutées ne sont pas touchées.
+              Ces boutons ne changent que le statut côté site. Ils ne remettent rien au joueur
+              en jeu : la livraison et le retrait appartiennent au plugin Tebex.
             </p>
           </section>
         </div>

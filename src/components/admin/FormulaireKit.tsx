@@ -31,8 +31,6 @@ export type KitEnEdition = {
   achetable: boolean
   bientot: boolean
   kitDeDepart: boolean
-  commandeLivraison: string
-  commandeRetrait: string
   tebexPackageId: number | null
   caracteristiques: { libelle: string; valeur: string }[]
 }
@@ -184,10 +182,6 @@ export function FormulaireKit({
         <h2 className="mb-4 font-titre text-base uppercase">Vente et livraison</h2>
         <ChampsVenteEtLivraison
           tebexPackageId={kit?.tebexPackageId}
-          commandeLivraison={kit?.commandeLivraison}
-          commandeRetrait={kit?.commandeRetrait}
-          exempleLivraison="kitadmin add {pseudo} kenshi"
-          exempleRetrait="kitadmin remove {pseudo} kenshi"
           erreurs={etat.champs}
         />
       </section>

@@ -61,10 +61,6 @@ export const schemaKit = z.object({
   achetable: z.boolean(),
   bientot: z.boolean(),
   kitDeDepart: z.boolean(),
-  /** Commande console de livraison, avec {pseudo} comme marqueur. */
-  commandeLivraison: z.string().trim().max(2000, 'Commande de livraison trop longue.'),
-  /** Commande console de retrait, jouée en cas de remboursement. */
-  commandeRetrait: z.string().trim().max(2000, 'Commande de retrait trop longue.'),
   tebexPackageId: tebexPackageId,
   /**
    * Les lignes de la fiche technique, déjà appariées libellé/valeur.
@@ -134,8 +130,6 @@ export const schemaGrade = z.object({
   visible: z.boolean(),
   achetable: z.boolean(),
   heriteDuPrecedent: z.boolean(),
-  commandeLivraison: z.string().trim().max(2000, 'Commande de livraison trop longue.'),
-  commandeRetrait: z.string().trim().max(2000, 'Commande de retrait trop longue.'),
   tebexPackageId: tebexPackageId,
   avantages: z
     .array(z.string().trim().min(1, 'Un avantage vide n’a pas de sens.').max(120))
@@ -160,8 +154,6 @@ export const schemaPack = z.object({
     .nullable(),
   visible: z.boolean(),
   achetable: z.boolean(),
-  commandeLivraison: z.string().trim().max(2000, 'Commande de livraison trop longue.'),
-  commandeRetrait: z.string().trim().max(2000, 'Commande de retrait trop longue.'),
   tebexPackageId: tebexPackageId,
   /// Les ids des kits inclus, cochés dans le formulaire.
   kitIds: z.array(z.string().min(1)).max(30, 'Trente kits au maximum par pack.'),

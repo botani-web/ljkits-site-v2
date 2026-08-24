@@ -29,8 +29,6 @@ function lireFormulairePack(formData: FormData) {
     prixBarreCentimes: eurosVersCentimes(String(formData.get('prixBarre') ?? '')),
     visible: formData.get('visible') !== null,
     achetable: formData.get('achetable') !== null,
-    commandeLivraison: String(formData.get('commandeLivraison') ?? ''),
-    commandeRetrait: String(formData.get('commandeRetrait') ?? ''),
     tebexPackageId: lireTebexPackageId(formData),
     // Une case cochée par kit inclus.
     kitIds: formData.getAll('kitId').map(String),

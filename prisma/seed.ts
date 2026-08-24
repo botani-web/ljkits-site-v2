@@ -770,19 +770,11 @@ async function peuplerKits() {
   for (const [index, kit] of KITS.entries()) {
     const { caracteristiques, ...champsDuKit } = kit
 
-    // La commande de livraison n'a de sens que pour les kits réellement
-    // vendus. Elle est déduite du slug plutôt que recopiée à la main : c'est
-    // une valeur de départ, éditable ensuite depuis l'admin.
-    const commandeLivraison = kit.achetable ? `kitadmin add {pseudo} ${kit.slug}` : ''
-    const commandeRetrait = kit.achetable ? `kitadmin remove {pseudo} ${kit.slug}` : ''
-
     // Champs communs à la création et à la mise à jour : le seed fait autorité.
     // `tebexPackageId` n'est jamais touché : il dépend de la boutique Tebex et
     // se saisit depuis l'admin.
     const donnees = {
       ...champsDuKit,
-      commandeLivraison,
-      commandeRetrait,
       visible: true,
       bientot: false,
       ordre: index,
@@ -820,7 +812,7 @@ async function peuplerKits() {
  * prix en euros avec le seed complet annulerait toutes les retouches faites
  * depuis /admin/kits. Ici on n'écrit que quatre colonnes :
  *
- *   prixEurosCentimes · achetable · commandeLivraison · commandeRetrait
+ *   prixEurosCentimes · achetable
  *
  * Aucun texte, aucun ordre, aucune visibilité, aucune caractéristique n'est
  * touché. `tebexPackageId` non plus : il se saisit depuis l'admin, cf. l'en-tête
@@ -850,14 +842,6 @@ async function peuplerPrixDesKits() {
       data: {
         prixEurosCentimes: kit.prixEurosCentimes,
         achetable: kit.achetable,
-        commandeLivraison:
-          kit.achetable && enBase.commandeLivraison.trim() === ''
-            ? `kitadmin add {pseudo} ${kit.slug}`
-            : enBase.commandeLivraison,
-        commandeRetrait:
-          kit.achetable && enBase.commandeRetrait.trim() === ''
-            ? `kitadmin remove {pseudo} ${kit.slug}`
-            : enBase.commandeRetrait,
       },
     })
 
@@ -894,8 +878,6 @@ async function peuplerPrixDesKits() {
  * L'index dans le tableau donne l'ordre, et `heriteDuPrecedent` s'appuie
  * dessus pour afficher "Tout le grade X" sans champ de liaison.
  *
- * commandeLivraison : une commande par ligne, {pseudo} sera remplacé par le
- * pseudo Minecraft de l'acheteur au moment de la livraison.
  */
 const GRADES: {
   slug: string
@@ -905,8 +887,6 @@ const GRADES: {
   etiquette: string | null
   prixEurosCentimes: number
   heriteDuPrecedent: boolean
-  commandeLivraison: string
-  commandeRetrait: string
   avantages: string[]
 }[] = [
   {
@@ -917,8 +897,6 @@ const GRADES: {
     etiquette: null,
     prixEurosCentimes: 500,
     heriteDuPrecedent: false,
-    commandeLivraison: 'lp user {pseudo} parent add ronin',
-    commandeRetrait: 'lp user {pseudo} parent remove ronin',
     avantages: [
       'Préfixe Ronin dans le chat et le TAB',
       'Couleur de pseudo au choix',
@@ -934,8 +912,6 @@ const GRADES: {
     etiquette: 'Le plus pris',
     prixEurosCentimes: 1000,
     heriteDuPrecedent: true,
-    commandeLivraison: 'lp user {pseudo} parent add samourai',
-    commandeRetrait: 'lp user {pseudo} parent remove samourai',
     avantages: [
       'Message de mort personnalisé',
       '3 placements enregistrés par kit',
@@ -951,8 +927,6 @@ const GRADES: {
     etiquette: null,
     prixEurosCentimes: 2000,
     heriteDuPrecedent: true,
-    commandeLivraison: 'lp user {pseudo} parent add shogun',
-    commandeRetrait: 'lp user {pseudo} parent remove shogun',
     avantages: [
       "Accès prioritaire quand c'est plein",
       'Symbole unique à côté du pseudo',
@@ -1013,18 +987,8 @@ async function peuplerPacks() {
   for (const [index, pack] of PACKS.entries()) {
     const { slugsDesKits, ...champsDuPack } = pack
 
-    // Une commande de livraison par kit inclus, une par ligne.
-    const commandeLivraison = slugsDesKits
-      .map((slug) => `kitadmin add {pseudo} ${slug}`)
-      .join('\n')
-    const commandeRetrait = slugsDesKits
-      .map((slug) => `kitadmin remove {pseudo} ${slug}`)
-      .join('\n')
-
     const donnees = {
       ...champsDuPack,
-      commandeLivraison,
-      commandeRetrait,
       ordre: index,
       visible: true,
       achetable: true,

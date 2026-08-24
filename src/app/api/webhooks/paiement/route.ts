@@ -1,6 +1,3 @@
-import type { Prisma, StatutCommande, TypeLivraison } from '@prisma/client'
-
-import { lignesAExecuter } from '@/lib/livraison'
 import { prisma } from '@/lib/prisma'
 import {
   extraireCommandeId,
@@ -16,7 +13,7 @@ import {
 } from '@/lib/tebex'
 
 /**
- * Webhook Tebex — le point d'entrée qui déclenche la livraison.
+ * Webhook Tebex — c'est lui qui fait avancer une commande.
  *
  * C'est la route la plus sensible du site : quelqu'un qui saurait la
  * déclencher se ferait livrer gratuitement. D'où l'ordre strict ci-dessous —
@@ -157,57 +154,46 @@ async function retrouverCommande(evenement: WebhookTebex) {
   return null
 }
 
-/** Passe la commande en PAYEE et remplit la file de livraison. */
+/**
+ * Paiement confirmé : la commande est LIVREE, pas seulement PAYEE.
+ *
+ * C'est le plugin Tebex, installé sur le serveur Minecraft, qui applique le
+ * contenu sur le compte du joueur. Il le fait de son côté dès que Tebex lui
+ * signale la transaction — le site n'a aucune commande console à exécuter et
+ * aucune file à remplir.
+ *
+ * `payeeAt` et `livreeAt` sont donc posés ensemble : les deux évènements sont
+ * simultanés de notre point de vue. On garde les deux colonnes plutôt qu'une
+ * seule, parce qu'un remboursement doit pouvoir distinguer « payée » de
+ * « livrée » dans l'historique.
+ */
 async function marquerPayeeEtLivrer(commandeId: string, transaction: string | null) {
-  await creerLignesEtChangerStatut(commandeId, 'LIVRAISON', 'PAYEE', {
-    payeeAt: new Date(),
-    transactionTebex: transaction,
-    derniereErreur: null,
-  })
-}
+  const maintenant = new Date()
 
-/** Passe la commande en REMBOURSEE et met les commandes de retrait en file. */
-async function marquerRembourseeEtRetirer(commandeId: string) {
-  await creerLignesEtChangerStatut(commandeId, 'RETRAIT', 'REMBOURSEE', {})
+  await prisma.commande.update({
+    where: { id: commandeId },
+    data: {
+      statut: 'LIVREE',
+      payeeAt: maintenant,
+      livreeAt: maintenant,
+      transactionTebex: transaction,
+      derniereErreur: null,
+    },
+  })
 }
 
 /**
- * Change le statut d'une commande et lui ajoute ses lignes de livraison,
- * en une seule transaction : soit la commande avance et la file est remplie,
- * soit rien ne bouge.
+ * Remboursement ou litige perdu : la commande passe en REMBOURSEE.
+ *
+ * Le retrait en jeu est du ressort du plugin Tebex, qui gère lui-même les
+ * remboursements. `livreeAt` n'est pas effacé : il reste la trace que le
+ * joueur avait bien reçu son contenu avant l'annulation.
  */
-async function creerLignesEtChangerStatut(
-  commandeId: string,
-  sens: TypeLivraison,
-  statut: StatutCommande,
-  champsSupplementaires: Prisma.CommandeUpdateInput,
-) {
-  const commande = await prisma.commande.findUniqueOrThrow({
+async function marquerRembourseeEtRetirer(commandeId: string) {
+  await prisma.commande.update({
     where: { id: commandeId },
-    include: { lignes: true },
+    data: { statut: 'REMBOURSEE' },
   })
-
-  const commandes = lignesAExecuter(
-    commande.lignes,
-    commande.pseudoMinecraft,
-    sens === 'LIVRAISON' ? 'LIVRAISON' : 'RETRAIT',
-  )
-
-  await prisma.$transaction([
-    prisma.commande.update({
-      where: { id: commandeId },
-      data: { statut, ...champsSupplementaires },
-    }),
-    prisma.ligneLivraison.createMany({
-      data: commandes.map((texte) => ({ commandeId, type: sens, commande: texte })),
-    }),
-  ])
-
-  if (commandes.length === 0) {
-    console.warn(
-      `[webhook] commande ${commandeId} : aucune commande console à exécuter en ${sens}`,
-    )
-  }
 }
 
 /**

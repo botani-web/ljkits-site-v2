@@ -39,7 +39,6 @@ Puis remplis les valeurs :
 | `ADMIN_MOT_DE_PASSE` | Mot de passe du compte admin (utilisé **uniquement** par le seed) |
 | `TEBEX_PUBLIC_TOKEN` | Public Token Tebex — création des paniers (API Headless) |
 | `TEBEX_WEBHOOK_SECRET` | Secret Key du webhook Tebex — vérification de signature |
-| `LIVRAISON_TOKEN` | Jeton partagé avec le bot de livraison. `openssl rand -hex 32` |
 
 ### 3. Créer les tables et peupler la base
 
@@ -83,8 +82,8 @@ identifiants du seed.
 >
 > - `npm run db:seed:boutique` ne crée que les grades et les packs, et laisse
 >   les kits et le règlement tels quels ;
-> - `npm run db:seed:prix` n'écrit que `prixEurosCentimes`, `achetable` et les
->   commandes console **restées vides** de chaque kit. C'est ce qu'il faut lancer
+> - `npm run db:seed:prix` n'écrit que `prixEurosCentimes` et `achetable` de
+>   chaque kit. C'est ce qu'il faut lancer
 >   pour mettre les 21 kits classiques en vente à 2 € : aucune description,
 >   aucun nom, aucune caractéristique n'est réécrit. Le script signale à la fin
 >   combien de kits en vente n'ont pas encore d'identifiant de package Tebex.
@@ -114,7 +113,6 @@ src/
     admin/           panneau d'administration (protégé)
     api/auth/        point d'entrée NextAuth
     api/webhooks/    webhook de paiement Tebex
-    api/livraison/   file de livraison, lue par le bot RCON
 
   actions/           Server Actions — toute écriture en base passe par là
     garde.ts         exigerAdmin() — appelé en 1ʳᵉ ligne de chaque action
@@ -136,7 +134,6 @@ src/
     format.ts        formatage des prix, dates et ratios
     classement.ts    lecture du classement (table joueur)
     tebex.ts         panier Headless et signature des webhooks
-    livraison.ts     construction des commandes console
 ```
 
 ---
@@ -321,7 +318,7 @@ pour de bonnes raisons :
 Ce qui protège `creerCommande` à la place :
 
 1. **Les prix ne viennent jamais du navigateur.** Le panier client n’envoie que
-   des couples `{type, slug}` ; nom, prix et commande de livraison sont relus en
+   des couples `{type, slug}` ; le nom et le prix sont relus en
    base et le total recalculé côté serveur. Sans ça, le pack s’achèterait à un
    centime.
 2. Seuls les articles `visible` **et** `achetable` sont acceptés ; les kits
@@ -408,9 +405,9 @@ que de recopier l'adresse :
 Ouvre un ticket sur le [Discord]({discord})
 ```
 
-Il est remplacé par le lien courant au moment de l'affichage — même idée que le
-`{pseudo}` des commandes de livraison. Changer le lien dans les réglages le met
-alors à jour jusque dans le texte du règlement, sans rouvrir chaque section.
+Il est remplacé par le lien courant au moment de l'affichage : le texte stocké
+en base garde le marqueur, jamais l'URL. Changer le lien dans les réglages le
+met alors à jour jusque dans le texte du règlement, sans rouvrir chaque section.
 L'aperçu de l'éditeur Markdown fait la même substitution : ce que tu vois est ce
 qui sera publié.
 
@@ -489,12 +486,17 @@ compte à rebours affiche « imminente » plutôt qu'un décompte négatif.
 
 ## Du paiement à la livraison
 
-Le site ne parle jamais au serveur Minecraft. Il dépose des commandes console
-dans une file ; un bot qui tourne à côté du serveur vient les chercher et les
-exécute en RCON. Le port RCON n'est donc jamais exposé sur Internet.
+Le site ne parle jamais au serveur Minecraft, et n'exécute aucune commande
+console. Il **vend** ; c'est le **plugin Tebex**, installé sur le serveur, qui
+livre en jeu. Le port RCON n'est donc jamais exposé, et il n'y a ni file
+d'attente ni bot à faire tourner.
+
+Conséquence directe : `payment.completed` fait passer la commande en **LIVREE**,
+pas en PAYEE. Du point de vue du site, payer et livrer sont simultanés — le
+plugin s'occupe du reste de son côté.
 
 ```
-  Joueur                Site                      Tebex              Bot VPS
+  Joueur                Site                      Tebex          Plugin serveur
     │                     │                         │                   │
     ├─ valide le panier ─▶│                         │                   │
     │                     ├─ crée la commande       │                   │
@@ -503,21 +505,16 @@ exécute en RCON. Le port RCON n'est donc jamais exposé sur Internet.
     │                     │  username + custom      │                   │
     │                     │  {commandeId}           │                   │
     │                     │◀─ ident + checkout ─────┤                   │
-    │◀─ redirection ──────┤                         │                   │
+    │◀─ modale ou onglet ─┤                         │                   │
     │                                               │                   │
     ├─ paie ──────────────────────────────────────▶ │                   │
     │                     │◀─ webhook ──────────────┤                   │
     │                     │  payment.completed      │                   │
     │                     ├─ signature vérifiée     │                   │
-    │                     ├─ statut PAYEE           │                   │
-    │                     ├─ LigneLivraison × n     │                   │
+    │                     ├─ statut LIVREE          │                   │
+    │                     │  payeeAt + livreeAt     │                   │
+    │                     │                         ├─ livre en jeu ───▶│
     │                     │                         │                   │
-    │                     │◀─ GET /api/livraison/file ───────────────────┤
-    │                     ├─ 20 lignes EN_ATTENTE ─────────────────────▶│
-    │                     │                         │      exécute RCON │
-    │                     │◀─ POST /api/livraison/confirmer ─────────────┤
-    │                     ├─ EXECUTEE, et LIVREE    │                   │
-    │                     │  quand tout est passé   │                   │
 ```
 
 ### La signature du webhook
@@ -542,8 +539,8 @@ Deux pièges, tous deux traités dans `src/lib/tebex.ts` :
 | Évènement Tebex | Effet |
 |---|---|
 | `validation.webhook` | Répond `{ "id": … }` — c'est ce qui valide l'endpoint dans Tebex |
-| `payment.completed` | Statut `PAYEE`, `payeeAt`, et les commandes de **livraison** entrent en file |
-| `payment.refunded` | Statut `REMBOURSEE`, et les commandes de **retrait** entrent en file |
+| `payment.completed` | Statut `LIVREE`, `payeeAt` et `livreeAt` posés, `transactionTebex` enregistré |
+| `payment.refunded` | Statut `REMBOURSEE`. `livreeAt` n'est pas effacé : il reste la trace de la livraison |
 | `payment.dispute.lost` | Idem remboursement |
 | `payment.dispute.opened` | Statut `LITIGE`, **rien n'est retiré** : l'arbitrage n'est pas tranché |
 
@@ -553,99 +550,21 @@ avec l'id fourni par Tebex en clé primaire. Un même évènement reçu deux foi
 webhook qui sert de clé — une commande reçoit plusieurs évènements légitimes
 (paiement, puis éventuellement remboursement).
 
-### Les deux routes du bot
-
-Elles ne sont **pas** protégées par `exigerAdmin()` : l'appelant est un bot, pas
-un navigateur avec une session. Leur authentification est `LIVRAISON_TOKEN`,
-comparé à temps constant (`src/lib/jeton.ts`).
-
-```http
-GET /api/livraison/file
-Authorization: Bearer <LIVRAISON_TOKEN>
-```
-
-```json
-{
-  "lignes": [
-    {
-      "id": "cmsz…",
-      "commande": "kitadmin add Lestoo kenshi",
-      "type": "LIVRAISON",
-      "tentatives": 0,
-      "pseudo": "Lestoo",
-      "numeroCommande": 42
-    }
-  ]
-}
-```
-
-Au plus 20 lignes, les plus anciennes d'abord, et uniquement celles ayant moins
-de 5 tentatives.
-
-```http
-POST /api/livraison/confirmer
-Authorization: Bearer <LIVRAISON_TOKEN>
-Content-Type: application/json
-```
-
-```json
-{
-  "resultats": [
-    { "id": "cmsz…", "succes": true },
-    { "id": "cmsz…", "succes": false, "erreur": "Unknown command" }
-  ]
-}
-```
-
-Réponse :
-
-```json
-{ "recu": 2, "traitees": 2, "executees": 1, "echouees": 1, "commandesLivrees": 0 }
-```
-
-Quand toutes les lignes de **livraison** d'une commande sont exécutées, la
-commande passe en `LIVREE`.
-
-### ⚠ La livraison est « au moins une fois »
-
-Une ligne reste `EN_ATTENTE` jusqu'à confirmation. Si le bot exécute une
-commande puis meurt avant de confirmer, **elle sera resservie et exécutée une
-seconde fois**. C'est inévitable sans transaction distribuée entre le site et le
-serveur Minecraft.
-
-**Les commandes console doivent donc supporter d'être rejouées.** `kitadmin add`
-et `lp user … parent add` le supportent : rejouer n'ajoute rien de plus. Si tu
-ajoutes un jour une commande qui ne le supporte pas — un `give` d'objet, un
-crédit de monnaie — enveloppe-la côté serveur dans une vérification « est-ce
-déjà fait ? », sinon un joueur pourra être servi deux fois.
-
-### Quand une ligne bloque
-
-Après 5 tentatives, une ligne sort de la file : `/api/livraison/file` ne la
-renvoie plus. Sans ce plafond, une commande erronée serait resservie
-indéfiniment. La page de la commande dans l'admin l'affiche en rouge, avec deux
-boutons :
-
-- **Relancer** : remet la ligne en attente et repart de zéro tentative ;
-- **Régénérer la file** : repart des articles de la commande et remplace les
-  lignes en attente ou en échec — utile après avoir corrigé la commande console
-  sur la fiche d'un article. Les lignes déjà exécutées ne bougent pas.
-
 ### Relier le catalogue à Tebex
 
 Chaque kit, grade et pack vendu doit porter le `tebexPackageId` du package
 correspondant chez Tebex. Sans lui, l'article est refusé à la mise au panier
 avec un message clair, et l'admin le signale en rouge dans la liste.
 
-Les commandes de **retrait** (`kitadmin remove …`) sont facultatives : un article
-sans commande de retrait sera bien remboursé, simplement rien ne sera retiré du
-compte. L'admin le signale également.
+Ce que le joueur reçoit réellement en jeu se configure **sur le package, dans
+le tableau de bord Tebex** — pas dans cette admin. Le site ne connaît que le
+prix, le libellé et l'identifiant du package.
 
 ## Déploiement sur Vercel
 
 1. Renseigner les variables d'environnement dans *Settings → Environment
    Variables* : `DATABASE_URL`, `AUTH_SECRET`, `NEXT_PUBLIC_SITE_URL`,
-   `TEBEX_PUBLIC_TOKEN`, `TEBEX_WEBHOOK_SECRET`, `LIVRAISON_TOKEN`.
+   `TEBEX_PUBLIC_TOKEN`, `TEBEX_WEBHOOK_SECRET`.
 2. `npm run build` lance `prisma generate` : rien d'autre à configurer.
 3. **Appliquer les migrations AVANT de pousser** le code qui en dépend, depuis
    ta machine pointée sur la production :

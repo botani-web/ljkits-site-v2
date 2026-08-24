@@ -20,8 +20,6 @@ export type GradeEnEdition = {
   visible: boolean
   achetable: boolean
   heriteDuPrecedent: boolean
-  commandeLivraison: string
-  commandeRetrait: string
   tebexPackageId: number | null
   avantages: string[]
 }
@@ -137,10 +135,6 @@ export function FormulaireGrade({
         <h2 className="mb-4 font-titre text-base uppercase">Vente et livraison</h2>
         <ChampsVenteEtLivraison
           tebexPackageId={grade?.tebexPackageId}
-          commandeLivraison={grade?.commandeLivraison}
-          commandeRetrait={grade?.commandeRetrait}
-          exempleLivraison="lp user {pseudo} parent add ronin"
-          exempleRetrait="lp user {pseudo} parent remove ronin"
           erreurs={etat.champs}
         />
       </section>

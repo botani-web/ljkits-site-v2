@@ -22,8 +22,6 @@ export type PackEnEdition = {
   prixBarreCentimes: number | null
   visible: boolean
   achetable: boolean
-  commandeLivraison: string
-  commandeRetrait: string
   tebexPackageId: number | null
   kitIds: string[]
 }
@@ -176,10 +174,6 @@ export function FormulairePack({
         <h2 className="mb-4 font-titre text-base uppercase">Vente et livraison</h2>
         <ChampsVenteEtLivraison
           tebexPackageId={pack?.tebexPackageId}
-          commandeLivraison={pack?.commandeLivraison}
-          commandeRetrait={pack?.commandeRetrait}
-          exempleLivraison={'kitadmin add {pseudo} yumi\nkitadmin add {pseudo} kitsune'}
-          exempleRetrait={'kitadmin remove {pseudo} yumi\nkitadmin remove {pseudo} kitsune'}
           erreurs={etat.champs}
         />
       </section>

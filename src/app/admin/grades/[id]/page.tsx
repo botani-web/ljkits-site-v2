@@ -45,8 +45,6 @@ export default async function PageModifierGrade({
           visible: grade.visible,
           achetable: grade.achetable,
           heriteDuPrecedent: grade.heriteDuPrecedent,
-          commandeLivraison: grade.commandeLivraison,
-          commandeRetrait: grade.commandeRetrait,
           tebexPackageId: grade.tebexPackageId,
           avantages: grade.avantages.map((avantage) => avantage.texte),
         }}

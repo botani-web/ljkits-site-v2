@@ -67,8 +67,6 @@ function lireFormulaireKit(formData: FormData) {
     achetable: formData.get('achetable') !== null,
     bientot: formData.get('bientot') !== null,
     kitDeDepart: formData.get('kitDeDepart') !== null,
-    commandeLivraison: String(formData.get('commandeLivraison') ?? ''),
-    commandeRetrait: String(formData.get('commandeRetrait') ?? ''),
     tebexPackageId: lireTebexPackageId(formData),
     caracteristiques,
   })

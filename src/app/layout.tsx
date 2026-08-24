@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import { Bungee, Outfit, JetBrains_Mono } from 'next/font/google'
 
+import { SuiviAudience } from '@/components/public/SuiviAudience'
 import { SITE } from '@/lib/site'
 import './globals.css'
 
@@ -64,7 +65,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       lang="fr"
       className={`${bungee.variable} ${outfit.variable} ${jetBrainsMono.variable}`}
     >
-      <body>{children}</body>
+      <body>
+        {children}
+        {/*
+          Le suivi d'audience n'affiche rien. Il est monté ici plutôt que dans
+          PagePublique pour couvrir aussi les pages qui ne s'en servent pas —
+          il s'exclut lui-même de /admin.
+        */}
+        <SuiviAudience />
+      </body>
     </html>
   )
 }

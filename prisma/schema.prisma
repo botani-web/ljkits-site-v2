@@ -67,15 +67,9 @@ model Kit {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  /// Commande console exécutée à la livraison, avec {pseudo} comme marqueur.
-  /// Ex : "kitadmin add {pseudo} kenshi". Vide tant que le kit n'est pas vendu.
-  commandeLivraison String @default("")
-  /// Commande console exécutée en cas de remboursement ou de litige perdu.
-  /// Ex : "kitadmin remove {pseudo} kenshi". Vide = rien à retirer.
-  commandeRetrait   String @default("")
   /// Identifiant numérique du package correspondant chez Tebex.
   /// Obligatoire pour qu'un article achetable puisse entrer dans un panier.
-  tebexPackageId    Int?   @unique
+  tebexPackageId Int? @unique
 
   caracteristiques CaracteristiqueKit[]
   packs            Pack[]
@@ -160,13 +154,8 @@ model Grade {
   /// qui précède dans l'ordre : pas de champ de liaison à maintenir.
   heriteDuPrecedent Boolean @default(false)
 
-  /// Commande console de livraison, avec {pseudo} comme marqueur.
-  /// Ex : "lp user {pseudo} parent add ronin".
-  commandeLivraison String @default("")
-  /// Commande console de retrait, en cas de remboursement ou de litige perdu.
-  commandeRetrait   String @default("")
   /// Identifiant numérique du package correspondant chez Tebex.
-  tebexPackageId    Int?   @unique
+  tebexPackageId Int? @unique
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -206,11 +195,8 @@ model Pack {
   visible   Boolean @default(true)
   achetable Boolean @default(true)
 
-  commandeLivraison String @default("")
-  /// Commande console de retrait, en cas de remboursement ou de litige perdu.
-  commandeRetrait   String @default("")
   /// Identifiant numérique du package correspondant chez Tebex.
-  tebexPackageId    Int?   @unique
+  tebexPackageId Int? @unique
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -284,8 +270,7 @@ model Commande {
   payeeAt   DateTime?
   livreeAt  DateTime?
 
-  lignes          LigneCommande[]
-  lignesLivraison LigneLivraison[]
+  lignes LigneCommande[]
 
   @@index([statut, createdAt])
   /// Sert au garde-fou anti-abus : compter les commandes non payées d'un
@@ -305,65 +290,14 @@ model LigneCommande {
 
   /// Instantanés pris AU MOMENT de l'achat. C'est ce qui permet de supprimer
   /// ou de repricer un article dans l'admin sans réécrire l'historique.
-  libelle           String
-  prixCentimes      Int
-  commandeLivraison String
-  commandeRetrait   String @default("")
+  libelle      String
+  prixCentimes Int
 
   commande Commande @relation(fields: [commandeId], references: [id], onDelete: Cascade)
   kit      Kit?     @relation(fields: [kitId], references: [id], onDelete: SetNull)
   grade    Grade?   @relation(fields: [gradeId], references: [id], onDelete: SetNull)
   pack     Pack?    @relation(fields: [packId], references: [id], onDelete: SetNull)
 
-  @@index([commandeId])
-}
-
-// ---------------------------------------------------------------------------
-// LIVRAISON (phase 3)
-//
-// Le site ne parle jamais au serveur Minecraft. Il dépose des commandes
-// console dans une file ; un bot qui tourne à côté du serveur vient les
-// chercher (GET /api/livraison/file), les exécute en RCON, puis rend compte
-// (POST /api/livraison/confirmer). Le port RCON n'est donc jamais exposé.
-// ---------------------------------------------------------------------------
-
-enum StatutLigneLivraison {
-  EN_ATTENTE
-  EXECUTEE
-  ECHOUEE
-}
-
-/// Sens de l'opération : livrer ce qui a été acheté, ou le retirer après un
-/// remboursement ou un litige perdu.
-enum TypeLivraison {
-  LIVRAISON
-  RETRAIT
-}
-
-model LigneLivraison {
-  id         String        @id @default(cuid())
-  commandeId String
-  type       TypeLivraison @default(LIVRAISON)
-
-  /// Commande console prête à exécuter, pseudo DÉJÀ substitué.
-  /// On ne stocke pas le marqueur {pseudo} ici : le bot n'a aucune
-  /// substitution à faire, il exécute la chaîne telle quelle.
-  commande String
-
-  statut     StatutLigneLivraison @default(EN_ATTENTE)
-  /// Nombre d'exécutions tentées. Au-delà de 5, la ligne sort de la file et
-  /// attend une relance manuelle depuis l'admin : une commande erronée ne
-  /// doit pas être resservie indéfiniment au bot.
-  tentatives Int                  @default(0)
-
-  createdAt      DateTime  @default(now())
-  executeeAt     DateTime?
-  derniereErreur String?
-
-  commandeClient Commande @relation(fields: [commandeId], references: [id], onDelete: Cascade)
-
-  /// La requête du bot : les lignes en attente, les plus anciennes d'abord.
-  @@index([statut, tentatives, createdAt])
   @@index([commandeId])
 }
 
@@ -488,4 +422,53 @@ model Reglages {
   updatedAt DateTime @updatedAt
 
   @@map("reglages")
+}
+
+// ---------------------------------------------------------------------------
+// AUDIENCE
+//
+// Suivi maison des pages vues, pour /admin/stats. Volontairement minimal :
+// aucune adresse IP, aucun user-agent, aucun cookie. Un identifiant de visite
+// anonyme, tiré au hasard et rangé dans le sessionStorage du navigateur, suffit
+// à distinguer deux visiteurs sans jamais identifier personne.
+//
+// Les pages /admin ne sont jamais enregistrées : ce sont les tiennes, elles
+// fausseraient les chiffres.
+// ---------------------------------------------------------------------------
+
+/// Le type d'appareil, déduit côté client de la largeur et du pointeur.
+enum TypeAppareil {
+  MOBILE
+  TABLETTE
+  BUREAU
+}
+
+model VuePage {
+  id String @id @default(cuid())
+
+  /// Chemin réel visité : "/", "/kits/kitsune", "/boutique"…
+  /// Sans query string : elle n'apporte rien et peut contenir n'importe quoi.
+  chemin String
+
+  /// Identifiant de visite anonyme, constant le temps d'un onglet.
+  /// C'est lui qui permet de compter des VISITEURS et pas seulement des vues.
+  visiteId String
+
+  /// Temps passé sur la page, en millisecondes. `null` tant que le visiteur
+  /// n'a pas quitté la page — une vue sans durée est une page encore ouverte,
+  /// ou un départ que le navigateur n'a pas eu le temps de signaler.
+  dureeMs Int?
+
+  /// Domaine de provenance ("google.com"), jamais l'URL complète.
+  /// `null` = accès direct, ou navigation interne au site.
+  source String?
+
+  appareil TypeAppareil
+
+  createdAt DateTime @default(now())
+
+  /// Les trois lectures de /admin/stats : par période, par page, par visiteur.
+  @@index([createdAt])
+  @@index([chemin, createdAt])
+  @@index([visiteId])
 }

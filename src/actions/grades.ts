@@ -38,8 +38,6 @@ function lireFormulaireGrade(formData: FormData) {
     visible: formData.get('visible') !== null,
     achetable: formData.get('achetable') !== null,
     heriteDuPrecedent: formData.get('heriteDuPrecedent') !== null,
-    commandeLivraison: String(formData.get('commandeLivraison') ?? ''),
-    commandeRetrait: String(formData.get('commandeRetrait') ?? ''),
     tebexPackageId: lireTebexPackageId(formData),
     avantages,
   })

@@ -50,8 +50,6 @@ export default async function PageModifierPack({
           prixBarreCentimes: pack.prixBarreCentimes,
           visible: pack.visible,
           achetable: pack.achetable,
-          commandeLivraison: pack.commandeLivraison,
-          commandeRetrait: pack.commandeRetrait,
           tebexPackageId: pack.tebexPackageId,
           kitIds: pack.kits.map((kit) => kit.id),
         }}

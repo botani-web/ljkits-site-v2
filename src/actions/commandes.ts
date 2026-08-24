@@ -148,8 +148,6 @@ export async function creerCommande(
         kit: { connect: { id: kit.id } },
         libelle: `Kit ${kit.nom}`,
         prixCentimes: kit.prixEurosCentimes,
-        commandeLivraison: kit.commandeLivraison,
-        commandeRetrait: kit.commandeRetrait,
       })
       packageIds.push(kit.tebexPackageId)
       continue
@@ -172,8 +170,6 @@ export async function creerCommande(
         grade: { connect: { id: grade.id } },
         libelle: `Grade ${grade.nom}`,
         prixCentimes: grade.prixEurosCentimes,
-        commandeLivraison: grade.commandeLivraison,
-        commandeRetrait: grade.commandeRetrait,
       })
       packageIds.push(grade.tebexPackageId)
       continue
@@ -193,8 +189,6 @@ export async function creerCommande(
       pack: { connect: { id: pack.id } },
       libelle: pack.nom,
       prixCentimes: pack.prixEurosCentimes,
-      commandeLivraison: pack.commandeLivraison,
-      commandeRetrait: pack.commandeRetrait,
     })
     packageIds.push(pack.tebexPackageId)
   }

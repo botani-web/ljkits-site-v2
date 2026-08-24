@@ -83,9 +83,6 @@ export default async function TableauDeBordGrades() {
                 <p className="font-mono text-[11px] tracking-wide text-gris">
                   {grade.slug} · {grade._count.avantages} avantage
                   {grade._count.avantages > 1 ? 's' : ''}
-                  {grade.achetable && grade.commandeLivraison.trim() === '' && (
-                    <span className="text-rouge"> · pas de commande de livraison</span>
-                  )}
                   {grade.achetable && grade.tebexPackageId === null && (
                     <span className="text-rouge"> · pas d’ID Tebex</span>
                   )}
