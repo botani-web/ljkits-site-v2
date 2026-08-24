@@ -175,7 +175,7 @@ export default async function PageKit({ params }: { params: Promise<{ slug: stri
           <div className="relative z-10">
             <Link
               href="/kits"
-              className="mb-5 inline-block font-mono text-[12.5px] tracking-wide text-gris uppercase transition-colors hover:text-creme"
+              className="-my-3 mb-2 inline-flex min-h-11 items-center font-mono text-[12.5px] tracking-wide text-gris uppercase transition-colors hover:text-creme"
             >
               ← Tous les kits
             </Link>
@@ -359,7 +359,7 @@ export default async function PageKit({ params }: { params: Promise<{ slug: stri
 
           <Link
             href="/kits"
-            className="mt-5 inline-block font-mono text-[12.5px] tracking-wide text-gris uppercase transition-colors hover:text-creme"
+            className="mt-2 -mb-3 inline-flex min-h-11 items-center font-mono text-[12.5px] tracking-wide text-gris uppercase transition-colors hover:text-creme"
           >
             Voir les {tousLesKits.length} kits →
           </Link>

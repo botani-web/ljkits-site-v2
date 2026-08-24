@@ -68,7 +68,7 @@ export function ChampPseudo({
               spellCheck={false}
               aria-invalid={erreur}
               aria-describedby={erreur ? 'erreur-pseudo' : undefined}
-              className="min-w-0 flex-1 rounded-[7px] border border-bord bg-nuit px-3 py-2.5 font-mono text-sm text-white placeholder:text-[#5e5473] focus:border-soupe focus:outline-none"
+              className="min-h-11 min-w-0 flex-1 rounded-[7px] border border-bord bg-nuit px-3 py-2.5 font-mono text-sm text-white placeholder:text-[#5e5473] focus:border-soupe focus:outline-none"
             />
             <button
               type="button"
@@ -105,7 +105,7 @@ export function ChampPseudo({
               setSaisie(pseudo)
               onChanger()
             }}
-            className="ml-auto shrink-0 text-xs text-gris underline underline-offset-2 transition-colors hover:text-white"
+            className="-my-2 ml-auto flex min-h-11 shrink-0 items-center text-xs text-gris underline underline-offset-2 transition-colors hover:text-white"
           >
             Changer
           </button>

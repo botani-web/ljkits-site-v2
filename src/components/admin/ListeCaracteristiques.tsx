@@ -64,7 +64,7 @@ export function ListeCaracteristiques({
               onChange={(e) => modifier(ligne.cle, 'libelle', e.target.value)}
               placeholder="Libellé"
               aria-label="Libellé de la caractéristique"
-              className="w-2/5 rounded-lg border border-bord bg-nuit px-3 py-2 text-sm text-creme placeholder:text-gris/60 focus:border-soupe focus:outline-none"
+              className="w-2/5 min-w-0 rounded-lg border border-bord bg-nuit px-3 py-2 text-sm text-creme placeholder:text-gris/60 focus:border-soupe focus:outline-none"
             />
             <input
               name="caracValeur"
@@ -72,7 +72,7 @@ export function ListeCaracteristiques({
               onChange={(e) => modifier(ligne.cle, 'valeur', e.target.value)}
               placeholder="Valeur"
               aria-label="Valeur de la caractéristique"
-              className="flex-1 rounded-lg border border-bord bg-nuit px-3 py-2 text-sm text-creme placeholder:text-gris/60 focus:border-soupe focus:outline-none"
+              className="min-w-0 flex-1 rounded-lg border border-bord bg-nuit px-3 py-2 text-sm text-creme placeholder:text-gris/60 focus:border-soupe focus:outline-none"
             />
             <button
               type="button"

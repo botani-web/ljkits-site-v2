@@ -6,6 +6,9 @@
  * C'est une bascule, comme dans la maquette : recliquer retire l'article.
  * On ne vend rien en plusieurs exemplaires — un grade acheté deux fois n'a
  * aucun sens.
+ *
+ * `min-h-11` partout : 44 px est le plancher d'une zone tactile confortable,
+ * et ce bouton est le geste principal de la page sur mobile.
  */
 export function BoutonAjout({
   dansLePanier,
@@ -22,8 +25,8 @@ export function BoutonAjout({
   pleineLargeur?: boolean
   onClick: () => void
 }) {
-  const base = `text-center font-mono text-[12.5px] font-bold tracking-wide transition-all rounded-[7px] px-4 py-2.5 ${
-    pleineLargeur ? 'mt-auto block w-full' : 'inline-block'
+  const base = `flex min-h-11 items-center justify-center rounded-[7px] px-4 py-2.5 text-center font-mono text-[12.5px] font-bold tracking-wide transition-all ${
+    pleineLargeur ? 'mt-auto w-full' : 'inline-flex'
   }`
 
   if (indisponible) {

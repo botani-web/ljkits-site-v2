@@ -20,7 +20,7 @@ export function BoutonSoumettre({
     <button
       type="submit"
       disabled={pending}
-      className="rounded-lg bg-linear-[135deg] from-soupe to-or px-5 py-2.5 text-sm font-bold text-[#1A1005] transition-all hover:shadow-[0_4px_18px_rgba(254,147,1,.35)] disabled:cursor-not-allowed disabled:opacity-60 disabled:shadow-none"
+      className="inline-flex min-h-11 items-center justify-center rounded-lg bg-linear-[135deg] from-soupe to-or px-5 text-sm font-bold text-[#1A1005] transition-all hover:shadow-[0_4px_18px_rgba(254,147,1,.35)] disabled:cursor-not-allowed disabled:opacity-60 disabled:shadow-none"
     >
       {pending ? enCours : children}
     </button>

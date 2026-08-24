@@ -6,7 +6,19 @@
  * coup d'œil. Les prix sont en centimes, comme partout.
  */
 
-export type GradeBoutique = {
+/**
+ * L'article est relié à un package Tebex, donc réellement payable.
+ *
+ * `creerCommande` refuse tout article dont `tebexPackageId` est null
+ * (cf. src/actions/commandes.ts). Sans ce drapeau côté carte, le joueur
+ * remplirait son panier pour se heurter au refus à la validation : on préfère
+ * un bouton inerte et honnête à un cul-de-sac au paiement.
+ */
+type Payable = {
+  paiementPret: boolean
+}
+
+export type GradeBoutique = Payable & {
   slug: string
   nom: string
   kanji: string | null
@@ -22,7 +34,7 @@ export type GradeBoutique = {
   heriteDe: string | null
 }
 
-export type KitBoutique = {
+export type KitBoutique = Payable & {
   slug: string
   nom: string
   kanji: string | null
@@ -30,11 +42,17 @@ export type KitBoutique = {
   descriptionCourte: string
   prixCoins: number
   prixEurosCentimes: number
+  /**
+   * GRATUIT = kit classique, EXCLUSIF = kit maison. C'est ce qui range la
+   * carte dans l'un des deux rayons et ce sur quoi portent les filtres
+   * rapides de la grille.
+   */
+  type: 'GRATUIT' | 'EXCLUSIF'
   bientot: boolean
   achetable: boolean
 }
 
-export type PackBoutique = {
+export type PackBoutique = Payable & {
   slug: string
   nom: string
   description: string

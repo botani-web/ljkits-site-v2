@@ -36,9 +36,15 @@ export function Panier({
   onPayer: () => void
 }) {
   return (
+    // `min-w-0` : sous lg, le panier et le catalogue partagent la MÊME colonne
+    // de grille. Sans lui, l'élément prend son `min-width: auto`, la piste se
+    // dimensionne sur le contenu min du panier — dont le champ pseudo, un
+    // <input> dont la largeur intrinsèque vaut ~177 px — et c'est toute la
+    // boutique qui déborde de 60 px à 360 px. Le `overflow-x: hidden` du body
+    // masquait le symptôme sans régler la cause.
     <aside
       id="panier"
-      className="rounded-xl border border-bord bg-charbon p-5.5 lg:sticky lg:top-22"
+      className="min-w-0 rounded-xl border border-bord bg-charbon p-5.5 lg:sticky lg:top-22"
     >
       <h2 className="font-titre text-[17px] uppercase">Ton panier</h2>
       <p className="mt-1 mb-4 text-[13px] text-gris">
@@ -69,11 +75,13 @@ export function Panier({
               <div className="font-mono text-sm font-bold text-or">
                 {formaterEuros(article.prixCentimes)}
               </div>
+              {/* -m-2 : la zone tactile fait 44 px sans pour autant faire
+                  grossir la ligne du panier, qui reste compacte. */}
               <button
                 type="button"
                 onClick={() => onRetirer(article)}
                 aria-label={`Retirer ${article.nom}`}
-                className="px-0.5 text-[17px] leading-none text-gris transition-colors hover:text-oni"
+                className="-m-2 flex size-11 shrink-0 items-center justify-center text-[17px] leading-none text-gris transition-colors hover:text-oni"
               >
                 ×
               </button>
@@ -94,7 +102,7 @@ export function Panier({
         type="button"
         onClick={onPayer}
         disabled={!pretAPayer}
-        className="mt-4 block w-full rounded-[7px] bg-soupe px-4 py-2.5 text-center font-mono text-[12.5px] font-bold tracking-wide text-[#1a0f00] transition-all hover:-translate-y-px hover:bg-or disabled:cursor-default disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:bg-soupe"
+        className="mt-4 flex min-h-11 w-full items-center justify-center rounded-[7px] bg-soupe px-4 text-center font-mono text-[12.5px] font-bold tracking-wide text-[#1a0f00] transition-all hover:-translate-y-px hover:bg-or disabled:cursor-default disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:bg-soupe"
       >
         Passer au paiement
       </button>

@@ -104,10 +104,16 @@ export default async function Accueil() {
 
           {/* --- colonne de tuiles --- */}
           <div className="flex flex-col gap-5">
+            {/*
+              La tuile « Voter » a laissé la place à la boutique. Le vote reste
+              atteignable par la section /#vote plus bas et par le pied de page ;
+              la boutique, elle, n'avait aucun point d'entrée depuis le hero.
+              Même taille, même dégradé, même poids visuel qu'avant.
+            */}
             <Tuile
-              href="/#vote"
-              titre="Voter"
-              sousTitre="+250 coins par vote, récompenses quotidiennes"
+              href="/boutique"
+              titre="Boutique"
+              sousTitre="Grades et kits — rien qui ne se gagne aussi en jeu"
               className="flex-1 bg-linear-[135deg] from-soupe to-or text-[#1A1005] shadow-[0_10px_34px_rgba(254,147,1,.22)]"
               icone={
                 <svg
@@ -115,12 +121,12 @@ export default async function Accueil() {
                   fill="none"
                   stroke="#1A1005"
                   strokeWidth="2"
+                  strokeLinejoin="round"
                   aria-hidden="true"
                   className="size-6"
                 >
-                  <path d="m9 12 2 2 5-5" />
-                  <path d="M5 8h14l-1.5 12.5a1.5 1.5 0 0 1-1.5 1.3h-8a1.5 1.5 0 0 1-1.5-1.3L5 8Z" />
-                  <path d="M9 8V6a3 3 0 0 1 6 0v2" />
+                  <path d="M4.5 8h15l-1.2 11.4a1.6 1.6 0 0 1-1.6 1.4H7.3a1.6 1.6 0 0 1-1.6-1.4L4.5 8Z" />
+                  <path d="M8.8 10.5V7a3.2 3.2 0 0 1 6.4 0v3.5" />
                 </svg>
               }
             />
@@ -293,17 +299,22 @@ export default async function Accueil() {
               return (
                 <div
                   key={site.cle}
-                  className="flex items-center justify-between gap-4.5 rounded-2xl border border-bord bg-charbon px-6 py-5 transition-colors hover:border-[#43305E]"
+                  // `flex-wrap` : à 360 px, « ServeursMinecraft.org » et le
+                  // bouton ne tiennent pas sur une ligne. Le bouton passe
+                  // dessous plutôt que de pousser la page hors de l'écran.
+                  className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-bord bg-charbon px-5 py-5 transition-colors hover:border-[#43305E] sm:flex-nowrap sm:gap-4.5 sm:px-6"
                 >
-                  <div className="flex items-center gap-4">
+                  <div className="flex min-w-0 items-center gap-4">
                     <div
                       aria-hidden="true"
-                      className="flex size-11 items-center justify-center rounded-xl bg-braise font-titre text-base text-soupe"
+                      className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-braise font-titre text-base text-soupe"
                     >
                       {site.sigle}
                     </div>
-                    <div>
-                      <div className="text-[16.5px] font-bold">{site.nom}</div>
+                    {/* min-w-0 + truncate : sans les deux, le nom du site
+                        impose sa largeur au conteneur et rien ne rétrécit. */}
+                    <div className="min-w-0">
+                      <div className="truncate text-[16.5px] font-bold">{site.nom}</div>
                       <div className="font-mono text-[13.5px] text-gris">
                         {inscrit ? 'Disponible' : 'Bientôt'}
                       </div>

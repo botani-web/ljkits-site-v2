@@ -17,7 +17,10 @@ export function OngletsAdmin() {
   const chemin = usePathname()
 
   return (
-    <nav className="mx-auto flex max-w-contenu gap-1 px-6">
+    // Six onglets ne tiennent pas dans 360 px. Défilement horizontal plutôt que
+    // retour à la ligne : la barre garde une hauteur d'une ligne sur toutes les
+    // largeurs, et le trait actif reste sur la même ligne que le contenu.
+    <nav className="mx-auto flex max-w-contenu gap-1 overflow-x-auto px-6">
       {ONGLETS.map((onglet) => {
         const actif = chemin.startsWith(onglet.href)
 
@@ -26,7 +29,7 @@ export function OngletsAdmin() {
             key={onglet.href}
             href={onglet.href}
             aria-current={actif ? 'page' : undefined}
-            className={`-mb-px border-b-2 px-4 py-2.5 text-sm font-semibold transition-colors ${
+            className={`-mb-px flex min-h-11 shrink-0 items-center border-b-2 px-4 text-sm font-semibold whitespace-nowrap transition-colors ${
               actif
                 ? 'border-soupe text-soupe'
                 : 'border-transparent text-gris hover:text-creme'

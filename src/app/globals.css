@@ -138,6 +138,22 @@
   }
 }
 
+/*
+  Conteneur qui défile sans afficher sa barre.
+  Réservé aux rangées de puces courtes qui tiennent déjà à l'écran aux largeurs
+  visées : le défilement n'y est qu'un filet de sécurité (police système plus
+  large, zoom texte), pas le mode de consultation normal. À ne pas utiliser sur
+  un contenu réellement plus large que sa boîte — on masquerait alors la seule
+  indication qu'il reste quelque chose à voir.
+*/
+@utility sans-barre-de-defilement {
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
 /* La pastille verte pulsante du statut « en ligne ». */
 @utility pastille-statut {
   width: 8px;
@@ -279,8 +295,22 @@
     border-top: 1px solid var(--color-bord);
   }
 
+  /*
+    Le conteneur posé par le renderer de src/lib/markdown.ts. Un tableau de
+    trois colonnes déborde d'un téléphone : il défile dans sa boîte plutôt que
+    de pousser la page entière vers la droite.
+    `-mx` + `px` : le défilement va d'un bord à l'autre de la carte, sans
+    couper le tableau au ras du texte.
+  */
+  .markdown .tableau-defilant {
+    overflow-x: auto;
+    margin-inline: -18px;
+    padding-inline: 18px;
+  }
+
   .markdown table {
     width: 100%;
+    min-width: 420px;
     border-collapse: collapse;
     font-size: 14.5px;
   }

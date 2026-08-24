@@ -88,7 +88,7 @@ export function TableauClassement({
               role="tab"
               aria-selected={estActif}
               onClick={() => setActif(option.cle)}
-              className={`-mb-px border-b-2 px-4.5 py-2.5 font-mono text-[13px] font-bold tracking-wide uppercase transition-colors ${
+              className={`-mb-px inline-flex min-h-11 items-center border-b-2 px-4.5 font-mono text-[13px] font-bold tracking-wide uppercase transition-colors ${
                 estActif ? 'border-soupe text-or' : 'border-transparent text-gris hover:text-white'
               }`}
             >

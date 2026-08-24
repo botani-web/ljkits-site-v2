@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 
+import { BandeauPositionnement } from '@/components/boutique/BandeauPositionnement'
 import { Boutique } from '@/components/boutique/Boutique'
 import type { GradeBoutique, KitBoutique, PackBoutique } from '@/components/boutique/types'
 import { PagePublique } from '@/components/public/PagePublique'
@@ -11,7 +12,7 @@ export const revalidate = 3600 // une heure
 export const metadata: Metadata = {
   title: 'Boutique',
   description:
-    'Soutiens LJKITS et débloque des kits maison et des cosmétiques. Tout le contenu reste obtenable en jeu, sans payer.',
+    'Soutiens LJKITS et débloque des kits et des cosmétiques. Tout le contenu reste obtenable en jeu, sans payer.',
   openGraph: {
     type: 'website',
     title: 'Boutique — LJKITS',
@@ -30,7 +31,9 @@ export default async function PageBoutique() {
       include: { avantages: { orderBy: { ordre: 'asc' }, select: { texte: true } } },
     }),
     // Un kit n'est proposé ici que s'il est explicitement mis en vente ET
-    // qu'il a un prix en euros. `bientot` ne l'exclut pas : il s'affiche,
+    // qu'il a un prix en euros. Le filtre ne distingue pas les classiques des
+    // exclusifs : c'est `type` qui les range ensuite dans l'un ou l'autre
+    // rayon, côté client. `bientot` n'exclut pas non plus : le kit s'affiche,
     // mais son bouton est inerte.
     prisma.kit.findMany({
       where: { visible: true, achetable: true, prixEurosCentimes: { not: null } },
@@ -53,6 +56,7 @@ export default async function PageBoutique() {
     etiquette: grade.etiquette,
     prixEurosCentimes: grade.prixEurosCentimes,
     achetable: grade.achetable,
+    paiementPret: grade.tebexPackageId !== null,
     avantages: grade.avantages.map((avantage) => avantage.texte),
     heriteDe: grade.heriteDuPrecedent && index > 0 ? gradesEnBase[index - 1].nom : null,
   }))
@@ -67,8 +71,10 @@ export default async function PageBoutique() {
     // Le `where` ci-dessus garantit que ce n'est pas null ; TypeScript ne le
     // sait pas, d'où le `?? 0` défensif.
     prixEurosCentimes: kit.prixEurosCentimes ?? 0,
+    type: kit.type,
     bientot: kit.bientot,
     achetable: kit.achetable,
+    paiementPret: kit.tebexPackageId !== null,
   }))
 
   const packs: PackBoutique[] = packsEnBase.map((pack) => ({
@@ -78,45 +84,31 @@ export default async function PageBoutique() {
     prixEurosCentimes: pack.prixEurosCentimes,
     prixBarreCentimes: pack.prixBarreCentimes,
     achetable: pack.achetable,
+    paiementPret: pack.tebexPackageId !== null,
   }))
 
   return (
     <PagePublique>
-      <header className="halo-hero overflow-hidden px-6 pt-[150px] pb-2">
+      {/*
+        Le bandeau passe AVANT le hero, et pas dans un encart sous le titre :
+        c'est l'argument central du serveur, il se lit avant le mot
+        « boutique ». Le pt- dégage la barre de navigation flottante.
+      */}
+      <div className="px-6 pt-[104px]">
+        <BandeauPositionnement />
+      </div>
+
+      <header className="halo-hero overflow-hidden px-6 pt-8 pb-2">
         <div className="mx-auto max-w-contenu text-center">
           <p className="mb-3.5 font-mono text-xs font-bold tracking-[3px] text-oni uppercase [text-shadow:0_0_18px_rgba(233,40,19,.35)]">
             Soutenir le serveur
           </p>
-          <h1 className="font-titre text-[clamp(30px,5vw,54px)] leading-[1.05] uppercase">
+          <h1 className="font-titre text-[clamp(28px,5vw,54px)] leading-[1.05] uppercase">
             La boutique <span className="texte-accent">LJKITS</span>
           </h1>
-          <p className="mx-auto mt-4 max-w-[560px] text-[17px] text-gris">
-            Des cosmétiques et des kits maison. Rien qui ne se gagne aussi à la soupe et à
-            l’épée.
+          <p className="mx-auto mt-4 max-w-[560px] text-[16px] text-gris sm:text-[17px]">
+            Des cosmétiques et des kits. Rien qui ne se gagne aussi à la soupe et à l’épée.
           </p>
-
-          <div className="mx-auto mt-9 flex max-w-[860px] items-start gap-4 rounded-[10px] border border-bord bg-charbon px-6 py-5 text-left">
-            <div
-              aria-hidden="true"
-              className="pt-0.5 font-titre text-xl leading-none text-vert"
-            >
-              ✓
-            </div>
-            <div>
-              <h2 className="mb-1.5 text-[15.5px] font-bold">
-                Zéro pay-to-win, et c’est vérifiable
-              </h2>
-              <p className="text-[14.5px] text-gris">
-                Chaque kit vendu ici s’obtient{' '}
-                <strong className="font-semibold text-white">aussi en coins</strong>, gagnés en
-                jouant — le prix en jeu est affiché sur chaque carte. Les grades ne donnent{' '}
-                <strong className="font-semibold text-white">
-                  aucun avantage en combat
-                </strong>{' '}
-                : que du cosmétique et du confort.
-              </p>
-            </div>
-          </div>
         </div>
       </header>
 

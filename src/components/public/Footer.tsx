@@ -17,7 +17,7 @@ export async function Footer() {
       <footer className="mt-10 border-t border-bord bg-charbon px-6 pt-13 pb-9">
         <div className="mx-auto flex max-w-contenu flex-wrap justify-between gap-8">
           <div className="max-w-[340px]">
-            <Link href="/" aria-label="LJKITS — retour à l’accueil">
+            <Link href="/" aria-label="LJKITS — retour à l’accueil" className="inline-flex min-h-11 items-center">
               <Image
                 src="/logo-texte.png"
                 alt="LJKITS"
@@ -45,7 +45,7 @@ export async function Footer() {
               href={discord}
               target="_blank"
               rel="noopener noreferrer"
-              className="mb-2.5 block text-[15px] text-creme opacity-85 transition hover:text-or hover:opacity-100"
+              className="-my-1 flex min-h-11 items-center text-[15px] text-creme opacity-85 transition hover:text-or hover:opacity-100"
             >
               Discord
             </a>
@@ -53,7 +53,7 @@ export async function Footer() {
           </ColonneFooter>
 
           <ColonneFooter titre="Jouer">
-            <BoutonCopieIp className="mb-2.5 block text-left text-[15px] text-creme opacity-85 transition hover:text-or hover:opacity-100">
+            <BoutonCopieIp className="-my-1 flex min-h-11 items-center text-left text-[15px] text-creme opacity-85 transition hover:text-or hover:opacity-100">
               {ip}
             </BoutonCopieIp>
             <span className="block text-[15px] text-creme opacity-85">Java 1.8 → 1.21+</span>
@@ -93,7 +93,7 @@ function LienFooter({ href, children }: { href: string; children: React.ReactNod
   return (
     <Link
       href={href}
-      className="mb-2.5 block text-[15px] text-creme opacity-85 transition hover:text-or hover:opacity-100"
+      className="-my-1 flex min-h-11 items-center text-[15px] text-creme opacity-85 transition hover:text-or hover:opacity-100"
     >
       {children}
     </Link>

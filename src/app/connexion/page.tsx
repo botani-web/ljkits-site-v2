@@ -26,7 +26,7 @@ export default async function PageConnexion() {
   return (
     <main className="flex min-h-screen items-center justify-center px-6 py-16">
       <div className="w-full max-w-[400px]">
-        <Link href="/" className="mb-8 flex justify-center" aria-label="Retour à l’accueil">
+        <Link href="/" className="mb-8 flex min-h-11 items-center justify-center" aria-label="Retour à l’accueil">
           <Image src="/logo-texte.png" alt="LJKITS" width={110} height={30} priority />
         </Link>
 
@@ -40,7 +40,10 @@ export default async function PageConnexion() {
         </div>
 
         <p className="mt-6 text-center text-[13px] text-gris">
-          <Link href="/" className="transition-colors hover:text-creme">
+          <Link
+            href="/"
+            className="-my-3.5 inline-flex min-h-11 items-center transition-colors hover:text-creme"
+          >
             ← Retour au site
           </Link>
         </p>

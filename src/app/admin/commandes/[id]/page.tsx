@@ -49,7 +49,7 @@ export default async function PageCommande({
       <div className="mb-6">
         <Link
           href="/admin/commandes"
-          className="text-[13px] text-gris transition-colors hover:text-creme"
+          className="-my-3.5 inline-flex min-h-11 items-center text-[13px] text-gris transition-colors hover:text-creme"
         >
           ← Retour aux commandes
         </Link>

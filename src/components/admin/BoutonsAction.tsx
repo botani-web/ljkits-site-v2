@@ -42,7 +42,7 @@ export function BoutonOrdre({
       <BoutonEnvoi
         disabled={desactive}
         aria-label={direction === 'haut' ? 'Monter d’un cran' : 'Descendre d’un cran'}
-        className="flex size-7 items-center justify-center rounded border border-bord text-gris transition-colors hover:border-soupe hover:text-soupe disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:border-bord disabled:hover:text-gris"
+        className="flex size-11 items-center justify-center rounded border border-bord text-gris transition-colors hover:border-soupe hover:text-soupe disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:border-bord disabled:hover:text-gris sm:size-7"
       >
         {direction === 'haut' ? '↑' : '↓'}
       </BoutonEnvoi>
@@ -76,7 +76,7 @@ export function BoutonBascule({
       <BoutonEnvoi
         aria-pressed={actif}
         title={`${label} — ${actif ? 'activé' : 'désactivé'}, cliquer pour basculer`}
-        className={`rounded border px-2.5 py-1 font-mono text-[10.5px] font-bold tracking-wide uppercase transition-colors ${
+        className={`flex min-h-11 items-center rounded border px-2.5 font-mono text-[10.5px] font-bold tracking-wide uppercase transition-colors sm:min-h-0 sm:py-1 ${
           actif
             ? couleursActives
             : 'border-bord text-gris/60 hover:border-[#43305E] hover:text-gris'
@@ -106,7 +106,7 @@ export function BoutonSupprimer({
       <button
         type="button"
         onClick={() => setConfirmation(true)}
-        className="rounded-lg border border-bord px-3 py-1.5 text-[13px] font-semibold text-gris transition-colors hover:border-rouge hover:text-rouge"
+        className="inline-flex min-h-11 items-center rounded-lg border border-bord px-3 text-[13px] font-semibold text-gris transition-colors hover:border-rouge hover:text-rouge sm:min-h-0 sm:py-1.5"
       >
         {libelle}
       </button>
@@ -115,13 +115,13 @@ export function BoutonSupprimer({
 
   return (
     <form action={action} className="flex items-center gap-1.5">
-      <BoutonEnvoi className="rounded-lg border border-rouge bg-rouge/15 px-3 py-1.5 text-[13px] font-bold text-rouge transition-colors hover:bg-rouge/25 disabled:opacity-60">
+      <BoutonEnvoi className="inline-flex min-h-11 items-center rounded-lg border border-rouge bg-rouge/15 px-3 text-[13px] font-bold text-rouge transition-colors hover:bg-rouge/25 disabled:opacity-60 sm:min-h-0 sm:py-1.5">
         Confirmer
       </BoutonEnvoi>
       <button
         type="button"
         onClick={() => setConfirmation(false)}
-        className="rounded-lg border border-bord px-3 py-1.5 text-[13px] text-gris transition-colors hover:text-creme"
+        className="inline-flex min-h-11 items-center rounded-lg border border-bord px-3 text-[13px] text-gris transition-colors hover:text-creme sm:min-h-0 sm:py-1.5"
       >
         Annuler
       </button>

@@ -106,7 +106,7 @@ export default async function TableauDeBordReglement() {
                 <div className="flex items-center gap-2">
                   <Link
                     href={`/admin/reglement/${section.id}`}
-                    className="rounded-lg border border-bord px-3 py-1.5 text-[13px] font-semibold text-gris transition-colors hover:border-soupe hover:text-soupe"
+                    className="inline-flex min-h-11 items-center rounded-lg border border-bord px-3 text-[13px] font-semibold text-gris transition-colors hover:border-soupe hover:text-soupe sm:min-h-0 sm:py-1.5"
                   >
                     Modifier
                   </Link>

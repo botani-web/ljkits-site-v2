@@ -14,6 +14,7 @@
     "db:migrate:status": "prisma migrate status",
     "db:seed": "tsx prisma/seed.ts",
     "db:seed:boutique": "tsx prisma/seed.ts --boutique",
+    "db:seed:prix": "tsx prisma/seed.ts --prix",
     "db:studio": "prisma studio"
   },
   "dependencies": {

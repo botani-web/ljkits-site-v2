@@ -14,7 +14,10 @@ type Filtre = 'tous' | 'GRATUIT' | 'EXCLUSIF'
 
 const FILTRES: { cle: Filtre; label: string }[] = [
   { cle: 'tous', label: 'Tous' },
-  { cle: 'GRATUIT', label: 'En coins' },
+  // « Classiques » et non « En coins » : les deux familles se débloquent en
+  // coins, et les deux sont désormais aussi vendues en euros. Ce qui les
+  // distingue, c'est leur origine — historiques d'un côté, maison de l'autre.
+  { cle: 'GRATUIT', label: 'Classiques' },
   { cle: 'EXCLUSIF', label: 'Exclusifs' },
 ]
 
@@ -35,7 +38,7 @@ export function GrilleKits({ kits }: { kits: KitEnCarte[] }) {
               type="button"
               onClick={() => setFiltre(option.cle)}
               aria-pressed={actif}
-              className={`rounded-lg border px-3.5 py-2 font-mono text-[12.5px] font-bold tracking-wide uppercase transition-colors ${
+              className={`inline-flex min-h-11 items-center rounded-lg border px-3.5 font-mono text-[12.5px] font-bold tracking-wide uppercase transition-colors ${
                 actif
                   ? 'border-soupe bg-soupe text-[#1a0f00]'
                   : 'border-bord text-gris hover:border-[#3d2f5c] hover:text-white'

@@ -62,7 +62,7 @@ export function ListeAvantages({
               }
               placeholder="Préfixe dans le chat et le TAB"
               aria-label="Avantage"
-              className="flex-1 rounded-lg border border-bord bg-nuit px-3 py-2 text-sm text-creme placeholder:text-gris/60 focus:border-soupe focus:outline-none"
+              className="min-w-0 flex-1 rounded-lg border border-bord bg-nuit px-3 py-2 text-sm text-creme placeholder:text-gris/60 focus:border-soupe focus:outline-none"
             />
             <button
               type="button"

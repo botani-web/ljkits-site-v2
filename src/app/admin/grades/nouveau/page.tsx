@@ -11,7 +11,7 @@ export default function PageNouveauGrade() {
       <div className="mb-6">
         <Link
           href="/admin/grades"
-          className="text-[13px] text-gris transition-colors hover:text-creme"
+          className="-my-3.5 inline-flex min-h-11 items-center text-[13px] text-gris transition-colors hover:text-creme"
         >
           ← Retour aux grades
         </Link>

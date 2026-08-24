@@ -72,14 +72,22 @@ identifiants du seed.
 | `npm run db:diff` | Affiche l'écart entre la base et le schéma, sans rien exécuter |
 | `npm run db:seed` | (Re)peuple **tout** le contenu de référence — idempotent |
 | `npm run db:seed:boutique` | Peuple **uniquement** grades et packs, sans toucher aux kits ni au règlement |
+| `npm run db:seed:prix` | Écrit **uniquement** le prix en euros et la mise en vente des kits — aucun texte touché |
 | `npm run db:studio` | Interface graphique Prisma sur la base |
 
 > ⚠ `db:seed` **réécrit** le contenu de référence : les 29 kits, leur ordre et
 > les 7 sections de règlement listés dans `prisma/seed.ts` reprennent leurs
 > valeurs d'origine. Les kits que tu as créés depuis l'admin ne sont pas touchés.
 >
-> Sur une base **déjà en service**, préfère `npm run db:seed:boutique` : il ne
-> crée que les grades et les packs et laisse les kits et le règlement tels quels.
+> Sur une base **déjà en service**, préfère un seed partiel :
+>
+> - `npm run db:seed:boutique` ne crée que les grades et les packs, et laisse
+>   les kits et le règlement tels quels ;
+> - `npm run db:seed:prix` n'écrit que `prixEurosCentimes`, `achetable` et les
+>   commandes console **restées vides** de chaque kit. C'est ce qu'il faut lancer
+>   pour mettre les 21 kits classiques en vente à 2 € : aucune description,
+>   aucun nom, aucune caractéristique n'est réécrit. Le script signale à la fin
+>   combien de kits en vente n'ont pas encore d'identifiant de package Tebex.
 >
 > Un piège à connaître : l'upsert se fait sur le **slug**. Si tu as renommé un
 > kit d'origine depuis l'admin (`archer` → `archer-longue-portee`), le seed ne le

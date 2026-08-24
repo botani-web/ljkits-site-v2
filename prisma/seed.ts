@@ -48,12 +48,20 @@ type KitDeReference = {
 }
 
 /**
- * Les 29 kits : 23 kits en coins par prix croissant, puis 6 kits exclusifs.
+ * Les 29 kits : 23 kits classiques par prix croissant, puis 6 kits exclusifs.
  * L'index dans ce tableau donne le champ `ordre`.
  *
  * À prix égal, les kits historiques restent devant ceux ajoutés ensuite :
  * l'ordre d'affichage de /kits bouge ainsi le moins possible d'une mise à
  * jour du catalogue à l'autre.
+ *
+ * PRIX EN EUROS. Les 21 kits classiques qui coûtent des coins sont vendus 2 €
+ * (200 centimes), les 6 exclusifs 4 €. Deux kits classiques n'ont PAS de prix
+ * en euros : `pvp` et `antistomper` sont déjà à 0 coin en jeu, et une carte qui
+ * afficherait « 2 € ou Gratuit » démolirait l'argument de la boutique.
+ *
+ * Le prix en euros ne remplace jamais le prix en coins : les deux cohabitent
+ * sur la même carte, c'est tout le propos du positionnement zéro pay-to-win.
  */
 const KITS: KitDeReference[] = [
   {
@@ -112,9 +120,9 @@ L'Archer se joue en périphérie : tu ouvres les combats des autres, tu punis ce
 
 En mêlée, tu n'as que l'épée de base et aucun avantage. Garder ses distances n'est pas une option de jeu, c'est la condition pour que le kit fonctionne.`,
     prixCoins: 300,
-    prixEurosCentimes: null,
+    prixEurosCentimes: 200,
     type: 'GRATUIT',
-    achetable: false,
+    achetable: true,
     kitDeDepart: false,
     caracteristiques: [
       { libelle: 'Item', valeur: 'Arc + 64 flèches' },
@@ -132,9 +140,9 @@ En mêlée, tu n'as que l'épée de base et aucun avantage. Garder ses distances
 
 Très situationnel, d'où son prix : sans source de feu en face, il joue un kit sans capacité.`,
     prixCoins: 300,
-    prixEurosCentimes: null,
+    prixEurosCentimes: 200,
     type: 'GRATUIT',
-    achetable: false,
+    achetable: true,
     kitDeDepart: false,
     caracteristiques: [
       { libelle: 'Feu', valeur: 'Immunisé' },
@@ -155,9 +163,9 @@ Le Fisherman ramène vers lui la cible qu'il accroche. Ça sert à rattraper un 
 
 C'est un kit de contrôle : il ne fait presque aucun dégât, il décide juste où se passe le combat.`,
     prixCoins: 400,
-    prixEurosCentimes: null,
+    prixEurosCentimes: 200,
     type: 'GRATUIT',
-    achetable: false,
+    achetable: true,
     kitDeDepart: false,
     caracteristiques: [
       { libelle: 'Item', valeur: 'Canne à pêche' },
@@ -175,9 +183,9 @@ C'est un kit de contrôle : il ne fait presque aucun dégât, il décide juste o
 
 Un kit qui récompense la connaissance du terrain plutôt que le combat pur — savoir où l'attirer devient une compétence.`,
     prixCoins: 400,
-    prixEurosCentimes: null,
+    prixEurosCentimes: 200,
     type: 'GRATUIT',
-    achetable: false,
+    achetable: true,
     kitDeDepart: false,
     caracteristiques: [
       { libelle: 'Effet', valeur: 'Vitesse II' },
@@ -198,9 +206,9 @@ Le Magma ne gagne pas un combat tout seul : il le rend coûteux. Contre un adver
 
 C'est le kit le plus passif du serveur, et sans doute le plus sous-estimé en combat de groupe.`,
     prixCoins: 500,
-    prixEurosCentimes: null,
+    prixEurosCentimes: 200,
     type: 'GRATUIT',
-    achetable: false,
+    achetable: true,
     kitDeDepart: false,
     caracteristiques: [
       { libelle: 'Effet', valeur: "Feu 2 s sur l'agresseur" },
@@ -220,9 +228,9 @@ Le poison ne tue pas — il ne descend jamais sous un demi-cœur — mais il ann
 
 Le Viper n'a aucune portée : tout se joue au corps à corps, et il faut tenir la distance pour que le poison ait le temps de faire son travail.`,
     prixCoins: 500,
-    prixEurosCentimes: null,
+    prixEurosCentimes: 200,
     type: 'GRATUIT',
-    achetable: false,
+    achetable: true,
     kitDeDepart: false,
     caracteristiques: [
       { libelle: 'Effet', valeur: 'Poison I · 4 s' },
@@ -242,9 +250,9 @@ Le Kangaroo sert autant à entrer dans un combat qu'à en sortir. Il traverse le
 
 Le seul vrai risque, c'est toi : un bond mal orienté au-dessus du vide ne se rattrape pas.`,
     prixCoins: 800,
-    prixEurosCentimes: null,
+    prixEurosCentimes: 200,
     type: 'GRATUIT',
-    achetable: false,
+    achetable: true,
     kitDeDepart: false,
     caracteristiques: [
       { libelle: 'Item', valeur: 'Fusée' },
@@ -264,9 +272,9 @@ L'Anchor ne fait pas de dégâts : il retire aux autres leur capacité à choisi
 
 C'est le kit qui punit le plus durement les joueurs habitués à décrocher dès qu'ils passent sous la moitié de leur vie.`,
     prixCoins: 1000,
-    prixEurosCentimes: null,
+    prixEurosCentimes: 200,
     type: 'GRATUIT',
-    achetable: false,
+    achetable: true,
     kitDeDepart: false,
     caracteristiques: [
       { libelle: 'Effet', valeur: 'Lenteur I' },
@@ -284,9 +292,9 @@ C'est le kit qui punit le plus durement les joueurs habitués à décrocher dès
 
 Les éponges ne se rechargent qu'en reprenant le kit. À utiliser au bon moment, pas en boucle.`,
     prixCoins: 1000,
-    prixEurosCentimes: null,
+    prixEurosCentimes: 200,
     type: 'GRATUIT',
-    achetable: false,
+    achetable: true,
     kitDeDepart: false,
     caracteristiques: [
       { libelle: 'Item', valeur: '5 éponges' },
@@ -307,9 +315,9 @@ Le Stomper transforme chaque plateforme haute de la map en arme. Il faut apprend
 
 Sans dénivelé, c'est un kit PvP ordinaire — son intérêt dépend entièrement de la map.`,
     prixCoins: 1200,
-    prixEurosCentimes: null,
+    prixEurosCentimes: 200,
     type: 'GRATUIT',
-    achetable: false,
+    achetable: true,
     kitDeDepart: false,
     caracteristiques: [
       { libelle: 'Chute', valeur: 'Annulée' },
@@ -327,9 +335,9 @@ Sans dénivelé, c'est un kit PvP ordinaire — son intérêt dépend entièreme
 
 Aucun dégât, aucun effet. Juste du chaos, au moment précis où l'autre en a le moins besoin.`,
     prixCoins: 1200,
-    prixEurosCentimes: null,
+    prixEurosCentimes: 200,
     type: 'GRATUIT',
-    achetable: false,
+    achetable: true,
     kitDeDepart: false,
     caracteristiques: [
       { libelle: 'Item', valeur: 'Cisailles' },
@@ -350,9 +358,9 @@ Le Switcher fait très peu de dégâts et beaucoup de dégâts indirects : il pl
 
 Seize munitions, pas une de plus : chaque échange doit servir à quelque chose.`,
     prixCoins: 1500,
-    prixEurosCentimes: null,
+    prixEurosCentimes: 200,
     type: 'GRATUIT',
-    achetable: false,
+    achetable: true,
     kitDeDepart: false,
     caracteristiques: [
       { libelle: 'Item', valeur: '16 boules de neige' },
@@ -372,9 +380,9 @@ Le Berserker inverse le réflexe du soup : boire sa soupe te fait perdre ton bon
 
 C'est le kit le plus risqué de la liste, et un des plus rapides à conclure un duel.`,
     prixCoins: 1500,
-    prixEurosCentimes: null,
+    prixEurosCentimes: 200,
     type: 'GRATUIT',
-    achetable: false,
+    achetable: true,
     kitDeDepart: false,
     caracteristiques: [
       { libelle: 'Effet', valeur: 'Force I' },
@@ -392,9 +400,9 @@ C'est le kit le plus risqué de la liste, et un des plus rapides à conclure un 
 
 Interdit dans les zones KOTH et les zones de contrôle : immobiliser quelqu'un sur un point à tenir serait trop décisif.`,
     prixCoins: 1800,
-    prixEurosCentimes: null,
+    prixEurosCentimes: 200,
     type: 'GRATUIT',
-    achetable: false,
+    achetable: true,
     kitDeDepart: false,
     caracteristiques: [
       { libelle: 'Item', valeur: 'Ficelle' },
@@ -416,9 +424,9 @@ Le Thor est le kit d'ouverture par excellence : il entame un groupe entier avant
 
 Huit secondes, c'est long. Un Thor qui gâche sa foudre est un kit PvP ordinaire pendant huit secondes.`,
     prixCoins: 2000,
-    prixEurosCentimes: null,
+    prixEurosCentimes: 200,
     type: 'GRATUIT',
-    achetable: false,
+    achetable: true,
     kitDeDepart: false,
     caracteristiques: [
       { libelle: 'Item', valeur: 'Hache en fer' },
@@ -439,9 +447,9 @@ En duel, ça ne change rien — le combat est déjà fini quand la capacité se 
 
 Le Vampire ne survit pas aux mauvais combats, il enchaîne les bons.`,
     prixCoins: 2000,
-    prixEurosCentimes: null,
+    prixEurosCentimes: 200,
     type: 'GRATUIT',
-    achetable: false,
+    achetable: true,
     kitDeDepart: false,
     caracteristiques: [
       { libelle: 'Effet', valeur: 'Vie restaurée à 100 %' },
@@ -460,9 +468,9 @@ Le Vampire ne survit pas aux mauvais combats, il enchaîne les bons.`,
 
 Sur un serveur où tout le monde se soigne à la soupe en continu, empêcher l'autre de remonter change complètement l'échange.`,
     prixCoins: 2000,
-    prixEurosCentimes: null,
+    prixEurosCentimes: 200,
     type: 'GRATUIT',
-    achetable: false,
+    achetable: true,
     kitDeDepart: false,
     caracteristiques: [
       { libelle: 'Item', valeur: 'Houe en fer' },
@@ -481,9 +489,9 @@ Sur un serveur où tout le monde se soigne à la soupe en continu, empêcher l'a
 
 Le kit ne tue pas. Il fait tomber. C'est différent, et souvent plus efficace.`,
     prixCoins: 2000,
-    prixEurosCentimes: null,
+    prixEurosCentimes: 200,
     type: 'GRATUIT',
-    achetable: false,
+    achetable: true,
     kitDeDepart: false,
     caracteristiques: [
       { libelle: 'Item', valeur: 'Bâton Knockback II' },
@@ -504,9 +512,9 @@ Le Gladiator isole. Il sort un joueur d'une mêlée où tu serais à trois contr
 
 À utiliser avec discernement : tu es enfermé aussi. Choisir la mauvaise cible, c'est offrir trente secondes de duel perdu d'avance.`,
     prixCoins: 2500,
-    prixEurosCentimes: null,
+    prixEurosCentimes: 200,
     type: 'GRATUIT',
-    achetable: false,
+    achetable: true,
     kitDeDepart: false,
     caracteristiques: [
       { libelle: 'Item', valeur: 'Bâton de blaze' },
@@ -527,9 +535,9 @@ Le Ninja est le kit de poursuite du serveur. Un adversaire qui décroche à un c
 
 La vitesse permanente est aussi son défaut — elle rend la gestion du knockback 1.8 plus délicate, et il est facile de dépasser sa cible en pleine mêlée.`,
     prixCoins: 2500,
-    prixEurosCentimes: null,
+    prixEurosCentimes: 200,
     type: 'GRATUIT',
-    achetable: false,
+    achetable: true,
     kitDeDepart: false,
     caracteristiques: [
       { libelle: 'Passif', valeur: 'Vitesse II' },
@@ -550,9 +558,9 @@ Le Phantom ne gagne pas les combats, il choisit quand ils commencent. Tu travers
 
 Attention : l'invisibilité ne cache ni les particules ni les objets que tu tiens. Les joueurs attentifs te repèrent quand même.`,
     prixCoins: 3500,
-    prixEurosCentimes: null,
+    prixEurosCentimes: 200,
     type: 'GRATUIT',
-    achetable: false,
+    achetable: true,
     kitDeDepart: false,
     caracteristiques: [
       { libelle: 'Passif', valeur: 'Invisibilité' },
@@ -598,7 +606,7 @@ C'est un kit qui ne monte pas au classement des kills. C'est aussi celui qui dé
 Le Kitsune n'achète que du temps, et seulement contre des adversaires qui regardent l'écran. En mêlée confuse, le leurre absorbe deux ou trois coups pendant que tu contournes ; en duel contre un joueur attentif, il ne trompe personne.
 
 C'est le kit le plus dépendant du niveau d'en face — et le plus satisfaisant quand il marche.`,
-    prixCoins: 15000,
+    prixCoins: 25000,
     prixEurosCentimes: 400,
     type: 'EXCLUSIF',
     achetable: true,
@@ -688,7 +696,7 @@ En team, c'est un kit de sacrifice assumé. En solo, c'est surtout une question 
 Le Sakura est le seul kit purement collectif de LJKITS. Seul, il n'apporte rien : il ne se soigne pas lui-même et n'a aucune capacité offensive. Dans une team qui tient une zone ou le KOTH, il économise une soupe à chaque joueur toutes les huit secondes — et c'est énorme.
 
 Il se joue au centre du groupe, jamais devant.`,
-    prixCoins: 20000,
+    prixCoins: 10000,
     prixEurosCentimes: 400,
     type: 'EXCLUSIF',
     achetable: true,
@@ -801,6 +809,79 @@ async function peuplerKits() {
   }
 
   console.log(`✔ ${KITS.length} kits en base.`)
+}
+
+/**
+ * Applique UNIQUEMENT les champs commerciaux des kits — `npm run db:seed:prix`.
+ *
+ * Pourquoi une fonction à part plutôt que `db:seed` tout court : peuplerKits()
+ * upserte le kit entier, donc réécrit `descriptionCourte`, `descriptionLongue`,
+ * `role`, `nom` et les caractéristiques. Sur une base en service, poser les
+ * prix en euros avec le seed complet annulerait toutes les retouches faites
+ * depuis /admin/kits. Ici on n'écrit que quatre colonnes :
+ *
+ *   prixEurosCentimes · achetable · commandeLivraison · commandeRetrait
+ *
+ * Aucun texte, aucun ordre, aucune visibilité, aucune caractéristique n'est
+ * touché. `tebexPackageId` non plus : il se saisit depuis l'admin, cf. l'en-tête
+ * de ce fichier.
+ *
+ * Les commandes de livraison ne sont écrites que si elles sont VIDES : un kit
+ * dont la commande a été ajustée à la main garde la sienne.
+ */
+async function peuplerPrixDesKits() {
+  let misAJour = 0
+  let absents = 0
+
+  for (const kit of KITS) {
+    const enBase = await prisma.kit.findUnique({ where: { slug: kit.slug } })
+
+    // Un kit renommé depuis l'admin n'est plus retrouvable par son slug. On le
+    // signale au lieu de le recréer : recréer donnerait un doublon, cf. le cas
+    // particulier décrit en tête de fichier.
+    if (!enBase) {
+      console.warn(`  ⚠ ${kit.slug} : absent de la base, ignoré.`)
+      absents += 1
+      continue
+    }
+
+    await prisma.kit.update({
+      where: { slug: kit.slug },
+      data: {
+        prixEurosCentimes: kit.prixEurosCentimes,
+        achetable: kit.achetable,
+        commandeLivraison:
+          kit.achetable && enBase.commandeLivraison.trim() === ''
+            ? `kitadmin add {pseudo} ${kit.slug}`
+            : enBase.commandeLivraison,
+        commandeRetrait:
+          kit.achetable && enBase.commandeRetrait.trim() === ''
+            ? `kitadmin remove {pseudo} ${kit.slug}`
+            : enBase.commandeRetrait,
+      },
+    })
+
+    misAJour += 1
+  }
+
+  const enVente = KITS.filter((kit) => kit.achetable).length
+  console.log(
+    `✔ Prix appliqués sur ${misAJour} kits (${enVente} en vente)` +
+      (absents > 0 ? `, ${absents} introuvable(s).` : '.'),
+  )
+
+  // Sans identifiant de package, creerCommande refuse l'article au moment de
+  // valider le panier. Le site l'affiche alors « Bientôt en boutique », mais
+  // autant le savoir tout de suite plutôt qu'au premier joueur qui essaie.
+  const sansTebex = await prisma.kit.count({
+    where: { achetable: true, tebexPackageId: null },
+  })
+  if (sansTebex > 0) {
+    console.log(
+      `↷ ${sansTebex} kit(s) en vente sans ID Tebex : ils s'affichent en boutique\n` +
+        `  avec un bouton inerte tant que l'identifiant n'est pas saisi dans /admin/kits.`,
+    )
+  }
 }
 
 
@@ -1028,18 +1109,37 @@ async function peuplerAdmin() {
 }
 
 /**
- * Deux modes :
+ * Trois modes :
  *
  *   npm run db:seed            tout le contenu de référence
  *   npm run db:seed:boutique   grades et packs UNIQUEMENT
+ *   npm run db:seed:prix       prix en euros et mise en vente des kits UNIQUEMENT
  *
- * Le second existe pour une raison précise : sur une base déjà en service, le
- * seed complet réécrit les 21 kits et les 7 sections, donc annule les
- * retouches faites depuis l'admin. Quand on ajoute la boutique à une base
- * existante, on ne veut peupler que les nouvelles tables.
+ * Les deux modes partiels existent pour une raison précise : sur une base déjà
+ * en service, le seed complet réécrit les 29 kits et les 7 sections, donc
+ * annule les retouches faites depuis l'admin.
+ *
+ *   --boutique  quand on ajoute la boutique à une base existante : seules les
+ *               nouvelles tables sont peuplées.
+ *   --prix      quand on met les kits classiques en vente : seuls
+ *               prixEurosCentimes, achetable et les commandes console vides
+ *               sont écrits. Aucun texte de kit n'est touché.
  */
 async function main() {
   const boutiqueSeulement = process.argv.includes('--boutique')
+  const prixSeulement = process.argv.includes('--prix')
+
+  if (boutiqueSeulement && prixSeulement) {
+    console.error('✖ --boutique et --prix ne se combinent pas : lance-les l’un après l’autre.')
+    process.exitCode = 1
+    return
+  }
+
+  if (prixSeulement) {
+    console.log('Mode prix : seuls les champs commerciaux des kits seront écrits.')
+    await peuplerPrixDesKits()
+    return
+  }
 
   if (boutiqueSeulement) {
     console.log('Mode boutique : les kits et le règlement ne seront pas touchés.')

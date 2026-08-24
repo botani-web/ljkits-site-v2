@@ -32,7 +32,7 @@ export default async function PageModifierPack({
       <div className="mb-6">
         <Link
           href="/admin/packs"
-          className="text-[13px] text-gris transition-colors hover:text-creme"
+          className="-my-3.5 inline-flex min-h-11 items-center text-[13px] text-gris transition-colors hover:text-creme"
         >
           ← Retour aux packs
         </Link>

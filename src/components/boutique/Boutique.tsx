@@ -5,7 +5,8 @@ import { useActionState, useEffect, useMemo, useState } from 'react'
 
 import { creerCommande, type EtatCommande } from '@/actions/commandes'
 import { ETAT_VIDE } from '@/actions/etat'
-import { CarteGrade, CarteKitBoutique, CartePack } from '@/components/boutique/Cartes'
+import { CarteGrade } from '@/components/boutique/Cartes'
+import { GrilleKitsBoutique } from '@/components/boutique/GrilleKitsBoutique'
 import { ModaleRecapitulatif } from '@/components/boutique/ModaleRecapitulatif'
 import { PaiementTebex } from '@/components/boutique/PaiementTebex'
 import { Panier } from '@/components/boutique/Panier'
@@ -27,7 +28,7 @@ type Onglet = 'grades' | 'kits' | 'aide'
 
 const ONGLETS: { cle: Onglet; label: string }[] = [
   { cle: 'grades', label: 'Grades' },
-  { cle: 'kits', label: 'Kits exclusifs' },
+  { cle: 'kits', label: 'Kits' },
   { cle: 'aide', label: 'Comment ça marche' },
 ]
 
@@ -139,7 +140,7 @@ export function Boutique({
               role="tab"
               aria-selected={actif}
               onClick={() => setOnglet(option.cle)}
-              className={`-mb-px border-b-2 px-4.5 py-2.5 font-mono text-[13px] font-bold tracking-wide uppercase transition-colors ${
+              className={`-mb-px inline-flex min-h-11 items-center border-b-2 px-4.5 font-mono text-[13px] font-bold tracking-wide uppercase transition-colors ${
                 actif
                   ? 'border-soupe text-or'
                   : 'border-transparent text-gris hover:text-white'
@@ -153,14 +154,21 @@ export function Boutique({
         <button
           type="button"
           onClick={allerAuPanier}
-          className="ml-auto self-center rounded-[7px] bg-soupe px-3.5 py-2 font-mono text-[12.5px] font-bold text-[#1a0f00] transition-colors hover:bg-or lg:hidden"
+          className="ml-auto my-0.5 inline-flex min-h-11 items-center self-center rounded-[7px] bg-soupe px-3.5 font-mono text-[12.5px] font-bold text-[#1a0f00] transition-colors hover:bg-or lg:hidden"
         >
           Panier ({articles.length})
         </button>
       </div>
 
       <div className="grid items-start gap-7 pb-17 lg:grid-cols-[1fr_370px]">
-        <div>
+        {/*
+          `min-w-0` n'est pas décoratif : un élément de grille a `min-width:
+          auto`, donc il se dimensionne sur le contenu min de ses descendants.
+          La barre de filtres des kits défile horizontalement — sans ce
+          min-w-0, c'est la colonne entière qui s'élargit pour la contenir, et
+          la page déborde de 44 px à 360 px au lieu que la barre défile.
+        */}
+        <div className="min-w-0">
           {/* ------------------------- VUE : GRADES ------------------------- */}
           {onglet === 'grades' && (
             <section>
@@ -186,39 +194,22 @@ export function Boutique({
             </section>
           )}
 
-          {/* -------------------- VUE : KITS EXCLUSIFS ---------------------- */}
-          {onglet === 'kits' && (
-            <section>
-              <EnTeteRayon titre="Kits exclusifs">
-                Des kits pensés et codés pour LJKITS. Aucun ne frappe plus fort que les kits
-                gratuits : ils jouent autrement.
-              </EnTeteRayon>
-
-              {kits.length === 0 ? (
-                <Vide>Aucun kit en vente pour le moment.</Vide>
-              ) : (
-                <div className="grid gap-4 sm:grid-cols-2">
-                  {kits.map((kit) => (
-                    <CarteKitBoutique
-                      key={kit.slug}
-                      kit={kit}
-                      dansLePanier={contient(panier, { type: 'KIT', slug: kit.slug })}
-                      onBasculer={() => basculerArticle({ type: 'KIT', slug: kit.slug })}
-                    />
-                  ))}
-                </div>
-              )}
-
-              {packs.map((pack) => (
-                <CartePack
-                  key={pack.slug}
-                  pack={pack}
-                  dansLePanier={contient(panier, { type: 'PACK', slug: pack.slug })}
-                  onBasculer={() => basculerArticle({ type: 'PACK', slug: pack.slug })}
-                />
-              ))}
-            </section>
-          )}
+          {/* --------------------------- VUE : KITS ------------------------- */}
+          {/*
+            Un seul rayon pour les deux familles : la recherche, les filtres et
+            les deux grilles vivent dans GrilleKitsBoutique.
+          */}
+          {onglet === 'kits' &&
+            (kits.length === 0 ? (
+              <Vide>Aucun kit en vente pour le moment.</Vide>
+            ) : (
+              <GrilleKitsBoutique
+                kits={kits}
+                packs={packs}
+                panier={panier}
+                onBasculer={basculerArticle}
+              />
+            ))}
 
           {/* ---------------------- VUE : COMMENT ÇA MARCHE ---------------- */}
           {onglet === 'aide' && <Aide discord={discord} />}

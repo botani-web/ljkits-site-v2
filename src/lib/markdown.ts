@@ -1,4 +1,4 @@
-import { Marked } from 'marked'
+import { Marked, Renderer } from 'marked'
 
 /**
  * Rendu Markdown → HTML pour le règlement et les descriptions longues de kits.
@@ -45,6 +45,21 @@ moteur.use({
     // Règle 1 : tout token HTML est recraché en texte échappé.
     html({ text }) {
       return echapper(text)
+    },
+    /**
+     * Un tableau est enveloppé dans un conteneur qui défile.
+     *
+     * Un tableau Markdown n'a aucune largeur maximale : trois colonnes de
+     * texte suffisent à faire déborder un téléphone à 360 px. Le CSS seul ne
+     * peut pas régler ça sans casser la mise en page du tableau (`display:
+     * block` sur un <table> lui fait perdre son `width: 100%`) — il faut un
+     * parent. D'où cette surcharge plutôt qu'une règle dans globals.css.
+     *
+     * On délègue le rendu du tableau lui-même au renderer d'origine : rien à
+     * réimplémenter, et les alignements de colonnes de GFM restent gérés.
+     */
+    table(token) {
+      return `<div class="tableau-defilant">${Renderer.prototype.table.call(this, token)}</div>`
     },
     // Règle 2 : les liens dangereux perdent leur href.
     link({ href, title, tokens }) {

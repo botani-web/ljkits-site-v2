@@ -139,7 +139,7 @@ function BoutonOnglet({
       role="tab"
       aria-selected={actif}
       onClick={onClick}
-      className={`rounded-md px-3 py-1 font-mono text-[12px] font-bold tracking-wide uppercase transition-colors ${
+      className={`inline-flex min-h-11 items-center rounded-md px-3 font-mono text-[12px] font-bold tracking-wide uppercase transition-colors ${
         actif ? 'bg-soupe text-[#1a0f00]' : 'border border-bord text-gris hover:text-creme'
       }`}
     >
