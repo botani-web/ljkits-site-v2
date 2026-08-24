@@ -4,7 +4,10 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 
 /**
- * Le paiement, affiché dans une modale posée sur ljkits.eu.
+ * Le paiement, affiché dans une modale posée sur ljkits.eu — SUR BUREAU
+ * seulement. Sur écran tactile la lightbox de Tebex.js se dimensionne mal, on
+ * bascule donc vers la page hébergée par Tebex, ouverte dans un onglet séparé
+ * (cf. `paiementEnOngletSepare`).
  *
  * On passe par Tebex.js, la librairie officielle, et non par un <iframe>
  * maison : c'est elle qui gère le dimensionnement, le fond, la fermeture et
@@ -99,12 +102,36 @@ const COULEURS = [
 ]
 
 /**
+ * Le paiement doit-il passer par un onglet séparé plutôt que par la modale ?
+ *
+ * La lightbox de Tebex.js se dimensionne mal sur les écrans tactiles : le
+ * formulaire de paiement y est tronqué. Sur ces appareils on ouvre donc la
+ * page hébergée par Tebex dans un onglet à part, où elle s'affiche
+ * correctement et où le clavier virtuel ne casse rien. Le bureau, lui, garde
+ * la modale : c'est tout l'intérêt de ne pas quitter le site.
+ *
+ * Deux critères, parce qu'aucun ne suffit seul :
+ *   - `pointer: coarse` attrape les tablettes larges — un iPad en paysage
+ *     dépasse 1024 px tout en restant tactile ;
+ *   - la largeur attrape les navigateurs tactiles qui annoncent un pointeur
+ *     fin, et les fenêtres trop étroites pour la lightbox.
+ */
+function paiementEnOngletSepare() {
+  if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return false
+  return (
+    window.matchMedia('(pointer: coarse)').matches ||
+    window.matchMedia('(max-width: 1023px)').matches
+  )
+}
+
+/**
  * `ouvert`     la modale Tebex est à l'écran, on n'affiche rien nous-mêmes
  * `interrompu` le joueur l'a fermée sans payer — on propose de reprendre
  * `abandonne`  il a explicitement renoncé
  * `echec`      Tebex.js ne s'est pas chargé — repli vers la page hébergée
+ * `externe`    écran tactile : la page hébergée s'ouvre dans un onglet à part
  */
-type Etat = 'ouvert' | 'interrompu' | 'abandonne' | 'echec'
+type Etat = 'ouvert' | 'interrompu' | 'abandonne' | 'echec' | 'externe'
 
 export function PaiementTebex({
   identPanier,
@@ -126,6 +153,13 @@ export function PaiementTebex({
   const ouverte = useRef(false)
 
   useEffect(() => {
+    // Écran tactile : on ne charge même pas Tebex.js (216 Ko pour rien) et on
+    // renvoie directement vers la page hébergée.
+    if (paiementEnOngletSepare()) {
+      setEtat('externe')
+      return
+    }
+
     let annule = false
     const minuteries: ReturnType<typeof setTimeout>[] = []
 
@@ -155,6 +189,9 @@ export function PaiementTebex({
           closeOnEsc: true,
           // Un clic à côté ne doit pas interrompre un paiement en cours.
           closeOnClickOutside: false,
+          // Filet de sécurité : on ne devrait plus arriver ici sur tactile,
+          // mais si notre détection rate un appareil, Tebex.js ouvrira sa
+          // propre fenêtre au lieu d'une lightbox tronquée.
           popupOnMobile: true,
         })
 
@@ -209,35 +246,57 @@ export function PaiementTebex({
 
   if (etat === 'ouvert' || etat === 'abandonne') return null
 
+  /** Le bouton principal du panneau, quel que soit l'état. */
+  const CLASSE_ACTION =
+    'mt-2.5 inline-flex min-h-11 items-center justify-center rounded-[7px] bg-soupe px-4 font-mono text-[12.5px] font-bold tracking-wide text-[#1a0f00] transition-colors hover:bg-or'
+
   return (
     <div
-      role="alert"
+      // `externe` est le déroulement normal sur tactile, pas une anomalie :
+      // l'annoncer comme une alerte serait mentir au lecteur d'écran.
+      role={etat === 'externe' ? 'status' : 'alert'}
       className="fixed inset-x-0 bottom-0 z-50 border-t border-bord bg-charbon px-6 py-4 text-center"
     >
-      {etat === 'interrompu' ? (
+      {etat === 'interrompu' && (
         <>
           <p className="text-[14.5px] text-creme">
             Paiement interrompu. Ta commande est conservée.
           </p>
-          <button
-            type="button"
-            onClick={reprendre}
-            className="mt-2.5 rounded-[7px] bg-soupe px-4 py-2.5 font-mono text-[12.5px] font-bold tracking-wide text-[#1a0f00] transition-colors hover:bg-or"
-          >
+          <button type="button" onClick={reprendre} className={CLASSE_ACTION}>
             Reprendre le paiement
           </button>
         </>
-      ) : (
+      )}
+
+      {etat === 'externe' && (
+        <>
+          <p className="text-[14.5px] text-creme">
+            Le paiement s’ouvre dans un onglet séparé — il s’affiche mieux qu’une
+            fenêtre posée sur le site.
+          </p>
+          <a href={urlCheckout} target="_blank" rel="noopener noreferrer" className={CLASSE_ACTION}>
+            Payer sur Tebex
+          </a>
+          {/*
+            Le paiement se passe dans l'autre onglet : celui-ci ne recevra
+            jamais l'évènement `payment:complete`. On donne donc le lien vers la
+            page de commande, qui lit le statut réel posé par le webhook.
+          */}
+          <a
+            href={`/boutique/commande/${commandeId}`}
+            className="mt-2 block text-[13px] text-gris underline-offset-2 transition-colors hover:text-creme"
+          >
+            Suivre ma commande
+          </a>
+        </>
+      )}
+
+      {etat === 'echec' && (
         <>
           <p className="text-[14.5px] text-creme">
             La fenêtre de paiement n’a pas pu s’ouvrir sur le site.
           </p>
-          <a
-            href={urlCheckout}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-2.5 inline-block rounded-[7px] bg-soupe px-4 py-2.5 font-mono text-[12.5px] font-bold tracking-wide text-[#1a0f00] transition-colors hover:bg-or"
-          >
+          <a href={urlCheckout} target="_blank" rel="noopener noreferrer" className={CLASSE_ACTION}>
             Payer dans un nouvel onglet
           </a>
         </>
@@ -246,7 +305,7 @@ export function PaiementTebex({
       <button
         type="button"
         onClick={() => setEtat('abandonne')}
-        className="mt-2 block w-full text-[13px] text-gris transition-colors hover:text-white"
+        className="mt-2 block min-h-11 w-full text-[13px] text-gris transition-colors hover:text-white"
       >
         Annuler
       </button>
