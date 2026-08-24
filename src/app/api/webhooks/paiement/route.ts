@@ -4,9 +4,11 @@ import {
   extraireIdentPanier,
   extraireTransaction,
   signatureWebhookValide,
+  TYPE_LITIGE_GAGNE,
   TYPE_LITIGE_OUVERT,
   TYPE_LITIGE_PERDU,
   TYPE_PAIEMENT_COMPLETE,
+  TYPE_PAIEMENT_REFUSE,
   TYPE_PAIEMENT_REMBOURSE,
   TYPE_VALIDATION,
   type WebhookTebex,
@@ -94,9 +96,29 @@ export async function POST(requete: Request) {
         await marquerPayeeEtLivrer(commande.id, extraireTransaction(evenement.subject))
         break
 
+      // Paiement refusé par la banque ou le prestataire. Sans ce cas, la
+      // commande resterait EN_ATTENTE indéfiniment — et ce statut compte dans
+      // le garde-fou anti-abus : trois refus d'affilée bloqueraient une heure
+      // un joueur qui n'y est pour rien.
+      case TYPE_PAIEMENT_REFUSE:
+        await prisma.commande.update({
+          where: { id: commande.id },
+          data: { statut: 'ECHOUEE', derniereErreur: 'Paiement refusé par Tebex.' },
+        })
+        break
+
       case TYPE_PAIEMENT_REMBOURSE:
       case TYPE_LITIGE_PERDU:
         await marquerRembourseeEtRetirer(commande.id)
+        break
+
+      // Litige tranché en notre faveur : le paiement tient, la commande
+      // retrouve son statut d'avant la contestation.
+      case TYPE_LITIGE_GAGNE:
+        await prisma.commande.update({
+          where: { id: commande.id },
+          data: { statut: 'LIVREE', derniereErreur: null },
+        })
         break
 
       case TYPE_LITIGE_OUVERT:

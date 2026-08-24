@@ -256,11 +256,19 @@ export type WebhookTebex = {
   subject?: Record<string, unknown>
 }
 
+/**
+ * `validation.webhook` n'apparaît PAS dans la liste des types à cocher côté
+ * Tebex, et c'est normal : on ne s'y abonne pas. Tebex l'envoie de lui-même,
+ * une fois, au moment où l'endpoint est enregistré, pour vérifier que l'URL
+ * répond. Il attend un 200 contenant exactement l'id reçu.
+ */
 export const TYPE_VALIDATION = 'validation.webhook'
 export const TYPE_PAIEMENT_COMPLETE = 'payment.completed'
+export const TYPE_PAIEMENT_REFUSE = 'payment.declined'
 export const TYPE_PAIEMENT_REMBOURSE = 'payment.refunded'
 export const TYPE_LITIGE_OUVERT = 'payment.dispute.opened'
 export const TYPE_LITIGE_PERDU = 'payment.dispute.lost'
+export const TYPE_LITIGE_GAGNE = 'payment.dispute.won'
 
 /**
  * Vérifie la signature d'un webhook Tebex.

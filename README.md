@@ -538,9 +538,11 @@ Deux pièges, tous deux traités dans `src/lib/tebex.ts` :
 
 | Évènement Tebex | Effet |
 |---|---|
-| `validation.webhook` | Répond `{ "id": … }` — c'est ce qui valide l'endpoint dans Tebex |
+| `validation.webhook` | Répond `{ "id": … }` — c'est ce qui valide l'endpoint dans Tebex. **Ne se coche pas** dans la liste des types : Tebex l'envoie de lui-même à l'enregistrement |
 | `payment.completed` | Statut `LIVREE`, `payeeAt` et `livreeAt` posés, `transactionTebex` enregistré |
+| `payment.declined` | Statut `ECHOUEE`. Sans ce cas, la commande resterait `EN_ATTENTE` et pèserait sur le garde-fou anti-abus |
 | `payment.refunded` | Statut `REMBOURSEE`. `livreeAt` n'est pas effacé : il reste la trace de la livraison |
+| `payment.dispute.won` | Retour en `LIVREE` : le paiement tient |
 | `payment.dispute.lost` | Idem remboursement |
 | `payment.dispute.opened` | Statut `LITIGE`, **rien n'est retiré** : l'arbitrage n'est pas tranché |
 
