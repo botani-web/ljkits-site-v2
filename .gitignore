@@ -15,3 +15,14 @@ next-env.d.ts
 .DS_Store
 *.tsbuildinfo
 /.vercel
+
+# Ajouté par `vercel link`. Le modèle, lui, doit rester suivi : c'est la seule
+# documentation des variables attendues.
+.env*
+!.env.example
+
+# Compétences agent installées par les intégrations Marketplace (Resend…).
+# 580 Ko de documentation tierce, régénérable : on suit skills-lock.json,
+# pas son contenu.
+/.agents
+/.claude

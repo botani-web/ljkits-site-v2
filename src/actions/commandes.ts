@@ -5,6 +5,7 @@ import type { Prisma, StatutCommande } from '@prisma/client'
 
 import type { EtatFormulaire } from '@/actions/etat'
 import { exigerAdmin } from '@/actions/garde'
+import { notifierCommande } from '@/lib/notifications'
 import { prisma } from '@/lib/prisma'
 import { SITE } from '@/lib/site'
 import { creerPanierTebex, ErreurTebex } from '@/lib/tebex'
@@ -269,6 +270,12 @@ export async function creerCommande(
   }
 
   revalidatePath('/admin/commandes')
+
+  // Notification à la création, pas seulement au paiement : c'est ce qui
+  // permet de voir aussi les paniers validés puis abandonnés. Envoyée APRÈS
+  // le succès du panier Tebex — une commande qui n'a jamais pu être payée a
+  // déjà renvoyé une erreur au joueur, la signaler par mail serait du bruit.
+  await notifierCommande(commande.id, true)
 
   // Pas de redirection : le paiement s'ouvre dans une modale posée sur le
   // site. On rend au client ce qu'il faut pour la lancer — l'ident du panier

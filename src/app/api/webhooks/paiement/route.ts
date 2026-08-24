@@ -1,3 +1,4 @@
+import { notifierCommande } from '@/lib/notifications'
 import { prisma } from '@/lib/prisma'
 import {
   extraireCommandeId,
@@ -94,6 +95,10 @@ export async function POST(requete: Request) {
     switch (evenement.type) {
       case TYPE_PAIEMENT_COMPLETE:
         await marquerPayeeEtLivrer(commande.id, extraireTransaction(evenement.subject))
+        // Après la mise à jour, pour que l'e-mail porte le statut LIVREE et
+        // l'identifiant de transaction. `notifierCommande` avale ses erreurs :
+        // un envoi raté ne fera jamais échouer le webhook.
+        await notifierCommande(commande.id, false)
         break
 
       // Paiement refusé par la banque ou le prestataire. Sans ce cas, la
