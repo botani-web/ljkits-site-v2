@@ -467,8 +467,66 @@ model VuePage {
 
   createdAt DateTime @default(now())
 
-  /// Les trois lectures de /admin/stats : par période, par page, par visiteur.
+  /// Les trois lectures de l'audience : par période, par page, par visiteur.
+  /// L'index sur createdAt sert aussi la purge de rétention (< 180 jours) et
+  /// l'agrégation quotidienne du cron de maintenance : sans lui, elles
+  /// passeraient en parcours complet dès quelques dizaines de milliers de vues.
   @@index([createdAt])
   @@index([chemin, createdAt])
   @@index([visiteId])
+}
+
+/// Agrégat quotidien de l'audience.
+///
+/// Calculé par le cron de maintenance (cf. /api/cron/maintenance) AVANT la
+/// purge des VuePage de plus de 180 jours : on garde ainsi un historique long
+/// et bon marché sans conserver des millions de lignes fines. Une ligne par
+/// jour, le jour étant fixé à minuit dans le fuseau Europe/Paris.
+model StatistiqueJour {
+  /// Le jour concerné, à minuit Europe/Paris. Type DATE : pas d'heure.
+  jour DateTime @id @db.Date
+
+  vues      Int
+  /// Visiteurs distincts (visiteId) ce jour-là.
+  visiteurs Int
+  /// Temps moyen passé, en millisecondes, sur les vues qui avaient une durée.
+  /// null si aucune vue du jour n'a pu être mesurée jusqu'à sa sortie.
+  dureeMoyenneMs Int?
+
+  @@map("statistique_jour")
+}
+
+// ---------------------------------------------------------------------------
+// FRÉQUENTATION
+//
+// Historique du nombre de joueurs connectés. Alimenté depuis le VPS (le bot
+// Discord relié au serveur en RCON) qui POST sur /api/frequentation toutes les
+// dix minutes : la donnée vient donc directement du serveur, sans dépendre de
+// mcstatus.io ni d'un plan Vercel payant.
+//
+// Une donnée non collectée est perdue pour toujours : la collecte démarre dès
+// la mise en ligne, même si le graphique de fréquentation viendra plus tard.
+// ---------------------------------------------------------------------------
+
+model EchantillonFrequentation {
+  id String @id @default(cuid())
+
+  /// Instant du relevé.
+  releveLe DateTime @default(now())
+
+  /// Le serveur répondait-il à cet instant ?
+  /// On enregistre un point dans les DEUX cas : hors ligne = { enLigne: false,
+  /// joueurs: 0 }. C'est ce booléen qui distingue un serveur éteint (une ligne
+  /// à false) d'un collecteur en panne (aucune ligne du tout) — impossible à
+  /// reconstituer après coup, d'où sa présence dès le départ.
+  enLigne Boolean
+
+  /// Joueurs connectés à cet instant. 0 quand le serveur est hors ligne.
+  joueurs Int
+
+  /// Capacité annoncée par le serveur (slots), pour tracer un plafond.
+  maxJoueurs Int
+
+  @@index([releveLe])
+  @@map("echantillon_frequentation")
 }
