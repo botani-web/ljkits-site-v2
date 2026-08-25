@@ -236,3 +236,96 @@ export const schemaReglages = z.object({
 })
 
 export type DonneesReglages = z.infer<typeof schemaReglages>
+
+/* -------------------------------------------------------------------------- */
+/* RECRUTEMENT                                                                */
+/* -------------------------------------------------------------------------- */
+
+export const schemaSectionRecrutement = z.object({
+  nom: z
+    .string()
+    .trim()
+    .min(1, 'Le nom de la section est obligatoire.')
+    .max(60, 'Nom trop long (60 caractères maximum).'),
+  actif: z.boolean(),
+})
+
+export type DonneesSectionRecrutement = z.infer<typeof schemaSectionRecrutement>
+
+/**
+ * Une question du formulaire de recrutement.
+ *
+ * Les règles croisées (options obligatoires pour un choix, minimum inférieur au
+ * maximum) sont vérifiées en `superRefine` : elles portent sur la COMBINAISON
+ * des champs, pas sur chacun pris isolément, et c'est le seul endroit d'où on
+ * peut viser le bon champ dans le message d'erreur.
+ */
+export const schemaQuestionRecrutement = z
+  .object({
+    sectionId: z.string().min(1, 'Choisis une section.'),
+    libelle: z
+      .string()
+      .trim()
+      .min(1, 'Le libellé est obligatoire.')
+      .max(300, 'Libellé trop long (300 caractères maximum).'),
+    aide: texteFacultatif.pipe(
+      z.string().max(300, 'Texte d’aide trop long (300 caractères maximum).').nullable(),
+    ),
+    type: z.enum(['TEXTE_COURT', 'TEXTE_LONG', 'NOMBRE', 'OUI_NON', 'CHOIX_UNIQUE'], {
+      error: 'Type de question inconnu.',
+    }),
+    options: z
+      .array(z.string().trim().min(1).max(80, 'Option trop longue (80 caractères maximum).'))
+      .max(12, 'Douze options au maximum.'),
+    obligatoire: z.boolean(),
+    minimum: z
+      .number({ error: 'Le minimum doit être un nombre.' })
+      .int('Le minimum doit être un entier.')
+      .min(0, 'Le minimum ne peut pas être négatif.')
+      .nullable(),
+    maximum: z
+      .number({ error: 'Le maximum doit être un nombre.' })
+      .int('Le maximum doit être un entier.')
+      .min(0, 'Le maximum ne peut pas être négatif.')
+      .nullable(),
+    actif: z.boolean(),
+  })
+  .superRefine((donnees, ctx) => {
+    if (donnees.type === 'CHOIX_UNIQUE' && donnees.options.length < 2) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['options'],
+        message: 'Un choix unique demande au moins deux options.',
+      })
+    }
+
+    if (
+      donnees.minimum !== null &&
+      donnees.maximum !== null &&
+      donnees.minimum > donnees.maximum
+    ) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['minimum'],
+        message: 'Le minimum ne peut pas dépasser le maximum.',
+      })
+    }
+  })
+
+export type DonneesQuestionRecrutement = z.infer<typeof schemaQuestionRecrutement>
+
+/** Le message affiché quand le recrutement est fermé. */
+export const schemaMessageFerme = z.object({
+  recrutementMessageFerme: z
+    .string()
+    .trim()
+    .min(1, 'Le message de fermeture est obligatoire : la page ne doit jamais être vide.')
+    .max(400, 'Message trop long (400 caractères maximum).'),
+})
+
+/** La note interne du staff sur une candidature. */
+export const schemaNoteAdmin = z.object({
+  noteAdmin: texteFacultatif.pipe(
+    z.string().max(2_000, 'Note trop longue (2000 caractères maximum).').nullable(),
+  ),
+})

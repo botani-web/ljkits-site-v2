@@ -215,7 +215,22 @@ function parSection(questions: QuestionPubliee[]) {
   return blocs
 }
 
-export function FormulaireCandidature({ questions }: { questions: QuestionPubliee[] }) {
+/**
+ * Le formulaire de candidature.
+ *
+ * `apercu` sert à /admin/recrutement, qui rend CE composant-CI plutôt
+ * qu'une maquette séparée : c'est la seule façon de garantir que l'aperçu
+ * montre vraiment ce que le candidat verra, y compris après une modification
+ * de question. En mode aperçu, tout est désactivé et l'action n'est pas
+ * branchée.
+ */
+export function FormulaireCandidature({
+  questions,
+  apercu = false,
+}: {
+  questions: QuestionPubliee[]
+  apercu?: boolean
+}) {
   const [etat, action] = useActionState<EtatCandidature, FormData>(soumettreCandidature, {})
   const idConsentement = useId()
 
@@ -247,7 +262,14 @@ export function FormulaireCandidature({ questions }: { questions: QuestionPublie
   const blocs = parSection(questions)
 
   return (
-    <form action={action} noValidate className="flex flex-col gap-10">
+    <form
+      action={apercu ? undefined : action}
+      noValidate
+      className="flex flex-col gap-10"
+    >
+      {/* `contents` : le fieldset désactive tout son contenu sans peser
+          sur la mise en page, les enfants restent dans le flex du formulaire. */}
+      <fieldset disabled={apercu} className="contents">
       {/* Le champ piège. Hors écran plutôt que `hidden` : un robot lit le HTML
           et ignore un champ explicitement caché, alors qu'il remplit celui-ci.
           `aria-hidden` et `tabIndex` le retirent du clavier et des lecteurs
@@ -383,13 +405,20 @@ export function FormulaireCandidature({ questions }: { questions: QuestionPublie
           </p>
         )}
 
-        <BoutonEnvoi />
+        {apercu ? (
+          <p className="rounded-lg border border-bord bg-braise px-4 py-3 text-[13px] text-gris">
+            Aperçu — l’envoi est désactivé.
+          </p>
+        ) : (
+          <BoutonEnvoi />
+        )}
 
         <p className="text-[13px] text-gris">
           Une seule candidature à la fois. Prends le temps de te relire : tu ne
           pourras pas la modifier après l’envoi.
         </p>
-      </div>
+        </div>
+      </fieldset>
     </form>
   )
 }

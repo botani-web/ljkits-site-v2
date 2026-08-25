@@ -10,6 +10,7 @@ const ONGLETS = [
   { href: '/admin/grades', label: 'Grades' },
   { href: '/admin/packs', label: 'Packs' },
   { href: '/admin/commandes', label: 'Commandes' },
+  { href: '/admin/recrutement', label: 'Recrutement' },
   { href: '/admin/reglement', label: 'Règlement' },
   { href: '/admin/reglages', label: 'Réglages' },
 ]
@@ -18,7 +19,7 @@ export function OngletsAdmin() {
   const chemin = usePathname()
 
   return (
-    // Six onglets ne tiennent pas dans 360 px. Défilement horizontal plutôt que
+    // Huit onglets ne tiennent pas dans 360 px. Défilement horizontal plutôt que
     // retour à la ligne : la barre garde une hauteur d'une ligne sur toutes les
     // largeurs, et le trait actif reste sur la même ligne que le contenu.
     <nav className="mx-auto flex max-w-contenu gap-1 overflow-x-auto px-6">
