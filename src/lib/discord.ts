@@ -13,9 +13,13 @@
  * LE PROBLÈME PARTICULIER DE CE FICHIER : les questions sont administrables,
  * donc leur nombre et leur longueur sont inconnus au moment d'écrire ce code,
  * alors que Discord impose des limites fermes. D'où `repartirBudget()`, qui
- * décide quoi garder — et que l'admin appelle AUSSI, sur une simulation du pire
- * cas, pour prévenir avant que ça déborde. Une seule implémentation : l'alerte
- * ne peut pas mentir sur ce que fera l'envoi.
+ * décide quoi garder.
+ *
+ * L'admin appelle la MÊME fonction, sur deux simulations (cf. estimerBudget) :
+ * au minimum configuré — un débordement là est une faute de configuration — et
+ * à la somme des maximums, où un débordement est la normale dès qu'on a
+ * quelques textes longs. Une seule implémentation : ces chiffres ne peuvent pas
+ * mentir sur ce que fera l'envoi.
  */
 import type { TypeQuestion } from '@prisma/client'
 
@@ -135,78 +139,126 @@ function couper(texte: string, limite: number): string {
 }
 
 /* -------------------------------------------------------------------------- */
-/* L'alerte de l'admin                                                        */
+/* Les deux repères de l'admin                                                */
 /* -------------------------------------------------------------------------- */
 
 /**
- * Ce qu'il faudrait supposer de long pour une question sans plafond réglé.
- * Sert UNIQUEMENT à la simulation du pire cas affichée dans l'admin.
+ * LE PLANCHER : ce qu'une candidature pèse au MINIMUM, d'après les minimums
+ * configurés sur chaque question.
+ *
+ * Rien n'est deviné ici — c'est le plus petit envoi qu'un candidat puisse
+ * matériellement produire sans que le formulaire le refuse. Si même ce
+ * plancher déborde, la configuration est en cause et l'alerte est justifiée.
  */
-function longueurPresumee(question: {
-  type: TypeQuestion
-  maximum: number | null
-  options: string[]
-}): number {
+function longueurPlancher(question: QuestionPubliee): number {
   switch (question.type) {
     case 'TEXTE_COURT':
     case 'TEXTE_LONG':
-      // Un texte long sans plafond ne partira pas à 5000 caractères en
-      // pratique ; 2000 est l'hypothèse haute raisonnable pour une mise en
-      // situation bien remplie.
-      return Math.min(plafondDe(question), question.type === 'TEXTE_LONG' ? 2_000 : 300)
+      // Sans minimum : une question obligatoire vaut au moins un caractère,
+      // une question facultative peut rester vide — le tiret qui s'affiche
+      // alors en compte un aussi.
+      return question.minimum ?? (question.obligatoire ? 1 : 0)
     case 'NOMBRE':
-      return 10
+      return String(question.minimum ?? 0).length
     case 'OUI_NON':
       return 3
     case 'CHOIX_UNIQUE':
-      return question.options.reduce((max, option) => Math.max(max, option.length), 0) || 1
+      // L'option la plus courte : c'est le plancher réel d'un choix.
+      return question.options.reduce(
+        (min, option) => Math.min(min, option.length),
+        question.options[0]?.length ?? 1,
+      )
   }
 }
 
+/**
+ * LE PLAFOND : la somme des maximums réellement applicables.
+ *
+ * Pas de longueur « réaliste » inventée : on prend le plafond que le serveur
+ * fera respecter, c'est-à-dire le maximum réglé, resserré par le plafond dur.
+ */
+function longueurPlafond(question: QuestionPubliee): number {
+  switch (question.type) {
+    case 'TEXTE_COURT':
+    case 'TEXTE_LONG':
+      return plafondDe(question)
+    case 'NOMBRE':
+      return String(question.maximum ?? 999_999_999).length
+    case 'OUI_NON':
+      return 3
+    case 'CHOIX_UNIQUE':
+      return question.options.reduce((max, option) => Math.max(max, option.length), 1)
+  }
+}
+
+/** Un repère : ce que donnerait l'embed pour un poids de réponses donné. */
+export type Repere = {
+  caracteres: number
+  /** Libellés qui n'entreraient pas du tout. */
+  omises: string[]
+  /** Libellés qui entreraient coupés. */
+  tronquees: string[]
+  /** Quelque chose ne passe pas. */
+  deborde: boolean
+}
+
 export type EtatBudget = {
-  /** Questions actives. */
   questions: number
   /** Emplacements de champ disponibles pour les réponses. */
   emplacements: number
-  /** Caractères du pire cas. */
-  caracteres: number
-  /** Le plafond auquel `caracteres` se compare. */
+  /** Le plafond de caractères auquel les deux repères se comparent. */
   budget: number
-  /** Libellés qui seraient omis dans le pire cas. */
-  omises: string[]
-  /** Libellés qui seraient coupés dans le pire cas. */
-  tronquees: string[]
-  /** Rien ne déborde. */
-  confortable: boolean
+
+  /**
+   * Au minimum configuré. Un débordement ICI est un vrai problème de
+   * configuration : l'admin doit le voir en rouge.
+   */
+  plancher: Repere
+
+  /**
+   * À la somme des maximums. Un débordement ici est la normale dès qu'on a
+   * quelques questions de texte long — c'est un CONSTAT, pas un
+   * avertissement, et jamais rouge : la troncature est prévue pour ça, et la
+   * fiche admin reste complète.
+   */
+  plafond: Repere
 }
 
 /**
- * Simule l'embed du PIRE CAS, pour l'alerte de /admin/recrutement.
+ * Les deux repères de /admin/recrutement.
  *
- * Passe par `repartirBudget()`, la même fonction que l'envoi réel : l'alerte ne
- * peut donc pas dériver du comportement effectif.
+ * Passent tous les deux par `repartirBudget()`, la fonction que l'envoi réel
+ * utilise : ces chiffres ne peuvent pas dériver du comportement effectif.
  */
 export function estimerBudget(questions: QuestionPubliee[]): EtatBudget {
-  const entrees = questions.map((question) => ({
-    nom: question.libelle,
-    // Une valeur factice de la bonne LONGUEUR : seul son poids compte ici.
-    valeur: 'x'.repeat(longueurPresumee(question)),
-  }))
-
-  // On prend une candidature fictive aux identifiants les plus longs possibles
-  // pour que l'en-tête simulé ne soit jamais plus léger que le vrai.
+  // Un en-tête simulé au maximum de sa taille, pour qu'il ne soit jamais plus
+  // léger que le vrai.
   const deja = poidsEntete('X'.repeat(16), 'X'.repeat(32), 99, 999_999)
 
-  const repartition = repartirBudget(entrees, deja)
+  const mesurer = (longueur: (q: QuestionPubliee) => number): Repere => {
+    const repartition = repartirBudget(
+      questions.map((question) => ({
+        nom: question.libelle,
+        // Une valeur factice de la bonne LONGUEUR : seul son poids compte.
+        valeur: 'x'.repeat(Math.max(1, longueur(question))),
+      })),
+      deja,
+    )
+
+    return {
+      caracteres: repartition.caracteres,
+      omises: repartition.omises,
+      tronquees: repartition.tronquees,
+      deborde: repartition.omises.length > 0 || repartition.tronquees.length > 0,
+    }
+  }
 
   return {
     questions: questions.length,
     emplacements: MAX_CHAMPS - CHAMPS_ENTETE,
-    caracteres: repartition.caracteres,
     budget: BUDGET_TOTAL,
-    omises: repartition.omises,
-    tronquees: repartition.tronquees,
-    confortable: repartition.omises.length === 0 && repartition.tronquees.length === 0,
+    plancher: mesurer(longueurPlancher),
+    plafond: mesurer(longueurPlafond),
   }
 }
 

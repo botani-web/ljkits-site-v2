@@ -15,7 +15,18 @@ export type Reglages = {
   ip: string
   discord: string
   sitesDeVote: { cle: string; sigle: string; nom: string; url: string }[]
+  /** Le formulaire /recrutement accepte-t-il des candidatures ? */
+  recrutementOuvert: boolean
+  /** Ce que lit un visiteur quand il est fermé. Jamais un 404. */
+  recrutementMessageFerme: string
 }
+
+/**
+ * Repli du message de fermeture. Ne sert que si la ligne de réglages n'existe
+ * pas : sinon c'est la valeur par défaut de la colonne qui s'applique.
+ */
+const MESSAGE_FERME_PAR_DEFAUT =
+  'Le recrutement est fermé pour le moment. Les ouvertures sont annoncées sur le Discord — passe y jeter un œil.'
 
 /**
  * Valeurs de repli, utilisées tant que la ligne de réglages n'existe pas —
@@ -26,6 +37,10 @@ export const REGLAGES_PAR_DEFAUT: Reglages = {
   ip: SITE.ip,
   discord: SITE.discord,
   sitesDeVote: SITE.sitesDeVote.map((site) => ({ ...site })),
+  // Fermé par défaut : sans ligne de réglages en base, le recrutement ne
+  // s'ouvre pas tout seul.
+  recrutementOuvert: false,
+  recrutementMessageFerme: MESSAGE_FERME_PAR_DEFAUT,
 }
 
 /**
@@ -50,6 +65,8 @@ export const lireReglages = cache(async (): Promise<Reglages> => {
   return {
     ip: enBase.ip,
     discord: enBase.discord,
+    recrutementOuvert: enBase.recrutementOuvert,
+    recrutementMessageFerme: enBase.recrutementMessageFerme,
     sitesDeVote: SITE.sitesDeVote.map((site) => ({
       ...site,
       // Une URL vide en base signifie « pas encore inscrit », comme le '#'
