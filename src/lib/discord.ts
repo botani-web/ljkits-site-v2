@@ -375,6 +375,27 @@ export type ResultatEnvoi = { envoye: true } | { envoye: false; erreur: string }
  * enregistre sur la candidature (`webhookEnvoyeAt` / `webhookErreur`) pour que
  * l'admin puisse proposer un renvoi.
  */
+/**
+ * ⚠ PIÈGE À CONNAÎTRE AVANT DE TESTER CE MODULE.
+ *
+ * Neutraliser la variable en tête d'un script de test NE SUFFIT PAS :
+ *
+ *   delete process.env.DISCORD_WEBHOOK_RECRUTEMENT   // ne protège de rien
+ *   const prisma = new PrismaClient()                // recharge .env
+ *
+ * `new PrismaClient()` charge le fichier .env de lui-même, ce qui REPOSE la
+ * variable qu’on venait de supprimer. Le webhook part alors pour de bon —
+ * c’est arrivé le 25 août 2026, une candidature de test a atterri dans le
+ * vrai salon staff.
+ *
+ * Le même piège vaut pour toute variable d'environnement et tout module qui
+ * charge .env à l’import : dotenv, Prisma, next/env.
+ *
+ * LA SEULE GARANTIE FIABLE EST DE NE PAS IMPORTER LE MODULE DU TOUT. Un test
+ * qui ne doit rien envoyer n’importe pas src/lib/discord.ts, point. Pour
+ * éprouver la mise en forme sans rien émettre, `construireMessage()` est pure
+ * et se teste seule.
+ */
 export async function envoyerCandidature(
   candidature: CandidaturePourDiscord,
 ): Promise<ResultatEnvoi> {
