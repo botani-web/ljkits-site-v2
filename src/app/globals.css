@@ -177,6 +177,45 @@
   }
 }
 
+/*
+  Bloc « audience détaillée » du tableau de bord admin, replié par défaut.
+
+  Sur téléphone, c'est un <details> natif, fermé : l'admin voit ses chiffres
+  clés et ses dernières commandes sans dérouler quatre écrans, et déplie
+  l'audience à la demande. Sur écran large (≥ 768 px), le résumé disparaît et
+  le contenu s'affiche toujours — inutile de cliquer quand la place ne manque
+  pas. Aucun JavaScript : le pli est géré par le navigateur.
+*/
+.audience-repliable > summary {
+  cursor: pointer;
+  list-style: none;
+}
+.audience-repliable > summary::-webkit-details-marker {
+  display: none;
+}
+.audience-repliable[open] > summary .audience-chevron {
+  transform: rotate(180deg);
+}
+
+/* Affichage piloté entièrement en CSS, sans dépendre du masquage natif du
+   <details> : fermé → caché, ouvert → colonne flex. */
+.audience-repliable > .audience-contenu {
+  display: none;
+}
+.audience-repliable[open] > .audience-contenu {
+  display: flex;
+}
+
+/* Écran large : le résumé disparaît et le contenu s'affiche toujours. */
+@media (min-width: 768px) {
+  .audience-repliable > summary {
+    display: none;
+  }
+  .audience-repliable > .audience-contenu {
+    display: flex !important;
+  }
+}
+
 /* ==========================================================================
    RENDU DU MARKDOWN
    Applique le style des maquettes au HTML produit par src/lib/markdown.ts.
