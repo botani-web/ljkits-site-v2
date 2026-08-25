@@ -419,6 +419,19 @@ model Reglages {
   urlTopServeurs       String @default("")
   urlServeursMinecraft String @default("")
 
+  /// Le recrutement staff accepte-t-il des candidatures ?
+  ///
+  /// FAUX PAR DÉFAUT, et peuplerReglages() ne touche jamais une ligne de
+  /// réglages déjà présente : ni une migration, ni un déploiement, ni un seed
+  /// ne peut ouvrir le recrutement. Seul un clic dans /admin/recrutement le
+  /// peut.
+  recrutementOuvert Boolean @default(false)
+
+  /// Ce que lit un visiteur qui ouvre /recrutement quand c'est fermé.
+  /// Un message, jamais un 404 : le lien vient d'être partagé à la main, et
+  /// une page introuvable donnerait l'impression d'un site cassé.
+  recrutementMessageFerme String @default("Le recrutement est fermé pour le moment. Les ouvertures sont annoncées sur le Discord — passe y jeter un œil.") @db.Text
+
   updatedAt DateTime @updatedAt
 
   @@map("reglages")
@@ -486,9 +499,9 @@ model StatistiqueJour {
   /// Le jour concerné, à minuit Europe/Paris. Type DATE : pas d'heure.
   jour DateTime @id @db.Date
 
-  vues      Int
+  vues           Int
   /// Visiteurs distincts (visiteId) ce jour-là.
-  visiteurs Int
+  visiteurs      Int
   /// Temps moyen passé, en millisecondes, sur les vues qui avaient une durée.
   /// null si aucune vue du jour n'a pu être mesurée jusqu'à sa sortie.
   dureeMoyenneMs Int?
@@ -529,4 +542,263 @@ model EchantillonFrequentation {
 
   @@index([releveLe])
   @@map("echantillon_frequentation")
+}
+
+// ---------------------------------------------------------------------------
+// RECRUTEMENT STAFF
+//
+// Un formulaire de candidature accessible par lien direct uniquement
+// (/recrutement, en noindex, jamais lié depuis le site), dont les QUESTIONS
+// SONT EN BASE et non dans le code : elles s'ajoutent, se modifient, se
+// réordonnent et se désactivent depuis /admin/recrutement.
+//
+// Le principe qui gouverne tout ce bloc : une candidature déjà reçue ne doit
+// JAMAIS devenir illisible parce que le questionnaire a changé après coup.
+// D'où `ReponseCandidature`, qui est une PHOTOGRAPHIE (libellé, type, section
+// et rang figés à l'envoi) et non une simple clé étrangère. L'affichage d'une
+// candidature ne relit jamais `QuestionRecrutement` : il se suffit à lui-même.
+// ---------------------------------------------------------------------------
+
+/// Les types de champ proposés à l'admin.
+/// TEXTE_COURT  : <input type="text">, une ligne.
+/// TEXTE_LONG   : <textarea>, c'est le type des mises en situation.
+/// NOMBRE       : entier, bornes dans `minimum` / `maximum`.
+/// OUI_NON      : deux boutons radio, stockés "oui" / "non".
+/// CHOIX_UNIQUE : une option parmi `options`, validée côté serveur.
+enum TypeQuestion {
+  TEXTE_COURT
+  TEXTE_LONG
+  NOMBRE
+  OUI_NON
+  CHOIX_UNIQUE
+}
+
+/// EN_ATTENTE : reçue, pas encore traitée.
+/// ACCEPTEE   : le candidat rejoint le staff.
+/// REFUSEE    : c'est `decideeAt` qui fait alors courir le délai de carence.
+enum StatutCandidature {
+  EN_ATTENTE
+  ACCEPTEE
+  REFUSEE
+}
+
+/// Un intertitre du formulaire : "Identité", "Mises en situation"…
+/// Administrable comme les questions : renommable, réordonnable, désactivable.
+model SectionRecrutement {
+  id  String @id @default(cuid())
+  nom String
+
+  /// Position de la section dans le formulaire.
+  ordre Int
+
+  /// false = la section ET toutes ses questions disparaissent du formulaire
+  /// public, sans rien supprimer.
+  actif Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  questions QuestionRecrutement[]
+
+  @@index([actif, ordre])
+  @@index([ordre])
+}
+
+/// Une question du formulaire.
+model QuestionRecrutement {
+  id        String @id @default(cuid())
+  sectionId String
+
+  /// L'intitulé lu par le candidat : "Qu'est-ce que le soup PvP pour toi ?".
+  libelle String @db.Text
+
+  /// Texte d'aide affiché SOUS le champ. Optionnel.
+  aide String? @db.Text
+
+  type TypeQuestion @default(TEXTE_COURT)
+
+  /// Les choix proposés, pour CHOIX_UNIQUE uniquement. Vide ailleurs.
+  /// Le schéma zod du formulaire public est construit à partir de CETTE
+  /// liste : une option forgée par le navigateur est rejetée.
+  options String[] @default([])
+
+  obligatoire Boolean @default(true)
+
+  /// Un seul couple de bornes pour trois usages, selon `type` :
+  ///   TEXTE_COURT / TEXTE_LONG → un NOMBRE DE CARACTÈRES (les 200 caractères
+  ///                              minimum des mises en situation, par exemple) ;
+  ///   NOMBRE                   → une VALEUR ;
+  ///   OUI_NON / CHOIX_UNIQUE   → ignorées.
+  /// Deux champs plutôt que quatre : c'est l'admin qui étiquette la saisie
+  /// selon le type choisi — jamais un « Minimum » nu, cf. uniteDesBornes()
+  /// dans src/lib/recrutement.ts. Quoi qu'il y ait ici, le serveur applique en
+  /// plus un plafond dur par champ.
+  minimum Int?
+  maximum Int?
+
+  /// Position DANS SA SECTION. Réordonné par les boutons ↑ / ↓, comme les
+  /// kits et les sections de règlement : pas de contrainte d'unicité, la
+  /// permutation se fait en une transaction.
+  ordre Int
+
+  /// false = retirée du formulaire, conservée en base.
+  ///
+  /// C'est l'état dans lequel bascule une question qu'on « supprime » alors
+  /// que des candidatures y ont déjà répondu : la Server Action refuse le
+  /// DELETE et désactive à la place (cf. src/actions/recrutement.ts).
+  actif Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  /// Restrict et non Cascade : supprimer une section ne doit pas emporter
+  /// silencieusement ses questions, donc l'historique qui s'y rattache.
+  section  SectionRecrutement   @relation(fields: [sectionId], references: [id], onDelete: Restrict)
+  reponses ReponseCandidature[]
+
+  @@index([sectionId, ordre])
+  @@index([actif, ordre])
+}
+
+/// Une candidature reçue.
+///
+/// Les trois champs d'identité (pseudo Minecraft, pseudo Discord, âge) sont
+/// des COLONNES et non des questions administrables. Ils portent des règles
+/// métier — délai de carence, limitation de débit, affichage de la liste, mise
+/// en évidence dans l'embed Discord, âge minimum — qu'un clic malheureux dans
+/// l'admin (désactivation, changement de type, suppression) casserait
+/// silencieusement. Tout le reste du formulaire est administrable.
+model Candidature {
+  /// Identifiant non devinable : c'est lui qui sert d'URL de fiche en admin.
+  id String @id @default(cuid())
+
+  /// Numéro lisible, cité au candidat et sur Discord : #000042.
+  numero Int @unique @default(autoincrement())
+
+  /// Validé par le même regex que la boutique : 3 à 16 caractères, [A-Za-z0-9_].
+  pseudoMinecraft String
+  /// Pour que le chef staff puisse prendre le relais avec le candidat.
+  pseudoDiscord   String
+  /// Entier. Le minimum de 16 ans est appliqué côté serveur.
+  age             Int
+
+  statut StatutCandidature @default(EN_ATTENTE)
+
+  /// Notes internes du staff sur ce candidat. Jamais montrées ailleurs.
+  noteAdmin String? @db.Text
+
+  /// Instant du passage à ACCEPTEE ou REFUSEE. C'est de LUI que part le délai
+  /// de carence de 30 jours après un refus, et non de `createdAt` : le délai
+  /// doit courir à partir de la décision, pas de l'envoi.
+  decideeAt DateTime?
+
+  /// Consentement RGPD. Le TEXTE est figé, pas seulement la date : si la
+  /// formulation change un jour, on saura toujours à quoi chaque candidat a
+  /// consenti.
+  consentementAt    DateTime
+  consentementTexte String   @db.Text
+
+  /// Suivi de la notification Discord. `webhookEnvoyeAt` null + `webhookErreur`
+  /// renseigné = la candidature est bien en base mais n'est pas partie sur
+  /// Discord ; l'admin l'affiche et propose un renvoi. Une candidature n'est
+  /// jamais perdue à cause de Discord.
+  webhookEnvoyeAt DateTime?
+  webhookErreur   String?
+
+  createdAt DateTime @default(now())
+
+  /// La corbeille. null = candidature vivante.
+  ///
+  /// Le CASCADE sur les réponses rend un vrai DELETE irréversible : il emporte
+  /// des réponses écrites par une personne réelle, sous un consentement figé.
+  /// La mise à la corbeille est donc l'opération courante, réversible d'un
+  /// clic ; la suppression définitive reste possible depuis la corbeille, mais
+  /// derrière une confirmation en deux temps (il faut retaper le pseudo du
+  /// candidat). Elle doit rester accessible : un candidat qui demande
+  /// l'effacement de ses données a droit à un vrai DELETE, pas à un drapeau.
+  ///
+  /// ⚠ UNE LECTURE IGNORE CE CHAMP, DÉLIBÉRÉMENT : le délai de carence
+  /// (cf. verifierEligibilite() dans src/lib/limite.ts). Sinon, ranger sa boîte
+  /// de réception rouvrirait la porte à un candidat refusé la veille.
+  ///
+  /// Le cron de maintenance purge la corbeille au bout de 30 jours, et toutes
+  /// les candidatures au bout de 6 mois — la durée annoncée au candidat.
+  supprimeeAt DateTime?
+
+  reponses ReponseCandidature[]
+
+  @@index([statut, createdAt])
+  /// Sert la liste (qui exclut la corbeille) et la purge de la corbeille.
+  @@index([supprimeeAt, createdAt])
+  /// Sert au délai de carence et au blocage d'une candidature déjà en cours.
+  /// La comparaison se fait en `mode: 'insensitive'` (Lestoo == lestoo), ce que
+  /// PostgreSQL ne peut pas servir par cet index : à l'échelle attendue
+  /// (quelques centaines de lignes) le parcours est sans conséquence, et un
+  /// index fonctionnel sur lower() serait de l'optimisation prématurée.
+  @@index([pseudoMinecraft, createdAt])
+  /// Purge des candidatures de plus de 6 mois par le cron de maintenance.
+  @@index([createdAt])
+}
+
+/// Une réponse, figée au moment de l'envoi.
+///
+/// TOUT ce qu'il faut pour afficher la ligne est ici : le libellé, le type, le
+/// nom de la section et le rang. Les questions peuvent être renommées,
+/// retypées, réordonnées, désactivées ou supprimées ensuite — la fiche reste
+/// exactement telle que le candidat l'a remplie.
+///
+/// Une ligne est écrite pour CHAQUE question active à l'envoi, MÊME SANS
+/// RÉPONSE (`valeur` vide). C'est ce qui distingue « on lui a posé la
+/// question, il n'a pas répondu » de « la question n'existait pas encore » —
+/// et c'est ce qui fait qu'ajouter une obligation après coup n'a aucun effet
+/// rétroactif : l'obligation est vérifiée à l'ENVOI, jamais à la lecture.
+model ReponseCandidature {
+  id            String @id @default(cuid())
+  candidatureId String
+
+  /// Conservé pour l'analyse (regrouper les réponses d'une même question) et
+  /// pour afficher un repère « question supprimée depuis » quand il vaut null.
+  /// N'entre JAMAIS dans le rendu de la fiche.
+  questionId String?
+
+  /// La photographie.
+  libelleFige  String       @db.Text
+  typeFige     TypeQuestion
+  sectionFigee String
+
+  /// Rang ABSOLU dans le formulaire tel qu'il a été affiché (0, 1, 2…), toutes
+  /// sections confondues. Trier là-dessus restitue l'ordre exact que le
+  /// candidat a vu, même si les questions ont été réordonnées depuis.
+  ordreFige Int
+
+  /// Forme canonique, quel que soit le type : "oui" / "non" pour OUI_NON,
+  /// l'entier en décimal pour NOMBRE, le libellé de l'option pour
+  /// CHOIX_UNIQUE. C'est `typeFige` qui commande le rendu.
+  valeur String @db.Text
+
+  candidature Candidature          @relation(fields: [candidatureId], references: [id], onDelete: Cascade)
+  question    QuestionRecrutement? @relation(fields: [questionId], references: [id], onDelete: SetNull)
+
+  @@index([candidatureId, ordreFige])
+  @@index([questionId])
+}
+
+/// Compteur de la limitation de débit du formulaire public.
+///
+/// Une ligne par TENTATIVE (acceptée ou refusée), volontairement séparée de
+/// `Candidature` : une tentative rejetée doit compter, sinon un script refusé
+/// pourrait réessayer sans fin.
+///
+/// `empreinte` ne contient JAMAIS d'adresse IP en clair : c'est
+/// "ip:<sha256(ip + AUTH_SECRET)>" ou "pseudo:<pseudo en minuscules>". Le
+/// compteur global de l'heure se lit en comptant les empreintes "ip:".
+/// Purgée à 7 jours par le cron de maintenance : au-delà, plus aucune fenêtre
+/// ne s'en sert.
+model TentativeRecrutement {
+  id        String   @id @default(cuid())
+  empreinte String
+  createdAt DateTime @default(now())
+
+  @@index([empreinte, createdAt])
+  @@index([createdAt])
 }
