@@ -20,7 +20,7 @@
  * retrouves avec les deux. À vérifier après chaque seed sur une base déjà
  * utilisée.
  */
-import { PrismaClient, type TypeKit } from '@prisma/client'
+import { PrismaClient, type TypeKit, type TypeQuestion } from '@prisma/client'
 import { hash } from 'bcryptjs'
 
 // Charge .env sans dépendance externe (Node 20.6+).
@@ -1072,12 +1072,268 @@ async function peuplerAdmin() {
   console.log(`✔ Compte admin prêt : ${email}`)
 }
 
+/* -------------------------------------------------------------------------- */
+/* RECRUTEMENT STAFF                                                          */
+/* -------------------------------------------------------------------------- */
+
+type QuestionDeReference = {
+  libelle: string
+  aide?: string
+  type: TypeQuestion
+  options?: string[]
+  /** Par défaut true : une question de candidature se répond. */
+  obligatoire?: boolean
+  /** Caractères pour les textes, valeur pour les nombres. */
+  minimum?: number
+  maximum?: number
+}
+
+type SectionDeReference = {
+  nom: string
+  questions: QuestionDeReference[]
+}
+
 /**
- * Trois modes :
+ * Le questionnaire d'amorçage.
  *
- *   npm run db:seed            tout le contenu de référence
- *   npm run db:seed:boutique   grades et packs UNIQUEMENT
- *   npm run db:seed:prix       prix en euros et mise en vente des kits UNIQUEMENT
+ * Ce n'est qu'un POINT DE DÉPART : tout est modifiable depuis
+ * /admin/recrutement, et le seed ne repassera jamais dessus (cf.
+ * peuplerRecrutement plus bas).
+ *
+ * Ce qui n'est PAS ici et n'a pas à y être : le pseudo Minecraft, le pseudo
+ * Discord et l'âge. Ce sont des colonnes de `Candidature`, pas des questions —
+ * elles portent le délai de carence, la limitation de débit et l'âge minimum
+ * de 16 ans, et le formulaire les affiche d'office en tête.
+ */
+const RECRUTEMENT: SectionDeReference[] = [
+  {
+    nom: 'Identité',
+    questions: [
+      {
+        libelle: 'Dans quel pays vis-tu, et à quel fuseau horaire ?',
+        aide: 'Exemple : France, UTC+1. Ça nous sert à savoir quand tu es joignable.',
+        type: 'TEXTE_COURT',
+        maximum: 120,
+      },
+      {
+        libelle: 'As-tu un micro en état de marche ?',
+        aide: 'Le staff se parle en vocal pour les décisions rapides.',
+        type: 'OUI_NON',
+      },
+    ],
+  },
+
+  {
+    nom: 'Disponibilité',
+    questions: [
+      {
+        libelle: 'Depuis quand joues-tu sur LJKITS ?',
+        aide: 'Une date approximative suffit.',
+        type: 'TEXTE_COURT',
+        maximum: 120,
+      },
+      {
+        libelle: 'Combien d’heures par semaine peux-tu consacrer au staff ?',
+        aide: 'Sois réaliste. Trois heures tenues valent mieux que dix promises.',
+        type: 'NOMBRE',
+        minimum: 1,
+        maximum: 80,
+      },
+      {
+        libelle: 'Quels sont tes créneaux habituels ?',
+        aide: 'Les jours et les heures, même approximativement.',
+        type: 'TEXTE_LONG',
+        minimum: 30,
+        maximum: 600,
+      },
+    ],
+  },
+
+  {
+    nom: 'Connaissance du serveur',
+    questions: [
+      {
+        libelle: 'Qu’est-ce que le soup PvP, et pourquoi ce serveur-là ?',
+        type: 'TEXTE_LONG',
+        minimum: 150,
+        maximum: 1_500,
+      },
+      {
+        libelle: 'Quel est ton kit principal, et qu’est-ce qui te plaît dedans ?',
+        type: 'TEXTE_LONG',
+        minimum: 40,
+        maximum: 800,
+      },
+      {
+        libelle: 'S’il y avait une chose à changer sur LJKITS, laquelle ?',
+        aide: 'Une critique argumentée nous intéresse plus qu’un compliment.',
+        type: 'TEXTE_LONG',
+        minimum: 40,
+        maximum: 800,
+      },
+    ],
+  },
+
+  {
+    /**
+     * Les cinq mises en situation. `minimum: 200` sur chacune : c'est le seuil
+     * en dessous duquel une réponse ne dit rien de la façon dont quelqu'un
+     * arbitre. Le formulaire affiche le compteur de caractères en direct.
+     */
+    nom: 'Mises en situation',
+    questions: [
+      {
+        libelle:
+          'Un joueur insulte un autre joueur dans le chat général. Que fais-tu, concrètement ?',
+        type: 'TEXTE_LONG',
+        minimum: 200,
+        maximum: 2_000,
+      },
+      {
+        libelle:
+          'Tu soupçonnes un joueur de tricher, mais tu n’as aucune preuve. Que fais-tu ?',
+        type: 'TEXTE_LONG',
+        minimum: 200,
+        maximum: 2_000,
+      },
+      {
+        libelle:
+          'Un joueur t’accuse publiquement d’abus de pouvoir dans le chat. Que fais-tu ?',
+        type: 'TEXTE_LONG',
+        minimum: 200,
+        maximum: 2_000,
+      },
+      {
+        libelle: 'Un ami à toi enfreint le règlement sous tes yeux. Que fais-tu ?',
+        type: 'TEXTE_LONG',
+        minimum: 200,
+        maximum: 2_000,
+      },
+      {
+        libelle:
+          'Un joueur ouvre un ticket : il a payé un grade et ne l’a pas reçu. Que fais-tu ?',
+        type: 'TEXTE_LONG',
+        minimum: 200,
+        maximum: 2_000,
+      },
+    ],
+  },
+
+  {
+    nom: 'Expérience',
+    questions: [
+      {
+        libelle: 'As-tu déjà été staff sur un autre serveur ?',
+        aide: 'Si oui : lequel, quel rôle, combien de temps, et pourquoi tu es parti. Si non, dis-le simplement — ça ne joue pas contre toi.',
+        type: 'TEXTE_LONG',
+        maximum: 1_500,
+      },
+      {
+        libelle: 'As-tu déjà été sanctionné sur un serveur Minecraft ?',
+        aide: 'Une réponse honnête ne disqualifie pas. Un mensonge découvert, oui.',
+        type: 'TEXTE_LONG',
+        maximum: 1_000,
+      },
+    ],
+  },
+
+  {
+    nom: 'Motivation',
+    questions: [
+      {
+        libelle: 'Pourquoi veux-tu rejoindre le staff de LJKITS ?',
+        type: 'TEXTE_LONG',
+        minimum: 150,
+        maximum: 1_500,
+      },
+      {
+        libelle: 'Qu’apportes-tu que les autres candidats n’apportent pas ?',
+        type: 'TEXTE_LONG',
+        minimum: 100,
+        maximum: 1_200,
+      },
+    ],
+  },
+
+  {
+    nom: 'Libre',
+    questions: [
+      {
+        // Sans consigne et sans obligation : c'est le principe du champ libre.
+        libelle: 'Quelque chose à ajouter ?',
+        type: 'TEXTE_LONG',
+        obligatoire: false,
+        maximum: 2_000,
+      },
+    ],
+  },
+]
+
+/**
+ * Peuple le questionnaire de recrutement — UNE SEULE FOIS DANS LA VIE DE LA BASE.
+ *
+ * Contrairement aux kits et au règlement, ce seed n'upserte rien : si la
+ * moindre section existe déjà, il ne fait RIEN et repart. Deux raisons.
+ *
+ *   1. Les questions sont faites pour être retouchées depuis l'admin. Un upsert
+ *      annulerait ces retouches à chaque relance — c'est exactement le problème
+ *      qu'on a eu avec le seed des kits.
+ *   2. Une identification par clé stable ne suffirait pas : une question
+ *      volontairement supprimée depuis l'admin ressusciterait à la relance
+ *      suivante. Le tout-ou-rien est le seul comportement qui ne surprend
+ *      jamais.
+ *
+ * Pour repartir du questionnaire d'origine, il faut donc vider les sections à
+ * la main — un geste conscient, pas un effet de bord.
+ */
+async function peuplerRecrutement() {
+  const dejaLa = await prisma.sectionRecrutement.findFirst({ select: { id: true } })
+
+  if (dejaLa) {
+    console.log('↷ Recrutement déjà peuplé, rien touché.')
+    return
+  }
+
+  let questions = 0
+
+  for (const [index, section] of RECRUTEMENT.entries()) {
+    await prisma.sectionRecrutement.create({
+      data: {
+        nom: section.nom,
+        ordre: index,
+        questions: {
+          create: section.questions.map((question, rang) => ({
+            libelle: question.libelle,
+            aide: question.aide ?? null,
+            type: question.type,
+            options: question.options ?? [],
+            obligatoire: question.obligatoire ?? true,
+            minimum: question.minimum ?? null,
+            maximum: question.maximum ?? null,
+            ordre: rang,
+          })),
+        },
+      },
+    })
+
+    questions += section.questions.length
+  }
+
+  console.log(
+    `✔ Recrutement : ${RECRUTEMENT.length} sections et ${questions} questions créées.`,
+  )
+  console.log(
+    '  Le recrutement reste FERMÉ : ouvre-le depuis /admin/recrutement quand tu veux.',
+  )
+}
+
+/**
+ * Quatre modes :
+ *
+ *   npm run db:seed              tout le contenu de référence
+ *   npm run db:seed:boutique     grades et packs UNIQUEMENT
+ *   npm run db:seed:prix         prix en euros et mise en vente des kits UNIQUEMENT
+ *   npm run db:seed:recrutement  le questionnaire de recrutement UNIQUEMENT
  *
  * Les deux modes partiels existent pour une raison précise : sur une base déjà
  * en service, le seed complet réécrit les 29 kits et les 7 sections, donc
@@ -1088,14 +1344,25 @@ async function peuplerAdmin() {
  *   --prix      quand on met les kits classiques en vente : seuls
  *               prixEurosCentimes, achetable et les commandes console vides
  *               sont écrits. Aucun texte de kit n'est touché.
+ *
+ * --recrutement est à part : il ne peut RIEN écraser, jamais. Il s'auto-annule
+ * dès qu'une section de recrutement existe, dans tous les modes. Le questionnaire
+ * est fait pour être retouché depuis l'admin, et le seed ne repasse pas dessus.
  */
 async function main() {
   const boutiqueSeulement = process.argv.includes('--boutique')
   const prixSeulement = process.argv.includes('--prix')
+  const recrutementSeulement = process.argv.includes('--recrutement')
 
   if (boutiqueSeulement && prixSeulement) {
     console.error('✖ --boutique et --prix ne se combinent pas : lance-les l’un après l’autre.')
     process.exitCode = 1
+    return
+  }
+
+  if (recrutementSeulement) {
+    console.log('Mode recrutement : seul le questionnaire sera peuplé, s’il est vide.')
+    await peuplerRecrutement()
     return
   }
 
@@ -1117,6 +1384,7 @@ async function main() {
   await peuplerGrades()
   await peuplerPacks()
   await peuplerReglement()
+  await peuplerRecrutement()
   await peuplerAdmin()
 }
 
