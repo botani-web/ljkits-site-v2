@@ -26,3 +26,4 @@ next-env.d.ts
 # pas son contenu.
 /.agents
 /.claude
+.vercel

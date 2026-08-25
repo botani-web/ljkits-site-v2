@@ -1,5 +1,5 @@
 /**
- * Les chiffres de /admin/stats.
+ * Les chiffres du tableau de bord /admin.
  *
  * Deux familles qui ne se mélangent pas :
  *   - l'ARGENT, lu dans Commande et LigneCommande ;
@@ -9,25 +9,54 @@
  * commandes livrées, et les remboursements en sont retranchés. Une commande
  * créée mais jamais payée ne vaut rien, et un remboursement n'est pas un
  * revenu — les afficher gonflerait les chiffres sans rien dire de vrai.
+ *
+ * Toutes les bornes de fenêtres (mois, 30 jours, période précédente) passent
+ * par src/lib/temps.ts et sont donc calées sur le fuseau Europe/Paris, alors
+ * même que Vercel exécute le code en UTC.
  */
+import type { StatutCommande } from '@prisma/client'
+
 import { prisma } from '@/lib/prisma'
+import {
+  cleMoisParis,
+  debutDuJourParis,
+  debutDuMoisParis,
+  libelleMois,
+} from '@/lib/temps'
 
 /** Les statuts qui représentent de l'argent réellement encaissé. */
 const STATUTS_ENCAISSES = ['LIVREE'] as const
 
+/** Les statuts d'une commande payée (ou en passe de l'être) mais pas livrée. */
+const STATUTS_A_LIVRER = ['EN_ATTENTE', 'PAYEE'] as const
+
 /** Nombre de lignes dans les palmarès (pages, articles, sources). */
 const TAILLE_PALMARES = 12
 
-/** Le début du mois courant, dans le fuseau du serveur. */
-function debutDuMois(decalageMois = 0) {
-  const maintenant = new Date()
-  return new Date(maintenant.getFullYear(), maintenant.getMonth() - decalageMois, 1)
+/* -------------------------------------------------------------------------- */
+/* ÉVOLUTION                                                                  */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Comparaison d'une valeur à celle de la période précédente.
+ *
+ * `sens` pilote la couleur de la tuile (vert / rouge / neutre). Quand la
+ * période précédente vaut zéro, l'évolution est INDISPONIBLE — pas +100 %, pas
+ * +∞ : diviser par zéro ne veut rien dire, et la tuile affiche « — ».
+ */
+export type Evolution = {
+  pourcentage: number | null
+  sens: 'hausse' | 'baisse' | 'stable' | 'indisponible'
 }
 
-function ilYaJours(jours: number) {
-  const date = new Date()
-  date.setDate(date.getDate() - jours)
-  return date
+function evolution(actuel: number, precedent: number): Evolution {
+  if (precedent === 0) return { pourcentage: null, sens: 'indisponible' }
+
+  const variation = Math.round(((actuel - precedent) / precedent) * 100)
+  return {
+    pourcentage: variation,
+    sens: variation > 0 ? 'hausse' : variation < 0 ? 'baisse' : 'stable',
+  }
 }
 
 /* -------------------------------------------------------------------------- */
@@ -38,48 +67,86 @@ export type ResumeArgent = {
   caTotalCentimes: number
   caMoisCentimes: number
   ca30joursCentimes: number
+  ca30joursEvolution: Evolution
   rembourseCentimes: number
+  /** Commandes livrées depuis toujours. */
   commandesLivrees: number
+  /** Commandes livrées sur les 30 derniers jours, et son évolution. */
+  commandes30jours: number
+  commandes30joursEvolution: Evolution
+  /** Commandes payées (ou en attente de paiement) mais pas encore livrées. */
+  enAttenteLivraison: number
+  /** Panier moyen de toujours. */
   panierMoyenCentimes: number
+  /** Panier moyen sur 30 jours, et son évolution. */
+  panierMoyen30joursCentimes: number
+  panierMoyen30joursEvolution: Evolution
   /** Commandes créées, tous statuts confondus — le haut de l'entonnoir. */
   commandesCreees: number
-  /** Part des commandes créées qui ont été payées, en pourcentage. */
+  /** Part des commandes créées qui ont été livrées, en pourcentage. */
   tauxConversion: number
 }
 
 export async function lireArgent(): Promise<ResumeArgent> {
-  const [total, mois, trenteJours, rembourse, creees] = await Promise.all([
-    prisma.commande.aggregate({
-      where: { statut: { in: [...STATUTS_ENCAISSES] } },
-      _sum: { montantTotalCentimes: true },
-      _count: { _all: true },
-    }),
-    prisma.commande.aggregate({
-      where: { statut: { in: [...STATUTS_ENCAISSES] }, payeeAt: { gte: debutDuMois() } },
-      _sum: { montantTotalCentimes: true },
-    }),
-    prisma.commande.aggregate({
-      where: { statut: { in: [...STATUTS_ENCAISSES] }, payeeAt: { gte: ilYaJours(30) } },
-      _sum: { montantTotalCentimes: true },
-    }),
-    prisma.commande.aggregate({
-      where: { statut: 'REMBOURSEE' },
-      _sum: { montantTotalCentimes: true },
-    }),
-    prisma.commande.count(),
-  ])
+  const debutMois = debutDuMoisParis()
+  const debut30 = debutDuJourParis(new Date(), 30)
+  const debut60 = debutDuJourParis(new Date(), 60)
+
+  const encaissees = { statut: { in: [...STATUTS_ENCAISSES] } }
+
+  const [total, mois, fenetre30, fenetrePrecedente, rembourse, creees, aLivrer] =
+    await Promise.all([
+      prisma.commande.aggregate({
+        where: encaissees,
+        _sum: { montantTotalCentimes: true },
+        _count: { _all: true },
+      }),
+      prisma.commande.aggregate({
+        where: { ...encaissees, payeeAt: { gte: debutMois } },
+        _sum: { montantTotalCentimes: true },
+      }),
+      prisma.commande.aggregate({
+        where: { ...encaissees, payeeAt: { gte: debut30 } },
+        _sum: { montantTotalCentimes: true },
+        _count: { _all: true },
+      }),
+      prisma.commande.aggregate({
+        where: { ...encaissees, payeeAt: { gte: debut60, lt: debut30 } },
+        _sum: { montantTotalCentimes: true },
+        _count: { _all: true },
+      }),
+      prisma.commande.aggregate({
+        where: { statut: 'REMBOURSEE' },
+        _sum: { montantTotalCentimes: true },
+      }),
+      prisma.commande.count(),
+      prisma.commande.count({ where: { statut: { in: [...STATUTS_A_LIVRER] } } }),
+    ])
 
   const caTotalCentimes = total._sum.montantTotalCentimes ?? 0
   const commandesLivrees = total._count._all
 
+  const ca30 = fenetre30._sum.montantTotalCentimes ?? 0
+  const cmd30 = fenetre30._count._all
+  const caPrec = fenetrePrecedente._sum.montantTotalCentimes ?? 0
+  const cmdPrec = fenetrePrecedente._count._all
+
+  const panier30 = cmd30 === 0 ? 0 : Math.round(ca30 / cmd30)
+  const panierPrec = cmdPrec === 0 ? 0 : Math.round(caPrec / cmdPrec)
+
   return {
     caTotalCentimes,
     caMoisCentimes: mois._sum.montantTotalCentimes ?? 0,
-    ca30joursCentimes: trenteJours._sum.montantTotalCentimes ?? 0,
+    ca30joursCentimes: ca30,
+    ca30joursEvolution: evolution(ca30, caPrec),
     rembourseCentimes: rembourse._sum.montantTotalCentimes ?? 0,
     commandesLivrees,
-    panierMoyenCentimes:
-      commandesLivrees === 0 ? 0 : Math.round(caTotalCentimes / commandesLivrees),
+    commandes30jours: cmd30,
+    commandes30joursEvolution: evolution(cmd30, cmdPrec),
+    enAttenteLivraison: aLivrer,
+    panierMoyenCentimes: commandesLivrees === 0 ? 0 : Math.round(caTotalCentimes / commandesLivrees),
+    panierMoyen30joursCentimes: panier30,
+    panierMoyen30joursEvolution: evolution(panier30, panierPrec),
     commandesCreees: creees,
     tauxConversion: creees === 0 ? 0 : Math.round((commandesLivrees / creees) * 100),
   }
@@ -95,7 +162,7 @@ export type MoisDeVente = {
 
 /** Les douze derniers mois, du plus ancien au plus récent, trous compris. */
 export async function lireMois(): Promise<MoisDeVente[]> {
-  const depuis = debutDuMois(11)
+  const depuis = debutDuMoisParis(new Date(), 11)
 
   const commandes = await prisma.commande.findMany({
     where: { statut: { in: [...STATUTS_ENCAISSES] }, payeeAt: { gte: depuis } },
@@ -106,22 +173,14 @@ export async function lireMois(): Promise<MoisDeVente[]> {
   // apparaître à zéro, pas disparaître du graphique.
   const cases = new Map<string, MoisDeVente>()
   for (let recul = 11; recul >= 0; recul--) {
-    const date = debutDuMois(recul)
-    const cle = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
-    cases.set(cle, {
-      cle,
-      libelle: date.toLocaleDateString('fr-FR', { month: 'short', year: '2-digit' }),
-      caCentimes: 0,
-      commandes: 0,
-    })
+    const debut = debutDuMoisParis(new Date(), recul)
+    const cle = cleMoisParis(debut)
+    cases.set(cle, { cle, libelle: libelleMois(debut), caCentimes: 0, commandes: 0 })
   }
 
   for (const commande of commandes) {
     if (!commande.payeeAt) continue
-    const cle = `${commande.payeeAt.getFullYear()}-${String(
-      commande.payeeAt.getMonth() + 1,
-    ).padStart(2, '0')}`
-    const mois = cases.get(cle)
+    const mois = cases.get(cleMoisParis(commande.payeeAt))
     if (!mois) continue
     mois.caCentimes += commande.montantTotalCentimes
     mois.commandes += 1
@@ -165,22 +224,118 @@ export async function lireArticles(): Promise<ArticleVendu[]> {
     .slice(0, TAILLE_PALMARES)
 }
 
-export type StatutCompte = { statut: string; nombre: number; totalCentimes: number }
+export type VenteCategorie = {
+  /** 'KIT' | 'GRADE' | 'PACK' */
+  categorie: string
+  libelle: string
+  quantite: number
+  caCentimes: number
+}
 
-export async function lireStatuts(): Promise<StatutCompte[]> {
-  const groupes = await prisma.commande.groupBy({
-    by: ['statut'],
+/**
+ * Ventes réparties par catégorie d'article (kit, grade, pack), sur les
+ * commandes livrées. C'est la matière du donut « ce qui se vend ».
+ */
+export async function lireVentesParCategorie(): Promise<VenteCategorie[]> {
+  const groupes = await prisma.ligneCommande.groupBy({
+    by: ['type'],
+    where: { commande: { statut: { in: [...STATUTS_ENCAISSES] } } },
     _count: { _all: true },
-    _sum: { montantTotalCentimes: true },
+    _sum: { prixCentimes: true },
   })
+
+  const libelles: Record<string, string> = { KIT: 'Kits', GRADE: 'Grades', PACK: 'Packs' }
 
   return groupes
     .map((groupe) => ({
-      statut: groupe.statut,
-      nombre: groupe._count._all,
-      totalCentimes: groupe._sum.montantTotalCentimes ?? 0,
+      categorie: groupe.type,
+      libelle: libelles[groupe.type] ?? groupe.type,
+      quantite: groupe._count._all,
+      caCentimes: groupe._sum.prixCentimes ?? 0,
     }))
-    .sort((a, b) => b.nombre - a.nombre)
+    .sort((a, b) => b.caCentimes - a.caCentimes)
+}
+
+export type CommandeRecente = {
+  id: string
+  numero: number
+  pseudoMinecraft: string
+  articles: string
+  montantTotalCentimes: number
+  statut: StatutCommande
+  createdAt: Date
+}
+
+/** Les N dernières commandes créées, tous statuts confondus. */
+export async function lireDernieresCommandes(limite = 10): Promise<CommandeRecente[]> {
+  const commandes = await prisma.commande.findMany({
+    orderBy: { createdAt: 'desc' },
+    take: limite,
+    select: {
+      id: true,
+      numero: true,
+      pseudoMinecraft: true,
+      montantTotalCentimes: true,
+      statut: true,
+      createdAt: true,
+      lignes: { select: { libelle: true } },
+    },
+  })
+
+  return commandes.map((commande) => ({
+    id: commande.id,
+    numero: commande.numero,
+    pseudoMinecraft: commande.pseudoMinecraft,
+    articles: commande.lignes.map((ligne) => ligne.libelle).join(' · '),
+    montantTotalCentimes: commande.montantTotalCentimes,
+    statut: commande.statut,
+    createdAt: commande.createdAt,
+  }))
+}
+
+/* -------------------------------------------------------------------------- */
+/* FRÉQUENTATION                                                              */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * L'instant du dernier échantillon de fréquentation reçu, ou null s'il n'y en
+ * a aucun. Utilisé par le rate limit du POST /api/frequentation.
+ */
+export async function lireDernierEchantillon(): Promise<Date | null> {
+  const dernier = await prisma.echantillonFrequentation.findFirst({
+    orderBy: { releveLe: 'desc' },
+    select: { releveLe: true },
+  })
+  return dernier?.releveLe ?? null
+}
+
+export type EtatCollecte = {
+  /** Instant du dernier échantillon reçu, ou null. */
+  dernier: Date | null
+  /** Nombre d'échantillons reçus sur les dernières 24 h glissantes. */
+  nombre24h: number
+}
+
+/**
+ * L'état de santé du collecteur, pour la tuile joueurs.
+ *
+ * Deux signaux, car un relevé récent ne prouve pas une collecte régulière : un
+ * bot qui redémarre en boucle peut poster un point de temps en temps. On
+ * attend 144 échantillons par jour (un toutes les 10 min) ; en voir 30 dit que
+ * quelque chose cloche, même si le dernier date d'il y a deux minutes.
+ */
+export async function lireEtatCollecte(): Promise<EtatCollecte> {
+  const ilYa24h = new Date(Date.now() - 24 * 60 * 60 * 1000)
+
+  const [dernier, nombre24h] = await Promise.all([
+    prisma.echantillonFrequentation.findFirst({
+      orderBy: { releveLe: 'desc' },
+      select: { releveLe: true },
+    }),
+    prisma.echantillonFrequentation.count({ where: { releveLe: { gte: ilYa24h } } }),
+  ])
+
+  return { dernier: dernier?.releveLe ?? null, nombre24h }
 }
 
 /* -------------------------------------------------------------------------- */
@@ -193,6 +348,8 @@ export type ResumeAudience = {
   vues30jours: number
   visiteurs7jours: number
   visiteurs30jours: number
+  /** Évolution des visiteurs sur 30 jours vs les 30 jours précédents. */
+  visiteurs30joursEvolution: Evolution
   /** Moyenne du temps passé, en secondes, sur les vues qui ont une durée. */
   dureeMoyenneSecondes: number
   /** Part des visites d'une seule page, en pourcentage. */
@@ -202,34 +359,41 @@ export type ResumeAudience = {
 }
 
 export async function lireAudience(): Promise<ResumeAudience> {
-  const sept = ilYaJours(7)
-  const trente = ilYaJours(30)
+  const debut7 = debutDuJourParis(new Date(), 7)
+  const debut30 = debutDuJourParis(new Date(), 30)
+  const debut60 = debutDuJourParis(new Date(), 60)
 
-  const [vuesTotal, vues7, vues30, uniques7, uniques30, duree] = await Promise.all([
-    prisma.vuePage.count(),
-    prisma.vuePage.count({ where: { createdAt: { gte: sept } } }),
-    prisma.vuePage.count({ where: { createdAt: { gte: trente } } }),
-    prisma.vuePage.findMany({
-      where: { createdAt: { gte: sept } },
-      distinct: ['visiteId'],
-      select: { visiteId: true },
-    }),
-    prisma.vuePage.findMany({
-      where: { createdAt: { gte: trente } },
-      distinct: ['visiteId'],
-      select: { visiteId: true },
-    }),
-    prisma.vuePage.aggregate({
-      where: { dureeMs: { not: null } },
-      _avg: { dureeMs: true },
-    }),
-  ])
+  const [vuesTotal, vues7, vues30, uniques7, uniques30, uniquesPrec, duree] =
+    await Promise.all([
+      prisma.vuePage.count(),
+      prisma.vuePage.count({ where: { createdAt: { gte: debut7 } } }),
+      prisma.vuePage.count({ where: { createdAt: { gte: debut30 } } }),
+      prisma.vuePage.findMany({
+        where: { createdAt: { gte: debut7 } },
+        distinct: ['visiteId'],
+        select: { visiteId: true },
+      }),
+      prisma.vuePage.findMany({
+        where: { createdAt: { gte: debut30 } },
+        distinct: ['visiteId'],
+        select: { visiteId: true },
+      }),
+      prisma.vuePage.findMany({
+        where: { createdAt: { gte: debut60, lt: debut30 } },
+        distinct: ['visiteId'],
+        select: { visiteId: true },
+      }),
+      prisma.vuePage.aggregate({
+        where: { dureeMs: { not: null } },
+        _avg: { dureeMs: true },
+      }),
+    ])
 
   // Rebond : une visite qui n'a vu qu'une seule page. Se calcule sur les
   // 30 derniers jours, comme le reste du bloc.
   const parVisite = await prisma.vuePage.groupBy({
     by: ['visiteId'],
-    where: { createdAt: { gte: trente } },
+    where: { createdAt: { gte: debut30 } },
     _count: { _all: true },
   })
   const visitesUnePage = parVisite.filter((v) => v._count._all === 1).length
@@ -240,6 +404,7 @@ export async function lireAudience(): Promise<ResumeAudience> {
     vues30jours: vues30,
     visiteurs7jours: uniques7.length,
     visiteurs30jours: uniques30.length,
+    visiteurs30joursEvolution: evolution(uniques30.length, uniquesPrec.length),
     dureeMoyenneSecondes: Math.round((duree._avg.dureeMs ?? 0) / 1000),
     tauxRebond:
       parVisite.length === 0 ? 0 : Math.round((visitesUnePage / parVisite.length) * 100),
@@ -257,7 +422,7 @@ export type PageVue = {
 /** Le palmarès des pages sur 30 jours : vues, visiteurs distincts, temps moyen. */
 export async function lirePages(): Promise<PageVue[]> {
   const vues = await prisma.vuePage.findMany({
-    where: { createdAt: { gte: ilYaJours(30) } },
+    where: { createdAt: { gte: debutDuJourParis(new Date(), 30) } },
     select: { chemin: true, visiteId: true, dureeMs: true },
   })
 
@@ -299,7 +464,7 @@ export type Repartition = { libelle: string; nombre: number; part: number }
 export async function lireSources(): Promise<Repartition[]> {
   const groupes = await prisma.vuePage.groupBy({
     by: ['source'],
-    where: { createdAt: { gte: ilYaJours(30) } },
+    where: { createdAt: { gte: debutDuJourParis(new Date(), 30) } },
     _count: { _all: true },
   })
 
@@ -319,7 +484,7 @@ export async function lireSources(): Promise<Repartition[]> {
 export async function lireAppareils(): Promise<Repartition[]> {
   const groupes = await prisma.vuePage.groupBy({
     by: ['appareil'],
-    where: { createdAt: { gte: ilYaJours(30) } },
+    where: { createdAt: { gte: debutDuJourParis(new Date(), 30) } },
     _count: { _all: true },
   })
 
