@@ -56,7 +56,7 @@ export default async function PageClassement() {
 
   return (
     <PagePublique>
-      <header className="halo-hero overflow-hidden px-6 pt-[150px] pb-8">
+      <header className="halo-hero overflow-hidden px-6 pt-14 pb-8">
         <div className="mx-auto max-w-contenu text-center">
           <p className="mb-3.5 font-mono text-xs font-bold tracking-[3px] text-oni uppercase [text-shadow:0_0_18px_rgba(233,40,19,.35)]">
             {nombreClasses > 0 ? `${nombreClasses} joueurs classés` : 'Arène ouverte'}

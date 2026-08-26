@@ -94,7 +94,7 @@ export default async function PageBoutique() {
         c'est l'argument central du serveur, il se lit avant le mot
         « boutique ». Le pt- dégage la barre de navigation flottante.
       */}
-      <div className="px-6 pt-[104px]">
+      <div className="px-6 pt-10">
         <BandeauPositionnement />
       </div>
 

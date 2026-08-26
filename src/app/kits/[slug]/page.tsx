@@ -155,7 +155,7 @@ export default async function PageKit({ params }: { params: Promise<{ slug: stri
   return (
     <PagePublique>
       {/* ================================ EN-TÊTE =============================== */}
-      <header className="halo-hero px-6 pt-[132px]">
+      <header className="halo-hero px-6 pt-14">
         <div className="relative mx-auto max-w-lecture overflow-hidden text-center">
           {/*
             Le kanji en très grand filigrane derrière le titre. Purement

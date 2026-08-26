@@ -43,7 +43,7 @@ export default async function PageCommande({
 
   return (
     <PagePublique>
-      <main className="halo-hero mx-auto max-w-lecture px-6 pt-[150px] pb-24">
+      <main className="halo-hero mx-auto max-w-lecture px-6 pt-14 pb-24">
         <div className="text-center">
           <p className="mb-3.5 font-mono text-xs font-bold tracking-[3px] text-vert uppercase">
             Commande {formaterNumeroCommande(commande.numero)}

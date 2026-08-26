@@ -43,6 +43,52 @@ export function formaterDate(date: Date): string {
   })
 }
 
+/*
+ * Les deux formes de la date d'ouverture.
+ *
+ * `timeZone: 'Europe/Paris'` est indispensable : sur Vercel, la machine tourne
+ * en UTC, et sans lui l'accueil annoncerait « 13h30 » à ses visiteurs.
+ */
+
+/** Date → "Samedi 29 août · 15h30". Forme d'étiquette, autonome. */
+export function formaterOuverture(date: Date): string {
+  const jour = date.toLocaleDateString('fr-FR', {
+    timeZone: 'Europe/Paris',
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+  })
+
+  return `${majusculeInitiale(jour)} · ${formaterHeureParis(date)}`
+}
+
+/** Date → "samedi 29 août à 15h30". Forme qui s'insère dans une phrase. */
+export function formaterOuvertureEnPhrase(date: Date): string {
+  const jour = date.toLocaleDateString('fr-FR', {
+    timeZone: 'Europe/Paris',
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+  })
+
+  return `${jour} à ${formaterHeureParis(date)}`
+}
+
+/** 15:30 en heure de Paris → "15h30", la notation française. */
+function formaterHeureParis(date: Date): string {
+  return date
+    .toLocaleTimeString('fr-FR', {
+      timeZone: 'Europe/Paris',
+      hour: '2-digit',
+      minute: '2-digit',
+    })
+    .replace(':', 'h')
+}
+
+function majusculeInitiale(texte: string): string {
+  return texte.charAt(0).toUpperCase() + texte.slice(1)
+}
+
 /** 42 → "LJK-000042". Numéro de commande lisible, pour le support. */
 export function formaterNumeroCommande(numero: number): string {
   return `LJK-${String(numero).padStart(6, '0')}`

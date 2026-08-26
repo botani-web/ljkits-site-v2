@@ -6,7 +6,7 @@ import { PagePublique } from '@/components/public/PagePublique'
 export default function PageIntrouvable() {
   return (
     <PagePublique>
-      <main className="halo-hero mx-auto max-w-lecture px-6 pt-[170px] pb-28 text-center">
+      <main className="halo-hero mx-auto max-w-lecture px-6 pt-20 pb-28 text-center">
         <p className="mb-3.5 font-mono text-xs font-bold tracking-[3px] text-oni uppercase">
           Erreur 404
         </p>

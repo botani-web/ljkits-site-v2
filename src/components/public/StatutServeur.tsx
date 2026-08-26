@@ -5,20 +5,30 @@ import { useEffect, useState } from 'react'
 import { useReglages } from '@/components/public/ContexteReglages'
 import { SITE } from '@/lib/site'
 
-type Statut = { enLigne: boolean; joueurs: number }
+export type StatutServeur = { enLigne: boolean; joueurs: number }
 
 /**
- * Encart « joueurs en ligne », rafraîchi toutes les 60 secondes depuis
+ * Le nombre de joueurs en ligne, rafraîchi toutes les 60 secondes depuis
  * l'API publique mcstatus.io.
  *
- * L'appel est fait côté navigateur, et pas côté serveur, exprès : la page est
- * en rendu statique, un fetch au build afficherait un chiffre figé.
+ * L'appel est fait côté navigateur, et pas côté serveur, exprès : les pages
+ * publiques sont en rendu statique, un fetch au build afficherait un chiffre
+ * figé pendant une heure.
+ *
+ * `actif` permet de ne rien interroger tant que ça n'a pas de sens. Avant
+ * l'ouverture, l'encart de l'accueil affiche un décompte : inutile de
+ * bombarder mcstatus.io pour une adresse qui ne répond pas encore.
+ *
+ * Renvoie `null` tant que la première réponse n'est pas arrivée — c'est
+ * différent de « hors ligne », et l'appelant doit distinguer les deux.
  */
-export function StatutServeur() {
+export function useStatutServeur(actif: boolean): StatutServeur | null {
   const { ip } = useReglages()
-  const [statut, setStatut] = useState<Statut | null>(null)
+  const [statut, setStatut] = useState<StatutServeur | null>(null)
 
   useEffect(() => {
+    if (!actif) return
+
     let annule = false
 
     async function rafraichir() {
@@ -46,29 +56,7 @@ export function StatutServeur() {
       annule = true
       clearInterval(minuteur)
     }
-  }, [ip])
+  }, [ip, actif])
 
-  // statut === null : première requête en cours, on n'affiche encore rien.
-  const enLigne = statut?.enLigne ?? false
-
-  return (
-    <div className="flex flex-col items-center justify-center gap-2 rounded-[18px] border border-bord bg-charbon p-6.5">
-      <div className="font-mono text-[46px] leading-none font-bold text-creme" aria-live="polite">
-        {statut?.enLigne ? statut.joueurs : '—'}
-      </div>
-      <div
-        className={`flex items-center gap-2 text-xs font-bold tracking-[2.5px] ${
-          enLigne ? 'text-vert' : 'text-rouge'
-        }`}
-      >
-        <span
-          aria-hidden="true"
-          className={
-            enLigne ? 'pastille-statut' : 'size-2 shrink-0 rounded-full bg-rouge'
-          }
-        />
-        {statut === null ? 'CONNEXION…' : enLigne ? 'EN LIGNE' : 'HORS LIGNE'}
-      </div>
-    </div>
-  )
+  return statut
 }

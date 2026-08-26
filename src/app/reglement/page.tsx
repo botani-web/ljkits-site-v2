@@ -43,7 +43,7 @@ export default async function PageReglement() {
 
   return (
     <PagePublique>
-      <header className="halo-hero mx-auto max-w-lecture px-6 pt-[150px] text-center">
+      <header className="halo-hero mx-auto max-w-lecture px-6 pt-14 text-center">
         <div className="mb-3.5 text-xs font-bold tracking-[3px] text-oni uppercase [text-shadow:0_0_18px_rgba(233,40,19,.35)]">
           Les règles du serveur
         </div>

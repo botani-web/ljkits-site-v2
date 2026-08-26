@@ -82,13 +82,19 @@
   --spacing-section: clamp(56px, 7vw, 96px);
 
   /*
-    Hauteur exacte de la barre de navigation : 12px de marge haute + 24px de
-    logo + 12px de marge basse + 1px de filet. Les barres d'outils collantes
-    (/kits, /classement, /boutique) s'y arriment avec `top-nav` ; si le
-    rembourrage de la nav change un jour, cette valeur est le seul endroit à
-    corriger.
+    Hauteur exacte de la barre de navigation : 12px de marge haute + 44px pour
+    le plus haut de ses enfants (les boutons, à la cible tactile minimale) +
+    12px de marge basse + 1px de filet.
+
+    Les maquettes annonçaient `top:49px` pour les barres d'outils collantes.
+    C'était faux même chez elles : leurs boutons faisaient déjà 42px, soit une
+    barre de 66px, et la barre d'outils se serait glissée dessous. Avec nos
+    boutons à 44px, la valeur juste est 69px.
+
+    Les barres d'outils de /kits, /classement et /boutique s'y arriment par
+    `top-nav` : c'est le seul endroit à corriger si le rembourrage change.
   */
-  --spacing-nav: 49px;
+  --spacing-nav: 69px;
 
   /* --- largeurs de contenu (namespace --container-* → classes max-w-*) --- */
   --container-contenu: 1240px;
