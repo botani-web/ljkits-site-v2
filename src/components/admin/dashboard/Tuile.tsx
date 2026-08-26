@@ -57,7 +57,7 @@ export function Tuile({
   accent?: boolean
 }) {
   return (
-    <div className="rounded-xl border border-bord bg-charbon px-5 py-4">
+    <div className="rounded-carte border border-bord bg-charbon px-5 py-4">
       <p className="font-mono text-[10.5px] font-bold tracking-[1.4px] text-gris uppercase">
         {libelle}
       </p>

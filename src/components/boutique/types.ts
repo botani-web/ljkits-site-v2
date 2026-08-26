@@ -59,4 +59,10 @@ export type PackBoutique = Payable & {
   prixEurosCentimes: number
   prixBarreCentimes: number | null
   achetable: boolean
+  /**
+   * Les noms des kits que le pack contient, dans l'ordre du catalogue.
+   * Affichés sous la description — « Sakura · Yumi · Tanuki… » — pour que
+   * l'acheteur voie ce qu'il prend sans ouvrir une autre page.
+   */
+  kitsInclus: string[]
 }

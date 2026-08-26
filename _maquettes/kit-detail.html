@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Viper — LJKITS</title>
+<meta name="description" content="Chaque coup empoisonne. Les dégâts s'accumulent pendant que ta cible boit ses soupes.">
+<meta name="theme-color" content="#0E061F">
+
+<link rel="icon" type="image/png" href="logo-icon.png">
+<link rel="apple-touch-icon" href="logo-icon.png">
+
+<meta property="og:type" content="article">
+<meta property="og:locale" content="fr_FR">
+<meta property="og:site_name" content="LJKITS">
+<meta property="og:image" content="https://ljkits.eu/og.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Outfit:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --noir:#0E061F;
+  --charbon:#171029;
+  --braise:#211736;
+  --bord:#2E2245;
+  --gris:#9E93AC;
+  --creme:#F2E8D9;
+  --soupe:#FE9301;
+  --or:#FDC003;
+  --oni:#E92813;
+  --vert:#5BE06B;
+
+  --mono:'JetBrains Mono',ui-monospace,monospace;
+  --corps:'Outfit',system-ui,sans-serif;
+  --titre:'Bungee',system-ui,sans-serif;
+
+  --gouttiere:clamp(18px,4vw,44px);
+  --large:1240px;
+}
+
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  background:var(--noir);color:var(--creme);
+  font-family:var(--corps);font-size:16px;line-height:1.6;
+  -webkit-font-smoothing:antialiased;overflow-x:hidden;
+}
+a{color:inherit;text-decoration:none}
+img{max-width:100%;display:block}
+button,select{font:inherit;color:inherit;cursor:pointer}
+button{border:0;background:none}
+:focus-visible{outline:2px solid var(--or);outline-offset:3px;border-radius:2px}
+
+.enveloppe{max-width:var(--large);margin:0 auto;padding-left:var(--gouttiere);padding-right:var(--gouttiere)}
+.etiquette{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:var(--soupe)}
+.titre-section{font-family:var(--titre);font-size:clamp(22px,3.2vw,32px);line-height:1.08;letter-spacing:-.01em;margin-top:12px}
+.titre-section .or{color:var(--or)}
+section{padding:clamp(52px,6.5vw,88px) 0;position:relative}
+
+/* ---------- navigation ---------- */
+.nav{position:sticky;top:0;z-index:70;background:rgba(14,6,31,.86);backdrop-filter:blur(14px);border-bottom:1px solid var(--bord)}
+.nav-int{max-width:var(--large);margin:0 auto;padding:12px var(--gouttiere);display:flex;align-items:center;gap:26px}
+.nav-logo img{height:24px;width:auto}
+.nav-liens{display:flex;gap:26px;margin-left:8px}
+.nav-liens a{font-family:var(--mono);font-size:12px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--gris);transition:color .18s}
+.nav-liens a:hover{color:var(--creme)}
+.nav-liens a[aria-current="page"]{color:var(--soupe)}
+.nav-droite{margin-left:auto;display:flex;align-items:center;gap:10px}
+
+.bouton{display:inline-flex;align-items:center;gap:9px;font-family:var(--mono);font-size:12.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:11px 18px;border-radius:4px;transition:transform .16s,background .16s,border-color .16s}
+.bouton:active{transform:translateY(1px)}
+.bouton-plein{background:var(--soupe);color:#180C02}
+.bouton-plein:hover{background:var(--or)}
+.bouton-vide{border:1px solid var(--bord);color:var(--creme)}
+.bouton-vide:hover{border-color:var(--soupe);background:var(--braise)}
+.bouton svg{width:16px;height:16px;fill:currentColor;flex:none}
+.nav-burger{display:none;padding:8px;border:1px solid var(--bord);border-radius:4px}
+.nav-burger svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2}
+
+/* ---------- fil d'ariane ---------- */
+.ariane{padding:22px 0 0}
+.ariane a{font-family:var(--mono);font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--gris);transition:color .18s}
+.ariane a:hover{color:var(--soupe)}
+
+/* ---------- entête du kit ---------- */
+.fiche{
+  display:grid;grid-template-columns:minmax(0,1fr) minmax(0,368px);
+  gap:clamp(28px,4vw,56px);align-items:start;
+  padding:clamp(26px,3.5vw,40px) 0 clamp(52px,6vw,80px);
+  position:relative;
+}
+.fiche::before{
+  content:"";position:absolute;inset:-14% -22% auto -22%;height:520px;
+  background:radial-gradient(48% 46% at 24% 30%,rgba(254,147,1,.14),transparent 70%);
+  pointer-events:none;z-index:-1;
+}
+.fiche.exclu::before{background:radial-gradient(48% 46% at 24% 30%,rgba(233,40,19,.16),transparent 70%)}
+
+.kit-role{
+  display:inline-block;font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--gris);border:1px solid var(--bord);border-radius:3px;padding:5px 10px;
+}
+.fiche.exclu .kit-role{color:var(--oni);border-color:rgba(233,40,19,.42)}
+
+h1{font-family:var(--titre);font-size:clamp(38px,6.6vw,68px);line-height:.96;letter-spacing:-.02em;margin-top:16px;display:flex;align-items:baseline;gap:16px;flex-wrap:wrap}
+.fiche.exclu h1{color:var(--oni)}
+h1 .kanji{font-family:var(--corps);font-size:.42em;color:rgba(233,40,19,.5);font-weight:700;letter-spacing:.06em}
+
+.accroche{color:var(--gris);font-size:clamp(16.5px,1.9vw,19.5px);max-width:52ch;margin-top:18px}
+
+.intro{margin-top:26px;max-width:60ch}
+.intro p{color:var(--gris);font-size:16px;margin-top:14px}
+.intro p:first-child{color:var(--creme);font-size:17px}
+.intro b{color:var(--creme);font-weight:600}
+.intro strong{color:var(--or);font-weight:700}
+
+/* barre de progression du prix */
+.jauge-bloc{margin-top:32px;max-width:60ch}
+.jauge-tete{display:flex;align-items:baseline;gap:12px;font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--gris)}
+.jauge-tete b{color:var(--soupe);font-weight:700}
+.jauge{height:6px;border-radius:3px;background:var(--braise);border:1px solid var(--bord);margin-top:10px;overflow:hidden}
+.jauge i{display:block;height:100%;background:linear-gradient(90deg,var(--soupe),var(--or))}
+.jauge-pied{font-family:var(--mono);font-size:11px;color:var(--gris);margin-top:9px}
+
+/* ---------- panneau latéral : le tooltip d'item ---------- */
+.panneau{position:sticky;top:74px}
+.tooltip{
+  border:1px solid var(--bord);border-radius:5px;background:var(--charbon);
+  overflow:hidden;box-shadow:0 30px 70px -34px rgba(0,0,0,.9);
+}
+.fiche.exclu .tooltip{border-color:rgba(233,40,19,.34)}
+.tooltip-tete{
+  padding:16px 20px;border-bottom:1px solid var(--bord);background:var(--braise);
+  font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--soupe);
+}
+.tooltip-prix{padding:22px 20px 20px;border-bottom:1px solid var(--bord);display:flex;align-items:flex-end;gap:14px}
+.prix-val{font-family:var(--mono);font-size:30px;font-weight:700;color:var(--or);line-height:1}
+.prix-val.libre{color:var(--vert)}
+.prix-unite{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--gris);margin-top:6px}
+.prix-euro{margin-left:auto;font-family:var(--mono);font-size:11.5px;color:var(--gris);border:1px solid var(--bord);border-radius:3px;padding:6px 10px}
+
+.lore{padding:16px 20px 18px}
+.lore-l{display:flex;gap:14px;font-family:var(--mono);font-size:12px;padding:5px 0}
+.lore-l span:first-child{color:var(--gris)}
+.lore-l span:last-child{margin-left:auto;color:var(--creme);font-weight:700;text-align:right}
+
+.tooltip-pied{padding:16px 20px 20px;border-top:1px solid var(--bord);background:rgba(14,6,31,.5)}
+.tooltip-pied .bouton{width:100%;justify-content:center}
+.tooltip-note{font-family:var(--mono);font-size:10.5px;color:var(--gris);margin-top:12px;line-height:1.55;text-align:center}
+.tooltip-note a{color:var(--soupe);border-bottom:1px solid rgba(254,147,1,.4)}
+
+/* ---------- jouer / contrer ---------- */
+.tactique{background:var(--charbon);border-top:1px solid var(--bord);border-bottom:1px solid var(--bord)}
+.duo{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:clamp(26px,3.5vw,38px)}
+.carte{border:1px solid var(--bord);border-radius:5px;background:var(--braise);padding:26px 24px}
+.carte.contre{border-color:rgba(233,40,19,.3)}
+.carte h3{font-family:var(--titre);font-size:17px;letter-spacing:-.005em}
+.carte.jouer h3{color:var(--vert)}
+.carte.contre h3{color:var(--oni)}
+.carte ul{list-style:none;margin-top:16px}
+.carte li{display:flex;gap:12px;padding:8px 0;color:var(--gris);font-size:15px;border-top:1px solid var(--bord)}
+.carte li:first-child{border-top:0;padding-top:0}
+.carte li::before{
+  content:"›";font-family:var(--mono);font-weight:700;color:var(--soupe);flex:none;line-height:1.6;
+}
+.carte.contre li::before{color:var(--oni)}
+
+/* ---------- constantes du soup ---------- */
+.constantes{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--bord);border-radius:5px;overflow:hidden;background:var(--charbon)}
+.cst{padding:22px}
+.cst + .cst{border-left:1px solid var(--bord)}
+.cst-val{font-family:var(--mono);font-size:clamp(18px,2.2vw,23px);font-weight:700;color:var(--or);line-height:1.15}
+.cst-val.oni{color:var(--oni)}
+.cst-lbl{font-family:var(--mono);font-size:11px;color:var(--gris);margin-top:8px;letter-spacing:.06em}
+.cst-note{font-family:var(--mono);font-size:11.5px;color:var(--gris);margin-top:16px;letter-spacing:.04em}
+
+/* ---------- obtention ---------- */
+.obtenir{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:clamp(26px,3.5vw,38px)}
+.voie{border:1px solid var(--bord);border-radius:5px;background:var(--charbon);padding:28px 26px;display:flex;flex-direction:column}
+.voie.payante{border-color:rgba(254,147,1,.3)}
+.voie-titre{font-family:var(--titre);font-size:17px}
+.voie.gratuite .voie-titre{color:var(--vert)}
+.voie.payante .voie-titre{color:var(--soupe)}
+.voie p{color:var(--gris);font-size:15px;margin-top:12px;flex:1}
+.voie b{color:var(--creme);font-weight:600}
+.voie-lignes{margin-top:16px;border-top:1px solid var(--bord);padding-top:12px}
+.voie-l{display:flex;gap:14px;font-family:var(--mono);font-size:11.5px;padding:3px 0}
+.voie-l span:first-child{color:var(--gris)}
+.voie-l span:last-child{margin-left:auto;color:var(--creme);font-weight:700}
+.voie .bouton{margin-top:18px;justify-content:center}
+
+/* ---------- pagination kits ---------- */
+.pagination{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:clamp(30px,4vw,44px)}
+.page-lien{border:1px solid var(--bord);border-radius:5px;background:var(--charbon);padding:18px 22px;transition:border-color .18s,background .18s}
+.page-lien:hover{border-color:var(--soupe);background:var(--braise)}
+.page-lien .lbl{font-family:var(--mono);font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--gris)}
+.page-lien .nom{font-family:var(--titre);font-size:17px;margin-top:8px}
+.page-lien.suiv{text-align:right}
+
+/* ---------- kits voisins ---------- */
+.voisins{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:clamp(26px,3.5vw,38px)}
+.voisin{position:relative;overflow:hidden;border:1px solid var(--bord);border-radius:5px;background:var(--charbon);padding:22px;transition:border-color .18s,transform .18s,background .18s;display:flex;flex-direction:column}
+.voisin:hover{border-color:var(--soupe);transform:translateY(-2px);background:var(--braise)}
+.voisin.excl{border-color:rgba(233,40,19,.34)}
+.voisin.excl:hover{border-color:var(--oni)}
+.voisin-kanji{position:absolute;right:-6px;bottom:-18px;font-size:76px;line-height:1;color:rgba(233,40,19,.09);pointer-events:none;user-select:none;font-weight:700}
+.voisin-tete{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.voisin-nom{font-family:var(--titre);font-size:18px;letter-spacing:-.01em}
+.voisin.excl .voisin-nom{color:var(--oni)}
+.voisin-role{font-family:var(--mono);font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--gris);border:1px solid var(--bord);border-radius:3px;padding:3px 7px}
+.voisin p{color:var(--gris);font-size:14px;margin-top:12px;flex:1}
+.voisin-prix{font-family:var(--mono);font-size:14px;font-weight:700;color:var(--or);margin-top:16px;padding-top:12px;border-top:1px solid var(--bord)}
+.voisin-prix.libre{color:var(--vert)}
+
+.lien-tous{display:inline-flex;align-items:center;gap:9px;margin-top:22px;font-family:var(--mono);font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--soupe);border-bottom:1px solid rgba(254,147,1,.4);padding-bottom:3px}
+
+/* ---------- cta ---------- */
+.final{text-align:center;position:relative;overflow:hidden}
+.final::before{content:"";position:absolute;inset:auto -20% -60% -20%;height:400px;background:radial-gradient(50% 60% at 50% 100%,rgba(254,147,1,.16),transparent 72%);pointer-events:none}
+.final h2{font-family:var(--titre);font-size:clamp(25px,4.6vw,46px);line-height:1.02;letter-spacing:-.02em;position:relative}
+.final h2 .or{color:var(--or)}
+.final > .enveloppe > p{color:var(--gris);margin-top:18px;position:relative;max-width:52ch;margin-left:auto;margin-right:auto}
+.final-ip{display:inline-flex;align-items:center;gap:14px;border:1px solid var(--bord);border-radius:5px;background:var(--charbon);padding:16px 22px;margin-top:28px;position:relative;font-family:var(--mono);font-size:clamp(15px,2.4vw,21px);font-weight:700;color:var(--or);transition:border-color .18s}
+.final-ip:hover{border-color:var(--soupe)}
+.final-ip svg{width:19px;height:19px;stroke:var(--gris);fill:none;stroke-width:2;flex:none}
+
+/* ---------- pied ---------- */
+footer{border-top:1px solid var(--bord);background:var(--charbon);padding:clamp(46px,6vw,64px) 0 0}
+.pied{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:36px}
+.pied-marque img{height:24px;margin-bottom:16px}
+.pied-marque p{color:var(--gris);font-size:14px;max-width:34ch}
+.pied-col h4{font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--soupe);margin-bottom:14px}
+.pied-col a{display:block;color:var(--gris);font-size:14.5px;padding:5px 0;transition:color .18s}
+.pied-col a:hover{color:var(--creme)}
+.pied-bas{margin-top:44px;border-top:1px solid var(--bord);padding:22px 0 28px;font-family:var(--mono);font-size:11px;color:var(--gris);display:flex;flex-wrap:wrap;gap:10px 26px}
+
+/* ---------- toast ---------- */
+.toast{position:fixed;left:50%;bottom:26px;z-index:200;transform:translateX(-50%) translateY(150%);background:var(--soupe);color:#180C02;font-family:var(--mono);font-size:12.5px;font-weight:700;letter-spacing:.06em;padding:13px 22px;border-radius:5px;transition:transform .3s cubic-bezier(.2,.9,.3,1.2);box-shadow:0 16px 40px rgba(0,0,0,.6)}
+.toast.on{transform:translateX(-50%) translateY(0)}
+
+/* ---------- sélecteur de maquette (à SUPPRIMER en production) ---------- */
+.maquette{
+  position:fixed;right:16px;bottom:16px;z-index:180;
+  display:flex;align-items:center;gap:9px;
+  border:1px solid var(--soupe);border-radius:5px;background:var(--charbon);
+  padding:9px 12px;box-shadow:0 16px 40px rgba(0,0,0,.7);
+}
+.maquette span{font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--soupe)}
+.maquette select{background:var(--noir);border:1px solid var(--bord);border-radius:3px;color:var(--creme);font-family:var(--mono);font-size:12px;padding:6px 8px}
+
+/* ---------- responsive ---------- */
+@media(max-width:1024px){
+  .fiche{grid-template-columns:1fr}
+  .panneau{position:static;max-width:420px}
+  .pied{grid-template-columns:1fr 1fr 1fr}
+  .pied-marque{grid-column:1/-1}
+}
+@media(max-width:860px){
+  .nav-liens{display:none}
+  .nav-burger{display:inline-flex}
+  .nav-droite .bouton-vide{display:none}
+  .duo,.obtenir{grid-template-columns:1fr}
+  .voisins{grid-template-columns:1fr}
+  .constantes{grid-template-columns:1fr 1fr}
+  .cst:nth-child(3),.cst:nth-child(4){border-top:1px solid var(--bord)}
+  .cst:nth-child(3){border-left:0}
+}
+@media(max-width:560px){
+  .pagination{grid-template-columns:1fr}
+  .page-lien.suiv{text-align:left}
+  .pied{grid-template-columns:1fr 1fr}
+  .maquette{left:16px;right:16px;justify-content:center}
+}
+@media(prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important}
+  html{scroll-behavior:auto}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════ NAV ═══════════ -->
+<nav class="nav">
+  <div class="nav-int">
+    <a class="nav-logo" href="/" aria-label="LJKITS, accueil">
+      <img src="logo-texte.png" alt="LJKITS" width="88" height="24">
+    </a>
+    <div class="nav-liens">
+      <a href="/classement">Classement</a>
+      <a href="/kits" aria-current="page">Kits</a>
+      <a href="/#evenements">Événements</a>
+      <a href="/boutique">Boutique</a>
+      <a href="/reglement">Règlement</a>
+    </div>
+    <div class="nav-droite">
+      <a class="bouton bouton-vide" data-discord href="#" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.317 4.37a19.79 19.79 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.058a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128c.126-.094.252-.192.372-.291a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.099.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>
+        Discord
+      </a>
+      <button class="bouton bouton-plein" onclick="copierIP()">Copier l'IP</button>
+      <button class="nav-burger" aria-label="Menu" onclick="document.querySelector('.nav-liens').style.display='flex'">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<!-- ═══════════ FICHE ═══════════ -->
+<div class="enveloppe ariane">
+  <a href="/kits">← Tous les kits</a>
+</div>
+
+<header class="enveloppe fiche" id="fiche">
+  <!-- rempli par le script -->
+</header>
+
+<!-- ═══════════ JOUER / CONTRER ═══════════ -->
+<section class="tactique">
+  <div class="enveloppe">
+    <div class="etiquette">Sur le terrain</div>
+    <h2 class="titre-section" id="titreTactique">Comment le jouer, comment le contrer</h2>
+    <div class="duo" id="duoTactique"></div>
+  </div>
+</section>
+
+<!-- ═══════════ COMMENT L'OBTENIR ═══════════ -->
+<section>
+  <div class="enveloppe">
+    <div class="etiquette">Deux chemins, un seul kit</div>
+    <h2 class="titre-section" id="titreObtenir">Comment l'obtenir</h2>
+    <div class="obtenir" id="blocObtenir"></div>
+  </div>
+</section>
+
+<!-- ═══════════ LES CONSTANTES ═══════════ -->
+<section class="tactique">
+  <div class="enveloppe">
+    <div class="etiquette">Identiques pour les 29 kits</div>
+    <h2 class="titre-section">Les règles du soup ne changent <span class="or">jamais</span></h2>
+    <div class="constantes" style="margin-top:clamp(26px,3.5vw,38px)">
+      <div class="cst"><div class="cst-val">1,75 ❤</div><div class="cst-lbl">Une soupe</div></div>
+      <div class="cst"><div class="cst-val">2 ❤</div><div class="cst-lbl">Épée en pierre</div></div>
+      <div class="cst"><div class="cst-val oni">Aucune</div><div class="cst-lbl">Armure</div></div>
+      <div class="cst"><div class="cst-val">1.8</div><div class="cst-lbl">Knockback d'époque</div></div>
+    </div>
+    <p class="cst-note">Tout le monde sort du spawn avec le même stuff. Seule la capacité change.</p>
+  </div>
+</section>
+
+<!-- ═══════════ VOISINS ═══════════ -->
+<section>
+  <div class="enveloppe">
+    <div class="etiquette">Dans la même gamme de prix</div>
+    <h2 class="titre-section" id="titreVoisins">Le prochain à viser</h2>
+    <div class="voisins" id="blocVoisins"></div>
+    <a class="lien-tous" href="/kits">Voir les 29 kits →</a>
+    <div class="pagination" id="pagination"></div>
+  </div>
+</section>
+
+<!-- ═══════════ CTA ═══════════ -->
+<section class="final">
+  <div class="enveloppe">
+    <div class="etiquette">Il t'attend en jeu</div>
+    <h2 id="titreFinal"></h2>
+    <p id="texteFinal"></p>
+    <button class="final-ip" onclick="copierIP()">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+      <span data-ip>mc.ljkits.eu</span>
+    </button>
+  </div>
+</section>
+
+<!-- ═══════════ PIED ═══════════ -->
+<footer>
+  <div class="enveloppe">
+    <div class="pied">
+      <div class="pied-marque">
+        <img src="logo-texte.png" alt="LJKITS" width="88" height="24">
+        <p>Le PvP Soup à l'ancienne. Serveur français, développé sans pay-to-win, par nostalgie du soup de 2014.</p>
+      </div>
+      <div class="pied-col">
+        <h4>Serveur</h4>
+        <a href="/classement">Classement</a>
+        <a href="/kits">Les 29 kits</a>
+        <a href="/#evenements">Événements</a>
+      </div>
+      <div class="pied-col">
+        <h4>Communauté</h4>
+        <a data-discord href="#" target="_blank" rel="noopener">Discord</a>
+        <a href="/reglement">Règlement</a>
+        <a href="/boutique">Boutique</a>
+      </div>
+      <div class="pied-col">
+        <h4>Jouer</h4>
+        <a href="#" onclick="copierIP();return false;" data-ip>mc.ljkits.eu</a>
+        <a href="/">Java 1.8 → 1.21</a>
+      </div>
+    </div>
+    <div class="pied-bas">
+      <span>© 2026 LJKITS</span>
+      <span>Hommage indépendant, sans lien avec les anciens administrateurs de MJKits.</span>
+      <span>Not an official Minecraft product. Not approved by or associated with Mojang or Microsoft.</span>
+    </div>
+  </div>
+</footer>
+
+<div class="toast" id="toast" role="status" aria-live="polite">Adresse copiée</div>
+
+<!-- ⚠️ MAQUETTE UNIQUEMENT — à supprimer en production -->
+<div class="maquette">
+  <span>Maquette</span>
+  <select id="selecteurKit" aria-label="Changer de kit"></select>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════════
+   CONFIGURATION
+   ═══════════════════════════════════════════════════ */
+const IP      = 'mc.ljkits.eu';
+const DISCORD = 'https://discord.gg/ljkits';
+
+document.querySelectorAll('[data-ip]').forEach(e => e.textContent = IP);
+document.querySelectorAll('[data-discord]').forEach(e => e.href = DISCORD);
+
+let minuteurToast;
+function copierIP(){
+  navigator.clipboard?.writeText(IP).then(afficherToast).catch(afficherToast);
+}
+function afficherToast(){
+  const t = document.getElementById('toast');
+  t.classList.add('on');
+  clearTimeout(minuteurToast);
+  minuteurToast = setTimeout(() => t.classList.remove('on'), 2200);
+}
+
+/* ═══════════════════════════════════════════════════
+   LES 29 KITS
+   Structure = ce que devrait contenir le modèle Prisma :
+   s  slug        n  nom          r  rôle
+   p  prix coins  x  exclusif     k  kanji
+   d  accroche (meta description + carte de la liste)
+   i  introduction, tableau de paragraphes
+   j  comment le jouer            c  comment le contrer
+   l  lignes de fiche technique
+   ═══════════════════════════════════════════════════ */
+const KITS = [
+{s:'pvp',n:'PvP',r:'Fondamental',p:0,
+ d:"L'épée, les soupes, rien d'autre. Celui qui gagne avec le PvP gagne avec n'importe quoi.",
+ i:["Aucune capacité, aucun item spécial. Une épée en pierre, un inventaire de soupes, et ce que tu sais faire.",
+    "C'est le kit avec lequel tout le monde commence, et celui que beaucoup finissent par reprendre. Sans capacité à gérer, tu ne penses qu'au combat — et tous les duels officiels se jouent avec."],
+ j:["Aucun cooldown à surveiller : toute ton attention va sur le combo et le stock de soupes.","Personne ne t'attend au tournant, tu n'annonces aucune capacité en approchant."],
+ c:["Un joueur en PvP n'a aucune sortie de secours : coupe-lui la retraite et il n'a rien à répondre.","Les kits de contrôle le tiennent facilement, il n'a ni dash ni téléportation."],
+ l:[['Capacité','Aucune'],['Inventaire','Épée + soupes'],['Déblocage','Immédiat']]},
+
+{s:'antistomper',n:'Anti-Stomper',r:'Encaisse',p:0,
+ d:"Ni dégât de chute, ni dégât d'écrasement. Le contre naturel du Stomper.",
+ i:["Tu ne prends plus aucun dégât de chute, et les impacts du Stomper te traversent sans effet.",
+    "C'est un kit de terrain : sur une map verticale, sauter d'une plateforme devient un déplacement normal pendant que les autres font le tour."],
+ j:["Prends les raccourcis verticaux que personne ne peut suivre.","Va chercher le Stomper directement, tu es le seul à ne rien craindre de lui."],
+ c:["Il n'a aucune capacité offensive : c'est un duel à mains nues, tu pars à égalité.","Le combat au sol annule tout son intérêt, garde-le sur un plat."],
+ l:[['Chute','Annulée'],['Stomp reçu','Annulé'],['Déblocage','Immédiat']]},
+
+{s:'archer',n:'Archer',r:'Distance',p:300,
+ d:"Un arc et un carquois plein. Tu harcèles, tu finis, tu ne tiens pas la mêlée.",
+ i:["Un arc et 64 flèches. À pleine charge, une flèche enlève 2,7 cœurs — plus qu'un coup d'épée.",
+    "L'Archer ne gagne pas les mêlées, il les termine. Ton travail, c'est de finir les joueurs déjà entamés par les autres et de forcer l'adversaire à boire pendant qu'il traverse le terrain."],
+ j:["Vise les joueurs bas en vie au milieu d'une mêlée, pas celui qui te charge.","Reste en hauteur : la flèche garde ses dégâts, pas le corps à corps."],
+ c:["Ferme la distance, il n'a aucun bonus en mêlée.","Une charge en zigzag rend la pleine charge presque impossible à placer."],
+ l:[['Item','Arc + 64 flèches'],['Dégâts','2,7 ❤ pleine charge'],['Mêlée','Aucun bonus']]},
+
+{s:'fireman',n:'Fireman',r:'Immunité',p:300,
+ d:"Immunisé au feu et à la lave. Les zones brûlantes de la map deviennent ton terrain.",
+ i:["Le feu ne t'atteint plus, la lave non plus, et la combustion est annulée à la source.",
+    "Le Fireman n'est pas un kit de dégâts, c'est un kit de position. Les endroits que tout le monde évite deviennent les tiens, et le Magma perd complètement sa riposte contre toi."],
+ j:["Combats au bord de la lave : tu peux y entrer, ton adversaire non.","Le Magma ne peut rien contre toi, c'est le duel le plus facile du serveur."],
+ c:["Éloigne le combat de toute source de feu et il redevient un kit sans capacité.","Le knockback fonctionne normalement sur lui : le vide reste une réponse."],
+ l:[['Feu','Immunisé'],['Lave','Immunisé'],['Combustion','Annulée']]},
+
+{s:'fisherman',n:'Fisherman',r:'Accroche',p:400,
+ d:"La canne ramène ta cible vers toi. Le kit qui empêche les autres de décrocher du combat.",
+ i:["Un coup de canne bien placé ramène ta cible vers toi. La canne elle-même n'inflige <strong>aucun dégât</strong> — elle ne fait que déplacer.",
+    "C'est le kit anti-fuite du serveur. Personne ne quitte un combat contre un Fisherman sans son autorisation, et une cible ramenée au-dessus du vide ne revient pas."],
+ j:["Accroche au moment où l'adversaire prend son élan pour fuir, pas quand il charge.","Poste-toi près d'un trou : la canne fait le reste."],
+ c:["La canne a un cooldown de 3 secondes, décroche pendant cette fenêtre.","Reste au sol et loin des bords, un grab sur du plat ne coûte presque rien."],
+ l:[['Item','Canne à pêche'],['Dégâts de la canne','Aucun'],['Cooldown','3 s']]},
+
+{s:'camel',n:'Camel',r:'Terrain',p:400,
+ d:"Court beaucoup plus vite sur le sable et le grès. À toi de choisir où se passe le combat.",
+ i:["Vitesse II tant que tu marches sur du sable ou du grès. Ailleurs, aucun bonus.",
+    "Le Camel décide où le combat a lieu. Sur sa surface il rattrape n'importe qui et décroche quand il veut ; à deux blocs de là, c'est un kit PvP ordinaire."],
+ j:["Apprends par cœur les zones de sable de la map, ce sont tes couloirs.","Attire les fuyards vers le sable plutôt que de les poursuivre ailleurs."],
+ c:["Sors du sable et emmène-le sur la pierre, il perd tout.","Il n'a aucune capacité de dégâts : hors de son terrain, c'est un duel nu."],
+ l:[['Effet','Vitesse II'],['Condition','Sable ou grès'],['Ailleurs','Aucun bonus']]},
+
+{s:'magma',n:'Magma',r:'Riposte',p:500,
+ d:"Qui te frappe s'enflamme. Purement défensif : tu ne déclenches rien, tu punis.",
+ i:["Chaque joueur qui te frappe prend feu pendant 2 secondes, avec un cooldown de 4 secondes entre deux ripostes.",
+    "Le Magma ne déclenche rien : il attend. Contre les kits qui doivent absolument entrer au contact, la riposte s'ajoute à chaque échange sans que tu aies rien à faire."],
+ j:["Laisse venir. Plus l'adversaire est agressif, plus il paie cher.","Le feu fait boire : compte les soupes de l'autre plutôt que tes coups."],
+ c:["Le Fireman t'ignore complètement.","La riposte a 4 secondes de cooldown : échange par salves espacées, pas en continu."],
+ l:[['Effet','Feu 2 s sur l\'agresseur'],['Déclencheur','Être frappé'],['Cooldown','4 s']]},
+
+{s:'viper',n:'Viper',r:'Poison',p:500,
+ d:"Chaque coup empoisonne. Les dégâts s'accumulent pendant que ta cible boit ses soupes.",
+ i:["Chacun de tes coups en mêlée applique <strong>Poison I pendant 4 secondes</strong>.",
+    "Le poison ne tue pas — il ne descend jamais sous un demi-cœur — mais il annule une partie de chaque soupe que boit ta cible. Sur un échange long, l'adversaire vide son inventaire deux fois plus vite que toi.",
+    "Le Viper n'a aucune portée : tout se joue au corps à corps, et il faut tenir la distance pour que le poison ait le temps de faire son travail."],
+ j:["Cherche l'échange long, pas le burst : c'est le temps qui fait tes dégâts.","Un seul coup suffit à relancer les 4 secondes, tu n'as pas besoin de combo parfait."],
+ c:["Décroche 4 secondes et le poison tombe, tes soupes redeviennent pleines.","Aucune portée : tout kit de distance ou de mobilité le tient à l'écart sans risque."],
+ l:[['Effet','Poison I · 4 s'],['Portée','Mêlée uniquement'],['Cooldown','Aucun']]},
+
+{s:'kangaroo',n:'Kangaroo',r:'Mobilité',p:800,
+ d:"Un bond en avant qui traverse les trous et les groupes. Pour engager comme pour fuir.",
+ i:["Une fusée dans la main, un bond directionnel, 5 secondes de cooldown.",
+    "Le Kangaroo choisit ses combats. Il tombe sur un joueur isolé, et si ça tourne mal il est déjà deux plateformes plus loin. C'est le premier kit de mobilité vraiment libre de la progression."],
+ j:["Garde toujours un bond en réserve pour sortir, pas seulement pour entrer.","Le bond passe au-dessus des mêlées : va chercher la cible au fond, pas celle du bord."],
+ c:["Après un bond, il est à découvert pendant 5 secondes.","Les kits de contrôle l'attrapent en vol comme au sol."],
+ l:[['Item','Fusée'],['Effet','Bond directionnel'],['Cooldown','5 s']]},
+
+{s:'anchor',n:'Anchor',r:'Zone',p:1000,
+ d:"Une aura permanente qui ralentit tout le monde autour. Personne ne s'échappe d'un Anchor collé.",
+ i:["Une aura de Lenteur I sur 5 blocs, active en permanence, sans cooldown ni activation.",
+    "L'Anchor ne poursuit pas : il colle. Une fois dans son rayon, sortir demande un dash ou une téléportation. C'est le kit qui transforme une fuite en combat forcé."],
+ j:["Colle ta cible et reste dedans : ta seule tâche est de ne pas la laisser sortir des 5 blocs.","Excellent sur une zone de contrôle ou un KOTH, où il faut tenir un espace fermé."],
+ c:["Les kits à dash ou téléportation en sortent d'un seul geste.","La lenteur ne s'applique qu'à 5 blocs : reste à distance et tire."],
+ l:[['Effet','Lenteur I'],['Rayon','5 blocs'],['Activation','Permanente']]},
+
+{s:'sponger',n:'Sponger',r:'Mobilité',p:1000,
+ d:"Ses éponges le propulsent en l'air. Bien placé, ça sort d'une mêlée en une seconde.",
+ i:["Cinq éponges, une propulsion verticale à chaque pose, 4 secondes de cooldown.",
+    "Le Sponger monte là où on ne l'attend pas. C'est une mobilité verticale, pas horizontale : elle sert à décrocher, à prendre un toit ou à retomber sur quelqu'un — pas à traverser la map."],
+ j:["Compte tes éponges : cinq, et elles ne se rechargent pas toutes seules.","Monte, puis retombe sur ta cible plutôt que de la charger au sol."],
+ c:["En l'air, il ne contrôle plus rien : un archer ou un Thor le cueille au sommet.","Attends qu'il ait vidé ses éponges, il redevient un kit ordinaire."],
+ l:[['Item','5 éponges'],['Effet','Propulsion verticale'],['Cooldown','4 s']]},
+
+{s:'stomper',n:'Stomper',r:'Impact',p:1200,
+ d:"Tu ne prends plus de dégâts de chute : tu les redistribues en atterrissant.",
+ i:["La chute ne te fait plus rien. À la place, ton atterrissage inflige jusqu'à <strong>2 cœurs</strong> dans un rayon de 4 blocs.",
+    "La map est verticale, et le Stomper en fait une arme. Plus tu tombes de haut, plus l'impact fait mal — le seul vrai contre étant l'Anti-Stomper, qui l'encaisse à zéro."],
+ j:["Cherche la hauteur avant de chercher la cible.","L'impact touche tout le rayon : vise les mêlées à trois ou quatre, pas les duels."],
+ c:["Prends l'Anti-Stomper et son kit ne t'existe plus.","Reste sous les surplombs et en intérieur, il n'a plus de hauteur à exploiter."],
+ l:[['Chute','Annulée'],['Impact','2 ❤ max · rayon 4'],['Contré par','Anti-Stomper']]},
+
+{s:'monk',n:'Monk',r:'Disruption',p:1200,
+ d:"Mélange la barre d'objets de sa cible. Trois secondes de panique pendant qu'elle cherche ses soupes.",
+ i:["Un coup de cisailles à 5 blocs et la hotbar de ta cible est mélangée. 25 secondes de cooldown.",
+    "Le Monk ne fait aucun dégât avec sa capacité. Il fait perdre du temps, et dans un combat où chaque soupe compte, deux secondes à chercher son bol valent plus qu'un coup d'épée."],
+ j:["Déclenche quand l'adversaire est bas en vie, pas au début de l'échange.","25 secondes de cooldown : un seul usage par combat, choisis bien le moment."],
+ c:["Reste calme, les items sont toujours là — c'est l'ordre qui change.","Décroche 3 secondes le temps de te réorganiser plutôt que de paniquer au contact."],
+ l:[['Item','Cisailles'],['Portée','5 blocs'],['Cooldown','25 s']]},
+
+{s:'switcher',n:'Switcher',r:'Disruption',p:1500,
+ d:"Une boule de neige et vous échangez de place. Le kit troll par excellence.",
+ i:["Seize boules de neige. Celle qui touche un joueur échange vos positions, avec 8 secondes de cooldown.",
+    "C'est le meilleur ami du vide. Le Switcher ne tue presque jamais lui-même : il met les gens là où ils ne devraient pas être. Interdit sur le roi du KOTH, sinon la zone serait impossible à tenir."],
+ j:["Place-toi au-dessus d'un trou avant de lancer, pas après.","Sert aussi à sortir d'un mauvais pas : échanger avec un joueur loin, c'est une fuite."],
+ c:["Regarde où il est avant de t'engager au bord du vide.","8 secondes de cooldown : après un échange, il est vulnérable un moment."],
+ l:[['Item','16 boules de neige'],['Effet','Échange de position'],['Cooldown','8 s'],['Interdit','Roi du KOTH']]},
+
+{s:'berserker',n:'Berserker',r:'Dernier souffle',p:1500,
+ d:"Sous le seuil de vie, tu frappes plus fort. Rester bas devient un choix tactique.",
+ i:["Sous <strong>1,75 cœur</strong>, tu passes en Force I automatiquement.",
+    "Le Berserker inverse la logique du soup : au lieu de boire dès que ça descend, tu retardes. Le risque est réel — à ce niveau de vie, une seule erreur te tue — mais l'adversaire qui te croyait fini se retrouve face à quelqu'un qui frappe plus fort que lui."],
+ j:["Retarde ta soupe volontairement quand l'adversaire est aussi bas que toi.","Le bonus s'active seul : ne perds pas de temps à surveiller un cooldown."],
+ c:["Ne le laisse jamais descendre bas sans le finir dans la foulée.","Le knockback marche pareil sur lui : éjecte-le plutôt que d'échanger des coups."],
+ l:[['Effet','Force I'],['Seuil','Sous 1,75 ❤'],['Activation','Automatique']]},
+
+{s:'spiderman',n:'Spiderman',r:'Piège',p:1800,
+ d:"Une toile sous les pieds de ta cible. Elle ne meurt pas, elle attend.",
+ i:["Un jet de ficelle pose une toile sous ta cible pendant 8 secondes. 20 secondes de cooldown.",
+    "La toile ne fait aucun dégât. Elle immobilise, et sur un serveur où tout le monde se déplace en permanence, huit secondes d'immobilité valent une condamnation. Interdit en KOTH et en zone de contrôle."],
+ j:["Pose la toile puis appelle : le kit brille en groupe, pas en duel.","Vise les fuyards, pas ceux qui te chargent."],
+ c:["Casse la toile à l'épée, ça va plus vite qu'on croit.","Une fois les 8 secondes passées, il a 12 secondes sans rien."],
+ l:[['Item','Ficelle'],['Durée','8 s'],['Cooldown','20 s'],['Interdit','KOTH et zones']]},
+
+{s:'thor',n:'Thor',r:'Burst',p:2000,
+ d:"La foudre tombe où tu vises. Dégâts de zone, et tout le monde voit d'où ça vient.",
+ i:["Une hache en fer, la foudre à 25 blocs, un rayon d'impact de 4 blocs, 8 secondes de cooldown.",
+    "Le Thor est le seul kit qui frappe fort de loin et en zone. Le prix à payer : l'éclair annonce ta position à toute la map, et tu deviens la cible prioritaire de tous ceux qui l'ont vu."],
+ j:["Vise les regroupements, pas les joueurs isolés — le rayon de 4 est là pour ça.","Change de place après chaque éclair, ta position est connue."],
+ c:["Le cooldown de 8 secondes est ta fenêtre pour fermer la distance.","Ne reste jamais collé à un allié quand un Thor est en vie."],
+ l:[['Item','Hache en fer'],['Portée','25 blocs · rayon 4'],['Cooldown','8 s']]},
+
+{s:'vampire',n:'Vampire',r:'Soin',p:2000,
+ d:"Chaque kill te rend toute ta vie. En mêlée générale, c'est la boule de neige la plus violente du serveur.",
+ i:["Tuer un joueur en mêlée te restaure <strong>toute ta vie</strong>, instantanément.",
+    "Le Vampire ne gagne pas les duels, il gagne les mêlées. Le premier kill le remet à plein, ce qui lui permet d'enchaîner sur le suivant — et une série de Vampire au milieu d'un groupe est très difficile à arrêter une fois lancée."],
+ j:["Entre dans les mêlées déjà commencées, jamais dans un duel propre.","Vise le joueur le plus bas en vie du groupe, il te relance tout le kit."],
+ c:["Ne le laisse jamais finir un joueur entamé, prends le kill à sa place.","En duel isolé, il n'a aucune capacité : c'est un PvP ordinaire."],
+ l:[['Effet','Vie restaurée à 100 %'],['Déclencheur','Un joueur tué'],['Portée','Mêlée uniquement']]},
+
+{s:'reaper',n:'Reaper',r:'Corruption',p:2000,
+ d:"Sa faux inflige des dégâts de wither. La barre descend même quand le combat s'arrête.",
+ i:["Une houe en fer qui applique Wither I pendant 3 secondes, avec 6 secondes de cooldown.",
+    "Contrairement au poison, le wither peut tuer. C'est ce qui fait la différence : un adversaire qui décroche à un demi-cœur avec un wither actif ne survit pas à sa fuite."],
+ j:["Applique le wither et laisse partir : il finira le travail.","Garde-le pour les cibles basses, pas pour ouvrir un combat."],
+ c:["Bois immédiatement, ne compte pas sur la régénération.","6 secondes de cooldown : après la faux, il n'a plus rien pendant un moment."],
+ l:[['Item','Houe en fer'],['Effet','Wither I · 3 s'],['Cooldown','6 s']]},
+
+{s:'grandpa',n:'Grand-Pa',r:'Éjection',p:2000,
+ d:"Un bâton qui envoie très loin et ne fait presque aucun mal. Le vide s'occupe du reste.",
+ i:["Un bâton enchanté Knockback II. Les dégâts sont dérisoires, la portée d'éjection ne l'est pas.",
+    "Le Grand-Pa ne tue personne à l'épée. Il déplace, il sépare, il envoie par-dessus bord. Sur une map avec du vide, c'est un des kits les plus détestés — et c'est un compliment."],
+ j:["Combats toujours dos à un plein et face à un trou.","Sert aussi à sortir un allié d'une mauvaise position en éjectant son agresseur."],
+ c:["Reste au centre des plateformes, loin de tout bord.","Ses dégâts sont minuscules : si tu tiens la position, tu gagnes l'échange."],
+ l:[['Item','Bâton Knockback II'],['Dégâts','Très faibles'],['Usage','Éjection']]},
+
+{s:'gladiator',n:'Gladiator',r:'Duel',p:2500,
+ d:"Tu enfermes ta cible avec toi dans une cage. Plus de gank, plus de fuite : un vrai 1v1.",
+ i:["Un bâton de blaze vous téléporte tous les deux dans une cage fermée pendant 30 secondes. 45 secondes de cooldown.",
+    "C'est le seul kit qui garantit un duel propre. Personne n'entre, personne ne sort, et à la fin il y a un gagnant. Impossible d'extraire le roi d'un KOTH avec — sinon la zone n'aurait plus aucun sens."],
+ j:["Choisis ta cible : tu vas passer 30 secondes seul avec elle.","Vérifie ton stock de soupes avant de déclencher, tu ne pourras pas te ravitailler."],
+ c:["Reste près des refills : entrer en cage avec un inventaire vide, c'est perdu d'avance.","45 secondes de cooldown après la cage, c'est ta fenêtre pour le punir."],
+ l:[['Item','Bâton de blaze'],['Durée','30 s en cage'],['Cooldown','45 s'],['Interdit','Roi du KOTH']]},
+
+{s:'ninja',n:'Ninja',r:'Chasse',p:2500,
+ d:"Un sneak te téléporte sur le dernier joueur frappé. Personne ne décroche du combat.",
+ i:["Frappe un joueur, il est marqué 15 secondes. Un sneak et tu es sur lui. 10 secondes de cooldown.",
+    "Le Ninja ne rattrape pas sa cible : il apparaît dessus. Aucune fuite ne fonctionne dans la fenêtre de 15 secondes, quel que soit le kit d'en face."],
+ j:["Marque puis laisse partir : la téléportation est plus utile quand l'autre se croit sauvé.","Surveille les 15 secondes, passé ce délai la marque tombe."],
+ c:["Tiens 15 secondes hors de portée et tu es libre.","Après une téléportation, il a 10 secondes sans échappatoire."],
+ l:[['Déclencheur','Sneak'],['Marque','Valable 15 s'],['Cooldown','10 s']]},
+
+{s:'phantom',n:'Phantom',r:'Furtif',p:3500,
+ d:"Invisible tant que tu ne touches à rien. Frapper te révèle : c'est un kit d'approche.",
+ i:["Invisibilité permanente. Frapper te révèle 8 secondes, être touché te révèle 5 secondes.",
+    "Le Phantom choisit le premier coup, et c'est tout ce qu'il a. Après, il est visible comme les autres, avec un kit sans capacité. Il est révélé automatiquement dans la zone du KOTH."],
+ j:["Ouvre sur une cible déjà engagée ailleurs, jamais sur quelqu'un qui te cherche.","Décroche et attends la fin des 8 secondes plutôt que de finir un combat perdu."],
+ c:["Frappe large dans les zones étroites, un Phantom touché est révélé 5 secondes.","En KOTH il est visible en permanence : c'est là qu'il faut le chasser."],
+ l:[['Passif','Invisibilité'],['Révélé','8 s si tu frappes'],['Révélé','5 s si tu es touché'],['Interdit','Zone KOTH']]},
+
+{s:'sakura',n:'Sakura',r:'Soutien',p:10000,x:true,k:'桜',
+ d:"Tu soignes les alliés autour de toi, en continu. Inutile en solo, décisif en équipe.",
+ i:["Toutes les 8 secondes, chaque allié dans un rayon de 6 blocs regagne <strong>un demi-cœur</strong>.",
+    "C'est le seul kit de soin du serveur, et il ne se soigne pas lui-même. Sans team, il ne sert à rien. Avec une team qui tient une zone de contrôle ou un KOTH, il change complètement la durée pendant laquelle le groupe peut rester en place."],
+ j:["Reste au centre du groupe, jamais en tête.","Le soin est faible mais permanent : il paie sur la durée, pas dans le burst."],
+ c:["Sors-le du groupe avec un Gladiator ou un Switcher et le soin s'arrête.","Concentre le burst sur une cible : un demi-cœur toutes les 8 secondes ne suit pas."],
+ l:[['Effet','+0,5 ❤ aux alliés'],['Rayon','6 blocs'],['Fréquence','Toutes les 8 s'],['Sur soi','Aucun effet']]},
+
+{s:'yumi',n:'Yumi',r:'Contrôle',p:12000,x:true,k:'弓',
+ d:"Des flèches qui font à peine mal mais ralentissent net. Tu ne tues pas : tu livres.",
+ i:["Un arc et 64 flèches. Les dégâts sont très réduits, mais chaque flèche applique Lenteur I pendant 3 secondes.",
+    "Le Yumi ne fait pas de kills, il fait des cibles. Un joueur ralenti à découvert est un joueur mort — simplement pas de ta main. C'est un kit d'équipe déguisé en kit de distance."],
+ j:["Tire sur celui que tes alliés poursuivent, pas sur celui qui te vise.","Enchaîne les flèches pour maintenir la lenteur, une seule ne suffit jamais."],
+ c:["Ses dégâts sont dérisoires : en duel isolé, tu peux encaisser et avancer.","Coupe la ligne de vue, la lenteur tombe au bout de 3 secondes."],
+ l:[['Item','Arc + 64 flèches'],['Dégâts','Très réduits'],['Effet','Lenteur I · 3 s']]},
+
+{s:'tanuki',n:'Tanuki',r:'Embuscade',p:15000,x:true,k:'狸',
+ d:"Un double part à ta place pendant que tu disparais. Le temps qu'on comprenne, tu es derrière.",
+ i:["Une plume. À l'activation, un clone part dans ta direction pendant 4 secondes pendant que tu deviens invisible. 20 secondes de cooldown.",
+    "Le Tanuki gagne du temps, pas des dégâts. Quatre secondes pendant lesquelles l'adversaire frappe quelqu'un qui n'existe pas, c'est assez pour contourner, boire ou disparaître complètement."],
+ j:["Déclenche pendant que l'adversaire attaque, pas avant : il faut qu'il ait déjà engagé.","Utilise les 4 secondes pour contourner, pas pour fuir en ligne droite."],
+ c:["Le clone ne frappe pas : s'il ne rend aucun coup, c'est le leurre.","Frappe large autour de toi plutôt que de poursuivre le double."],
+ l:[['Item','Plume'],['Durée du leurre','4 s'],['Invisibilité','Pendant le leurre'],['Cooldown','20 s']]},
+
+{s:'kenshi',n:'Kenshi',r:'Duelliste',p:18000,x:true,k:'剣士',
+ d:"Tes trois premiers coups sur une cible frappent bien plus fort. Après, change de cible.",
+ i:["Contre chaque adversaire, ton premier coup fait <strong>+60 %</strong> de dégâts, le deuxième +45 %, le troisième +30 %. Ensuite, plus rien.",
+    "Le compteur est indépendant pour chaque joueur. Le Kenshi n'est pas fait pour tenir un duel long : il est fait pour ouvrir sur quelqu'un, faire mal tout de suite, et passer au suivant."],
+ j:["Trois coups puis change de cible, ne t'acharne jamais sur le même joueur.","En mêlée, tourne d'adversaire en adversaire : chacun te redonne un compteur plein."],
+ c:["Encaisse les trois premiers coups et le duel s'égalise.","Ne l'affronte pas juste après qu'il a lâché un autre joueur : ton compteur est neuf."],
+ l:[['1ᵉʳ coup','+60 % de dégâts'],['2ᵉ coup','+45 %'],['3ᵉ coup','+30 %'],['Compteur','Par adversaire']]},
+
+{s:'onryo',n:'Onryo',r:'Rancune',p:18000,x:true,k:'怨霊',
+ d:"À ta mort, ton fantôme s'accroche à ton tueur et le ralentit. Ça ne te sauve pas — ça se paie.",
+ i:["Quand tu meurs, un esprit sort de ton corps et applique une lenteur à ton tueur pendant <strong>6 secondes</strong>.",
+    "C'est le seul kit dont la capacité se déclenche après la mort. L'Onryo n'améliore aucun de tes combats : il rend ta mort coûteuse pour celui qui te l'a infligée, souvent au moment où il est déjà bas en vie et où quelqu'un d'autre arrive."],
+ j:["Meurs au milieu du monde, pas à l'écart : la lenteur ne sert que s'il y a du monde autour.","Ne joue pas prudemment, le kit récompense l'engagement."],
+ c:["Après un kill sur un Onryo, décroche 6 secondes avant d'enchaîner.","Ne le tue jamais au milieu d'un groupe adverse."],
+ l:[['Déclencheur','Ta mort'],['Effet','Lenteur sur le tueur'],['Durée','6 s']]},
+
+{s:'kitsune',n:'Kitsune',r:'Tromperie',p:25000,x:true,k:'狐',
+ d:"Une queue par kill. À neuf queues, le renard se libère.",
+ i:["Chaque kill te donne une queue. À <strong>neuf queues</strong>, tu te transformes pendant 25 secondes avec <strong>+35 % de dégâts</strong>.",
+    "C'est le kit le plus cher du serveur, et le plus exigeant. Neuf kills sans mourir, c'est une session entière pour la plupart des joueurs. Mais une transformation lancée au bon moment retourne une mêlée à elle seule."],
+ j:["Ne gaspille pas la transformation sur un duel : garde-la pour un KOTH ou une mêlée.","Les queues se perdent à la mort — joue prudemment jusqu'à neuf, agressivement après."],
+ c:["Surveille son compteur de queues, il est visible en jeu.","Pendant les 25 secondes, décroche plutôt que d'échanger — après, il redevient normal."],
+ l:[['Gain','1 queue par kill'],['Palier','9 queues'],['Transformation','25 s'],['Bonus','+35 % de dégâts']]}
+];
+
+/* ═══════════════════════════════════════════════════
+   RENDU DE LA FICHE
+   ═══════════════════════════════════════════════════ */
+const parPrix = [...KITS].sort((a, b) => a.p - b.p);
+
+function euros(k){ return k.x ? 4 : 2; }
+
+function afficherKit(slug){
+  const k = KITS.find(x => x.s === slug) || KITS[0];
+  const iPrix = parPrix.findIndex(x => x.s === k.s);
+  const prec  = parPrix[iPrix - 1];
+  const suiv  = parPrix[iPrix + 1];
+
+  document.title = k.n + ' — LJKITS';
+
+  /* --- entête --- */
+  const fiche = document.getElementById('fiche');
+  fiche.className = 'enveloppe fiche' + (k.x ? ' exclu' : '');
+  fiche.innerHTML = `
+    <div>
+      <span class="kit-role">${k.r}</span>
+      <h1>${k.n}${k.k ? `<span class="kanji">${k.k}</span>` : ''}</h1>
+      <p class="accroche">${k.d}</p>
+      <div class="intro">${k.i.map(p => `<p>${p}</p>`).join('')}</div>
+      ${k.p === 0 ? '' : `
+      <div class="jauge-bloc">
+        <div class="jauge-tete">
+          <span>Place dans la progression</span>
+          <b>${iPrix + 1}<sup>e</sup> kit le moins cher sur ${KITS.length}</b>
+        </div>
+        <div class="jauge"><i style="width:${Math.round((k.p / 25000) * 100)}%"></i></div>
+        <div class="jauge-pied">Environ ${Math.max(1, Math.round(k.p / 20))} kills pour le débloquer, à ~20 coins le kill.</div>
+      </div>`}
+    </div>
+
+    <aside class="panneau">
+      <div class="tooltip">
+        <div class="tooltip-tete">${k.x ? 'Kit exclusif' : 'Fiche technique'}</div>
+        <div class="tooltip-prix">
+          <div>
+            <div class="prix-val ${k.p === 0 ? 'libre' : ''}">${k.p === 0 ? 'Gratuit' : k.p.toLocaleString('fr-FR')}</div>
+            <div class="prix-unite">${k.p === 0 ? 'Kit de départ' : 'coins'}</div>
+          </div>
+          ${k.p === 0 ? '' : `<span class="prix-euro">ou ${euros(k)} €</span>`}
+        </div>
+        <div class="lore">
+          ${k.l.map(([c, v]) => `<div class="lore-l"><span>${c}</span><span>${v}</span></div>`).join('')}
+        </div>
+        <div class="tooltip-pied">
+          <button class="bouton bouton-plein" onclick="copierIP()">Copier l'IP</button>
+          <p class="tooltip-note">${k.p === 0
+            ? 'Disponible dès ta première connexion.'
+            : `Débloque-le en jouant, ou <a href="/boutique">prends-le en boutique</a> pour ${euros(k)} €.`}</p>
+        </div>
+      </div>
+    </aside>`;
+
+  /* --- tactique --- */
+  document.getElementById('titreTactique').innerHTML =
+    `Jouer le ${k.n}, <span class="or">ou le contrer</span>`;
+  document.getElementById('duoTactique').innerHTML = `
+    <div class="carte jouer">
+      <h3>Comment le jouer</h3>
+      <ul>${k.j.map(x => `<li>${x}</li>`).join('')}</ul>
+    </div>
+    <div class="carte contre">
+      <h3>Comment le contrer</h3>
+      <ul>${k.c.map(x => `<li>${x}</li>`).join('')}</ul>
+    </div>`;
+
+  /* --- obtention --- */
+  document.getElementById('titreObtenir').innerHTML =
+    k.p === 0 ? 'Il est déjà à toi' : `Comment obtenir le ${k.n}`;
+  document.getElementById('blocObtenir').innerHTML = k.p === 0 ? `
+    <div class="voie gratuite" style="grid-column:1/-1">
+      <div class="voie-titre">Aucun coût</div>
+      <p>Ce kit est disponible dès ta première connexion, sans rien débloquer. C'est le point de départ de tout le monde.</p>
+      <button class="bouton bouton-plein" onclick="copierIP()">Copier l'IP</button>
+    </div>` : `
+    <div class="voie gratuite">
+      <div class="voie-titre">En jouant</div>
+      <p><b>${k.p.toLocaleString('fr-FR')} coins</b>, gagnés au combat. C'est la voie normale, et celle que prend la majorité des joueurs.</p>
+      <div class="voie-lignes">
+        <div class="voie-l"><span>Par kill</span><span>~20 coins</span></div>
+        <div class="voie-l"><span>Tous les 10 kills</span><span>+50 coins</span></div>
+        <div class="voie-l"><span>Totem remporté</span><span>Jusqu'à 5 000</span></div>
+        <div class="voie-l"><span>Discord lié</span><span>1 000 coins, une fois</span></div>
+      </div>
+      <button class="bouton bouton-vide" onclick="copierIP()">Aller le chercher</button>
+    </div>
+    <div class="voie payante">
+      <div class="voie-titre">En boutique</div>
+      <p><b>${euros(k)} €</b> pour le même kit, aux mêmes statistiques, simplement sans le grind. Ça fait tourner le serveur — ça ne te rend pas plus fort.</p>
+      <div class="voie-lignes">
+        <div class="voie-l"><span>Statistiques</span><span>Identiques</span></div>
+        <div class="voie-l"><span>Avantage en combat</span><span>Aucun</span></div>
+        <div class="voie-l"><span>Livraison</span><span>Sous 90 s en jeu</span></div>
+      </div>
+      <a class="bouton bouton-vide" href="/boutique">Voir la boutique</a>
+    </div>`;
+
+  /* --- voisins de prix --- */
+  const voisins = parPrix
+    .filter(x => x.s !== k.s)
+    .sort((a, b) => Math.abs(a.p - k.p) - Math.abs(b.p - k.p))
+    .slice(0, 3);
+
+  document.getElementById('blocVoisins').innerHTML = voisins.map(v => `
+    <a class="voisin ${v.x ? 'excl' : ''}" href="/kits/${v.s}">
+      ${v.k ? `<div class="voisin-kanji" aria-hidden="true">${v.k}</div>` : ''}
+      <div class="voisin-tete">
+        <span class="voisin-nom">${v.n}</span>
+        <span class="voisin-role">${v.r}</span>
+      </div>
+      <p>${v.d}</p>
+      <div class="voisin-prix ${v.p === 0 ? 'libre' : ''}">${v.p === 0 ? 'Gratuit' : v.p.toLocaleString('fr-FR') + ' coins'}</div>
+    </a>`).join('');
+
+  /* --- pagination --- */
+  document.getElementById('pagination').innerHTML = `
+    ${prec ? `<a class="page-lien prec" href="/kits/${prec.s}"><div class="lbl">← Moins cher</div><div class="nom">${prec.n}</div></a>` : '<div></div>'}
+    ${suiv ? `<a class="page-lien suiv" href="/kits/${suiv.s}"><div class="lbl">Plus cher →</div><div class="nom">${suiv.n}</div></a>` : '<div></div>'}`;
+
+  /* --- cta --- */
+  document.getElementById('titreFinal').innerHTML =
+    k.p === 0 ? `Le <span class="or">${k.n}</span> t'attend au spawn.` : `Va chercher le <span class="or">${k.n}</span>.`;
+  document.getElementById('texteFinal').textContent =
+    k.p === 0
+      ? "Connecte-toi, prends-le au menu des kits, et sors du spawn."
+      : `Connecte-toi, enchaîne les kills, et il est à toi. ${k.p.toLocaleString('fr-FR')} coins, ça se fait plus vite qu'on ne croit.`;
+}
+
+/* ═══════════════════════════════════════════════════
+   MAQUETTE : sélecteur de kit (à retirer en production)
+   En Next.js, le slug vient de params, pas de l'URL query.
+   ═══════════════════════════════════════════════════ */
+const selecteur = document.getElementById('selecteurKit');
+selecteur.innerHTML = parPrix.map(k =>
+  `<option value="${k.s}">${k.n} — ${k.p === 0 ? 'gratuit' : k.p.toLocaleString('fr-FR')}</option>`).join('');
+
+const slugInitial = new URLSearchParams(location.search).get('kit') || 'viper';
+selecteur.value = slugInitial;
+afficherKit(slugInitial);
+
+selecteur.addEventListener('change', e => {
+  afficherKit(e.target.value);
+  history.replaceState(null, '', '?kit=' + e.target.value);
+  window.scrollTo({top: 0, behavior: 'smooth'});
+});
+</script>
+
+</body>
+</html>

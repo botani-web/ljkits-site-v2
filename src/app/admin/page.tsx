@@ -48,7 +48,7 @@ function Section({
   children: React.ReactNode
 }) {
   return (
-    <section className="rounded-2xl border border-bord bg-charbon px-5 py-5 sm:px-6 sm:py-6">
+    <section className="rounded-carte border border-bord bg-charbon px-5 py-5 sm:px-6 sm:py-6">
       <h2 className="font-mono text-[10.5px] font-bold tracking-[1.4px] text-gris uppercase">
         {titre}
       </h2>
@@ -175,7 +175,7 @@ export default async function TableauDeBord() {
   return (
     <>
       <div className="mb-6">
-        <h1 className="font-titre text-2xl uppercase">Tableau de bord</h1>
+        <h1 className="font-titre text-2xl">Tableau de bord</h1>
         <p className="mt-1 text-sm text-gris">
           Le chiffre d’affaires ne compte que les commandes <strong>livrées</strong>,
           remboursements déduits. Les évolutions comparent aux 30 jours précédents, en heure de
@@ -244,10 +244,10 @@ export default async function TableauDeBord() {
                   <Link
                     key={commande.id}
                     href={`/admin/commandes/${commande.id}`}
-                    className={`flex flex-wrap items-center gap-x-4 gap-y-2 rounded-xl border px-4 py-3 transition-colors ${
+                    className={`flex flex-wrap items-center gap-x-4 gap-y-2 rounded-carte border px-4 py-3 transition-colors ${
                       probleme
                         ? 'border-rouge/40 bg-rouge/5 hover:border-rouge/70'
-                        : 'border-bord bg-nuit/40 hover:border-[#43305E]'
+                        : 'border-bord bg-nuit/40 hover:border-soupe'
                     }`}
                   >
                     <span className="font-mono text-[13px] font-bold text-or">
@@ -305,7 +305,7 @@ export default async function TableauDeBord() {
               <Link
                 key={raccourci.href}
                 href={raccourci.href}
-                className="rounded-xl border border-bord bg-nuit/40 px-4 py-3 text-sm font-semibold text-creme transition-colors hover:border-soupe hover:text-soupe"
+                className="rounded-carte border border-bord bg-nuit/40 px-4 py-3 text-sm font-semibold text-creme transition-colors hover:border-soupe hover:text-soupe"
               >
                 {raccourci.label}
               </Link>
@@ -314,7 +314,7 @@ export default async function TableauDeBord() {
         </Section>
 
         {/* -------------------- 5. ANALYSE DÉTAILLÉE (repliée mobile) --------- */}
-        <details className="audience-repliable rounded-2xl border border-bord bg-charbon">
+        <details className="audience-repliable rounded-carte border border-bord bg-charbon">
           <summary className="flex items-center justify-between gap-3 px-5 py-4 sm:px-6">
             <span className="font-mono text-[10.5px] font-bold tracking-[1.4px] text-gris uppercase">
               Analyse détaillée — historique &amp; audience

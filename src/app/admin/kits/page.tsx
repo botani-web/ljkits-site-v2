@@ -8,6 +8,7 @@ import {
 } from '@/components/admin/BoutonsAction'
 import { formaterCoins, formaterEuros } from '@/lib/format'
 import { prisma } from '@/lib/prisma'
+import { classesBouton } from '@/components/ui/Bouton'
 
 export const metadata = { title: 'Kits' }
 
@@ -26,7 +27,7 @@ export default async function TableauDeBordKits() {
     <>
       <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="font-titre text-2xl uppercase">Les kits</h1>
+          <h1 className="font-titre text-2xl">Les kits</h1>
           <p className="mt-1 text-sm text-gris">
             {kits.length} kit{kits.length > 1 ? 's' : ''} au total, {visibles} visible
             {visibles > 1 ? 's' : ''} sur le site.
@@ -35,14 +36,14 @@ export default async function TableauDeBordKits() {
 
         <Link
           href="/admin/kits/nouveau"
-          className="rounded-lg bg-linear-[135deg] from-soupe to-or px-4 py-2.5 text-sm font-bold text-[#1A1005] transition-shadow hover:shadow-[0_4px_18px_rgba(254,147,1,.35)]"
+          className={classesBouton({ variante: 'plein' })}
         >
           + Nouveau kit
         </Link>
       </div>
 
       {kits.length === 0 ? (
-        <p className="rounded-2xl border border-bord bg-charbon px-6 py-12 text-center text-gris">
+        <p className="rounded-carte border border-bord bg-charbon px-6 py-12 text-center text-gris">
           Aucun kit pour l’instant. Lance <code className="text-or">npm run db:seed</code> ou
           crée-en un.
         </p>
@@ -51,7 +52,7 @@ export default async function TableauDeBordKits() {
           {kits.map((kit, index) => (
             <article
               key={kit.id}
-              className={`flex flex-wrap items-center gap-4 rounded-xl border bg-charbon px-4 py-3.5 ${
+              className={`flex flex-wrap items-center gap-4 rounded-carte border bg-charbon px-4 py-3.5 ${
                 kit.visible ? 'border-bord' : 'border-bord/50 opacity-60'
               }`}
             >
@@ -73,7 +74,7 @@ export default async function TableauDeBordKits() {
               <div className="min-w-[180px] flex-1">
                 <div className="flex items-baseline gap-2">
                   <h2
-                    className={`font-titre text-[17px] uppercase ${
+                    className={`font-titre text-[17px] ${
                       kit.type === 'EXCLUSIF' ? 'text-violet' : 'text-creme'
                     }`}
                   >
@@ -139,7 +140,7 @@ export default async function TableauDeBordKits() {
               <div className="flex items-center gap-2">
                 <Link
                   href={`/admin/kits/${kit.id}`}
-                  className="inline-flex min-h-11 items-center rounded-lg border border-bord px-3 text-[13px] font-semibold text-gris transition-colors hover:border-soupe hover:text-soupe sm:min-h-0 sm:py-1.5"
+                  className="inline-flex min-h-11 items-center rounded-controle border border-bord px-3 text-[13px] font-semibold text-gris transition-colors hover:border-soupe hover:text-soupe sm:min-h-0 sm:py-1.5"
                 >
                   Modifier
                 </Link>

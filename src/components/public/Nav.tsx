@@ -8,31 +8,32 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { useReglages } from '@/components/public/ContexteReglages'
 import { BoutonCopieIp } from '@/components/public/CopieIp'
 import { IconeDiscord } from '@/components/public/IconeDiscord'
+import { classesBouton } from '@/components/ui/Bouton'
 
 /**
- * Barre de navigation du site public — la barre flottante d'index.html.
+ * Barre de navigation du site public.
  *
- * Les maquettes en proposaient deux variantes (flottante sur l'accueil et le
- * règlement, collée en haut sur les kits) : on garde la flottante, majoritaire,
- * pour que la navigation soit identique d'une page à l'autre.
+ * Collée en haut et dans le flux (`sticky`), pleine largeur, filet en bas.
+ * C'est le choix des cinq maquettes validées ; elle remplace la pilule
+ * flottante arrondie d'avant. La conséquence directe : les pages n'ont plus
+ * à réserver 150px de vide sous une barre en `position:fixed`.
  *
- * Composant client pour deux raisons : usePathname(), qui met en or le lien de
- * la page courante, et le menu burger en dessous de `md`.
+ * Sa hauteur est figée à 69px et publiée par le token `--spacing-nav`, dont
+ * les barres d'outils collantes de /kits, /classement et /boutique se servent
+ * pour se poser exactement dessous.
+ *
+ * Composant client pour deux raisons : usePathname(), qui met en soupe le lien
+ * de la page courante, et le menu burger sous 860px.
  */
 const LIENS = [
-  { href: '/#jouer', label: 'Jouer' },
   { href: '/kits', label: 'Kits' },
   { href: '/classement', label: 'Classement' },
   { href: '/boutique', label: 'Boutique' },
-  // « Voter » a été retiré de la barre pour ne pas la surcharger : la section
-  // reste atteignable par le pied de page.
   { href: '/reglement', label: 'Règlement' },
 ]
 
 /** Un lien est-il celui de la page affichée ? */
 function estActif(href: string, chemin: string) {
-  // Les ancres de l'accueil (/#jouer) ne sont actives que sur l'accueil.
-  if (href.startsWith('/#')) return chemin === '/'
   return chemin === href || chemin.startsWith(`${href}/`)
 }
 
@@ -45,76 +46,97 @@ export function Nav() {
   const fermer = useCallback(() => setMenuOuvert(false), [])
 
   return (
-    <nav className="fixed inset-x-4 top-4 z-[100] mx-auto flex max-w-contenu items-center justify-between gap-3 rounded-2xl border border-bord bg-nuit/85 px-4 py-3 backdrop-blur-xl sm:px-5.5">
-      <Link href="/" aria-label="LJKITS — retour à l’accueil" className="flex min-h-11 items-center">
-        <Image src="/logo-texte.png" alt="LJKITS" width={81} height={22} priority />
-      </Link>
+    <nav className="sticky top-0 z-70 border-b border-bord bg-nuit/86 backdrop-blur-[14px]">
+      <div className="mx-auto flex max-w-contenu items-center gap-6.5 px-gouttiere py-3">
+        <Link href="/" aria-label="LJKITS — retour à l’accueil" className="flex items-center">
+          <Image src="/logo-texte.png" alt="LJKITS" width={88} height={24} priority />
+        </Link>
 
-      {/* --- liens, à partir de md : en dessous ils vivent dans le panneau --- */}
-      <div className="hidden gap-7 text-[15px] font-semibold md:flex">
-        {LIENS.map((lien) => {
-          const actif = estActif(lien.href, chemin)
+        {/* --- liens, à partir de 860px : en dessous ils vivent dans le panneau --- */}
+        <div className="ml-2 hidden gap-6.5 min-[860px]:flex">
+          {LIENS.map((lien) => {
+            const actif = estActif(lien.href, chemin)
 
-          return (
-            <Link
-              key={lien.href}
-              href={lien.href}
-              aria-current={actif ? 'page' : undefined}
-              // min-h-11 : à 768 px on est encore sur un écran tactile, et un
-              // lien de 24 px de haut y est difficile à viser au pouce.
-              className={`flex min-h-11 items-center transition-colors ${
-                actif ? 'text-or' : 'text-gris hover:text-creme'
-              }`}
-            >
-              {lien.label}
-            </Link>
-          )
-        })}
-      </div>
+            return (
+              <Link
+                key={lien.href}
+                href={lien.href}
+                aria-current={actif ? 'page' : undefined}
+                // min-h-11 : à 860px on est encore sur un écran tactile, et un
+                // lien de 19px de haut y est difficile à viser au pouce.
+                className={`flex min-h-11 items-center font-mono text-xs font-medium tracking-[.12em] uppercase transition-colors ${
+                  actif ? 'text-soupe' : 'text-gris hover:text-creme'
+                }`}
+              >
+                {lien.label}
+              </Link>
+            )
+          })}
+        </div>
 
-      <div className="flex items-center gap-2.5">
-        {/*
-          Masqué sous `sm` : à 360 px, logo + Discord + JOUER + burger dépassent
-          les 328 px utiles. Le Discord reste accessible dans le panneau.
-        */}
-        <a
-          href={discord}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="hidden min-h-11 items-center gap-2 rounded-[10px] bg-discord px-4.5 text-sm font-bold text-white transition-all hover:bg-[#6a76f5] hover:shadow-[0_4px_18px_rgba(88,101,242,.35)] sm:flex"
-        >
-          <IconeDiscord className="size-4.5 fill-white" />
-          <span className="hidden md:inline">Discord</span>
-        </a>
-
-        <BoutonCopieIp
-          aria-label={`Copier l’adresse du serveur, ${ip}`}
-          className="min-h-11 rounded-[10px] bg-linear-[135deg] from-soupe to-or px-4 text-sm font-extrabold tracking-wide text-[#1A1005] transition-shadow hover:shadow-[0_4px_18px_rgba(254,147,1,.45)] sm:px-5"
-        >
-          JOUER
-        </BoutonCopieIp>
-
-        <button
-          type="button"
-          onClick={() => setMenuOuvert(true)}
-          aria-label="Ouvrir le menu"
-          aria-expanded={menuOuvert}
-          aria-controls="menu-mobile"
-          aria-haspopup="dialog"
-          className="flex size-11 shrink-0 items-center justify-center rounded-[10px] border border-bord text-creme transition-colors hover:border-soupe hover:text-soupe md:hidden"
-        >
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2.2"
-            strokeLinecap="round"
-            aria-hidden="true"
-            className="size-5.5"
+        <div className="ml-auto flex items-center gap-2.5">
+          {/*
+            Sous 860px, la barre ne garde que le logo, le Discord et le burger :
+            les quatre ensemble ne tiennent pas dans les 324px utiles d'un
+            écran de 360. C'est « Copier l'IP » qui cède la place, parce que
+            c'est l'action la moins urgente des deux tant qu'on n'a pas encore
+            décidé de jouer — et parce qu'elle reste à un doigt dans le panneau,
+            où l'adresse est en plus affichée en toutes lettres.
+          */}
+          <a
+            href={discord}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={classesBouton({ variante: 'vide' })}
           >
-            <path d="M4 7h16M4 12h16M4 17h16" />
-          </svg>
-        </button>
+            <IconeDiscord className="size-4 shrink-0 fill-current" />
+            Discord
+          </a>
+
+          {/*
+            `max-[860px]:hidden` et non `hidden min-[860px]:inline-flex`.
+
+            classesBouton() pose déjà `inline-flex` dans sa chaîne de base. Deux
+            utilitaires de `display` dans le même attribut, c'est l'ordre de la
+            FEUILLE DE STYLE qui tranche, pas celui de l'attribut — et Tailwind
+            émet `.inline-flex` après `.hidden`. Le bouton restait donc visible
+            à toutes les largeurs.
+
+            Une règle sous media query, elle, est écrite après toutes les règles
+            de base : elle gagne sans dépendre de cet ordre.
+          */}
+          <BoutonCopieIp
+            aria-label={`Copier l’adresse du serveur, ${ip}`}
+            className={classesBouton({
+              variante: 'plein',
+              className: 'max-[860px]:hidden',
+            })}
+          >
+            Copier l’IP
+          </BoutonCopieIp>
+
+          <button
+            type="button"
+            onClick={() => setMenuOuvert(true)}
+            aria-label="Ouvrir le menu"
+            aria-expanded={menuOuvert}
+            aria-controls="menu-mobile"
+            aria-haspopup="dialog"
+            className="flex size-11 shrink-0 items-center justify-center rounded-controle border border-bord text-creme transition-colors hover:border-soupe hover:text-soupe min-[860px]:hidden"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              aria-hidden="true"
+              className="size-[18px]"
+            >
+              <path d="M4 7h16M4 12h16M4 17h16" />
+            </svg>
+          </button>
+        </div>
       </div>
 
       <MenuMobile
@@ -160,14 +182,14 @@ function MenuMobile({
   }, [ouvert])
 
   /**
-   * Le panneau n'existe que sous `md`. Si la fenêtre est élargie alors qu'il
+   * Le panneau n'existe que sous 860px. Si la fenêtre est élargie alors qu'il
    * est ouvert, les liens réapparaissent dans la barre et le panneau resterait
    * un calque modal invisible qui bloque toute la page.
    */
   useEffect(() => {
     if (!ouvert) return
 
-    const requete = window.matchMedia('(min-width: 768px)')
+    const requete = window.matchMedia('(min-width: 860px)')
     const fermerSiLarge = () => {
       if (requete.matches) onFermer()
     }
@@ -187,28 +209,28 @@ function MenuMobile({
       onClick={(evenement) => {
         if (evenement.target === dialogue.current) onFermer()
       }}
-      className="fixed inset-0 m-0 max-h-none w-full max-w-none bg-transparent p-4 text-creme backdrop:bg-nuit/80 backdrop:backdrop-blur-sm md:hidden"
+      className="fixed inset-0 m-0 max-h-none w-full max-w-none bg-transparent p-4 text-creme backdrop:bg-nuit/80 backdrop:backdrop-blur-sm min-[860px]:hidden"
     >
       {/*
         Le <dialog> couvre tout l'écran pour que le clic « à côté » ait une
         cible ; le panneau visible, lui, est ce bloc, posé sous la barre.
       */}
-      <div className="mx-auto mt-[72px] flex max-h-[calc(100dvh-88px)] max-w-contenu flex-col overflow-y-auto rounded-2xl border border-bord bg-charbon p-4 shadow-[0_18px_50px_rgba(0,0,0,.55)]">
+      <div className="mx-auto mt-[76px] flex max-h-[calc(100dvh-92px)] max-w-contenu flex-col overflow-y-auto rounded-carte border border-bord bg-charbon p-4 shadow-[0_18px_50px_rgba(0,0,0,.55)]">
         <div className="mb-3 flex items-center justify-between">
-          <span className="font-mono text-[10.5px] font-bold tracking-[1.4px] text-gris uppercase">
+          <span className="font-mono text-[10.5px] font-bold tracking-[.2em] text-soupe uppercase">
             Navigation
           </span>
           <button
             type="button"
             onClick={onFermer}
             aria-label="Fermer le menu"
-            className="flex size-11 items-center justify-center rounded-[10px] border border-bord text-gris transition-colors hover:border-oni hover:text-oni"
+            className="flex size-11 items-center justify-center rounded-controle border border-bord text-gris transition-colors hover:border-oni hover:text-oni"
           >
             <svg
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
-              strokeWidth="2.2"
+              strokeWidth="2"
               strokeLinecap="round"
               aria-hidden="true"
               className="size-5"
@@ -231,8 +253,8 @@ function MenuMobile({
                 // courante : Next ne remonte alors pas le composant, et le
                 // panneau resterait ouvert sur un clic sur le lien actif.
                 onClick={onFermer}
-                className={`flex min-h-12 items-center rounded-[10px] px-3.5 text-[16.5px] font-semibold transition-colors ${
-                  actif ? 'bg-braise text-or' : 'text-creme hover:bg-braise'
+                className={`flex min-h-12 items-center rounded-controle px-3.5 font-mono text-[13px] font-bold tracking-[.12em] uppercase transition-colors ${
+                  actif ? 'bg-braise text-soupe' : 'text-creme hover:bg-braise'
                 }`}
               >
                 {lien.label}
@@ -244,15 +266,15 @@ function MenuMobile({
         <div className="mt-4 flex flex-col gap-2.5 border-t border-bord pt-4">
           <BoutonCopieIp
             aria-label={`Copier l’adresse du serveur, ${ip}`}
-            className="flex min-h-12 w-full items-center justify-center gap-2.5 rounded-[10px] bg-linear-[135deg] from-soupe to-or px-4 font-mono text-[15px] font-bold text-[#1A1005]"
+            className={classesBouton({ variante: 'plein', pleineLargeur: true })}
           >
             <svg
               viewBox="0 0 24 24"
               fill="none"
-              strokeWidth="2.2"
-              stroke="#1A1005"
+              strokeWidth="2"
+              stroke="currentColor"
               aria-hidden="true"
-              className="size-4.5 shrink-0"
+              className="size-4 shrink-0"
             >
               <rect x="9" y="9" width="12" height="12" rx="2" />
               <path d="M5 15V5a2 2 0 0 1 2-2h10" />
@@ -265,9 +287,9 @@ function MenuMobile({
             target="_blank"
             rel="noopener noreferrer"
             onClick={onFermer}
-            className="flex min-h-12 w-full items-center justify-center gap-2.5 rounded-[10px] bg-discord px-4 text-[15px] font-bold text-white"
+            className={classesBouton({ variante: 'vide', pleineLargeur: true })}
           >
-            <IconeDiscord className="size-4.5 shrink-0 fill-white" />
+            <IconeDiscord className="size-4 shrink-0 fill-current" />
             Rejoindre le Discord
           </a>
         </div>

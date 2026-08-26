@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { redirect } from 'next/navigation'
 
 import { FormulaireConnexion } from '@/components/admin/FormulaireConnexion'
+import { Panneau, SectionPanneau } from '@/components/ui/Panneau'
 import { auth } from '@/lib/auth'
 
 export const metadata: Metadata = {
@@ -17,6 +18,13 @@ export const metadata: Metadata = {
  *
  * Volontairement placé HORS de /admin : ainsi la règle « tout ce qui commence
  * par /admin exige une session » n'a aucune exception à gérer.
+ *
+ * ⚠ Seul l'habillage a changé. L'authentification, la Server Action
+ * `connecter` et la redirection ci-dessous sont intactes.
+ *
+ * Pas de <PagePublique> ici : ni barre de navigation ni pied de page. C'est
+ * une porte de service, pas une page du site — et elle ne doit proposer aucun
+ * chemin vers la boutique ou le classement.
  */
 export default async function PageConnexion() {
   // Déjà connecté : inutile de repasser par le formulaire.
@@ -24,27 +32,32 @@ export default async function PageConnexion() {
   if (session?.user) redirect('/admin/kits')
 
   return (
-    <main className="flex min-h-screen items-center justify-center px-6 py-16">
+    <main className="halo-hero flex min-h-screen items-center justify-center px-gouttiere py-16">
       <div className="w-full max-w-[400px]">
-        <Link href="/" className="mb-8 flex min-h-11 items-center justify-center" aria-label="Retour à l’accueil">
+        <Link
+          href="/"
+          className="mb-8 flex min-h-11 items-center justify-center"
+          aria-label="Retour à l’accueil"
+        >
           <Image src="/logo-texte.png" alt="LJKITS" width={110} height={30} priority />
         </Link>
 
-        <div className="rounded-2xl border border-bord bg-charbon px-7 py-8">
-          <h1 className="mb-1.5 font-titre text-xl uppercase">Administration</h1>
-          <p className="mb-6 text-sm text-gris">
-            Espace réservé. Connecte-toi pour gérer les kits et le règlement.
-          </p>
+        <Panneau ombre titre="Administration">
+          <SectionPanneau dernier>
+            <p className="mb-5 text-sm text-gris">
+              Espace réservé. Connecte-toi pour gérer les kits et le règlement.
+            </p>
 
-          <FormulaireConnexion />
-        </div>
+            <FormulaireConnexion />
+          </SectionPanneau>
+        </Panneau>
 
-        <p className="mt-6 text-center text-[13px] text-gris">
+        <p className="mt-6 text-center">
           <Link
             href="/"
-            className="-my-3.5 inline-flex min-h-11 items-center transition-colors hover:text-creme"
+            className="-my-3.5 inline-flex min-h-11 items-center font-mono text-[11px] tracking-[.08em] text-gris uppercase transition-colors hover:text-creme"
           >
-            ← Retour au site
+            <span aria-hidden="true">←</span>&nbsp;Retour au site
           </Link>
         </p>
       </div>

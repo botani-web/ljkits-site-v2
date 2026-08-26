@@ -42,7 +42,7 @@ export function InterrupteurRecrutement({ ouvert }: { ouvert: boolean }) {
   /* --- ouvert : on peut fermer d'un clic ------------------------------- */
   if (ouvert) {
     return (
-      <div className="flex flex-wrap items-center gap-4 rounded-xl border border-vert/40 bg-vert/5 px-5 py-4">
+      <div className="flex flex-wrap items-center gap-4 rounded-carte border border-vert/40 bg-vert/5 px-5 py-4">
         <div className="min-w-[220px] flex-1">
           <p className="text-[15px] font-bold text-vert">Recrutement ouvert</p>
           <p className="mt-1 text-[13px] text-gris">
@@ -52,7 +52,7 @@ export function InterrupteurRecrutement({ ouvert }: { ouvert: boolean }) {
         </div>
 
         <form action={basculerRecrutement}>
-          <BoutonEnvoi className="inline-flex min-h-11 items-center rounded-lg border border-bord px-4 text-[13px] font-semibold text-gris transition-colors hover:border-rouge hover:text-rouge">
+          <BoutonEnvoi className="inline-flex min-h-11 items-center rounded-controle border border-bord px-4 text-[13px] font-semibold text-gris transition-colors hover:border-rouge hover:text-rouge">
             Fermer le recrutement
           </BoutonEnvoi>
         </form>
@@ -62,7 +62,7 @@ export function InterrupteurRecrutement({ ouvert }: { ouvert: boolean }) {
 
   /* --- fermé : confirmation avant d'ouvrir ------------------------------ */
   return (
-    <div className="rounded-xl border border-bord bg-charbon px-5 py-4">
+    <div className="rounded-carte border border-bord bg-charbon px-5 py-4">
       <div className="flex flex-wrap items-center gap-4">
         <div className="min-w-[220px] flex-1">
           <p className="text-[15px] font-bold text-creme">Recrutement fermé</p>
@@ -76,7 +76,7 @@ export function InterrupteurRecrutement({ ouvert }: { ouvert: boolean }) {
           <button
             type="button"
             onClick={() => setConfirmation(true)}
-            className="inline-flex min-h-11 items-center rounded-lg bg-linear-[135deg] from-soupe to-or px-4 text-[13px] font-bold text-[#1a1005] transition-shadow hover:shadow-[0_4px_18px_rgba(254,147,1,.35)]"
+            className="inline-flex min-h-11 items-center rounded-controle bg-soupe px-4 text-[13px] font-bold text-encre transition-colors hover:bg-or"
           >
             Ouvrir le recrutement
           </button>
@@ -84,7 +84,7 @@ export function InterrupteurRecrutement({ ouvert }: { ouvert: boolean }) {
       </div>
 
       {confirmation && (
-        <div className="mt-4 rounded-lg border border-soupe/40 bg-soupe/5 p-4">
+        <div className="mt-4 rounded-controle border border-soupe/40 bg-soupe/5 p-4">
           <p className="text-[14px] text-creme">
             En ouvrant, <strong className="font-bold">n’importe qui ayant le lien</strong>{' '}
             pourra envoyer une candidature. La page reste invisible sur le site et non
@@ -98,7 +98,7 @@ export function InterrupteurRecrutement({ ouvert }: { ouvert: boolean }) {
 
           <div className="mt-4 flex flex-wrap gap-2">
             <form action={basculerRecrutement}>
-              <BoutonEnvoi className="inline-flex min-h-11 items-center rounded-lg bg-linear-[135deg] from-soupe to-or px-4 text-[13px] font-bold text-[#1a1005] transition-shadow hover:shadow-[0_4px_18px_rgba(254,147,1,.35)]">
+              <BoutonEnvoi className="inline-flex min-h-11 items-center rounded-controle bg-soupe px-4 text-[13px] font-bold text-encre transition-colors hover:bg-or">
                 J’ai compris, ouvrir le formulaire à quiconque a le lien
               </BoutonEnvoi>
             </form>
@@ -106,7 +106,7 @@ export function InterrupteurRecrutement({ ouvert }: { ouvert: boolean }) {
             <button
               type="button"
               onClick={() => setConfirmation(false)}
-              className="inline-flex min-h-11 items-center rounded-lg border border-bord px-4 text-[13px] text-gris transition-colors hover:text-creme"
+              className="inline-flex min-h-11 items-center rounded-controle border border-bord px-4 text-[13px] text-gris transition-colors hover:text-creme"
             >
               Annuler
             </button>

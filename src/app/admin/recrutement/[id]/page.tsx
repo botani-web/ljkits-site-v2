@@ -97,7 +97,7 @@ export default async function FicheCandidature({
       </Link>
 
       {candidature.supprimeeAt && (
-        <div className="mb-6 flex flex-wrap items-center gap-4 rounded-xl border border-bord bg-braise px-5 py-4">
+        <div className="mb-6 flex flex-wrap items-center gap-4 rounded-carte border border-bord bg-braise px-5 py-4">
           <p className="min-w-[200px] flex-1 text-[14px] text-gris">
             Cette candidature est à la corbeille depuis le{' '}
             {formaterDate(candidature.supprimeeAt)}. Elle continue de compter pour le
@@ -110,7 +110,7 @@ export default async function FicheCandidature({
       )}
 
       {/* --- identité : les trois champs système --------------------------- */}
-      <header className="mb-6 rounded-xl border border-bord bg-charbon p-5">
+      <header className="mb-6 rounded-carte border border-bord bg-charbon p-5">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <p className="font-mono text-[12.5px] text-gris">
@@ -158,7 +158,7 @@ export default async function FicheCandidature({
       </header>
 
       {/* --- état Discord --------------------------------------------------- */}
-      <section className="mb-6 flex flex-wrap items-center gap-4 rounded-xl border border-bord bg-charbon px-5 py-4">
+      <section className="mb-6 flex flex-wrap items-center gap-4 rounded-carte border border-bord bg-charbon px-5 py-4">
         <div className="min-w-[220px] flex-1">
           <p className="font-mono text-[10.5px] tracking-[1.4px] text-gris uppercase">
             Discord
@@ -186,7 +186,7 @@ export default async function FicheCandidature({
       {/* --- les réponses, telles qu'envoyées -------------------------------- */}
       {blocs.map((bloc) => (
         <section key={bloc.nom} className="mb-6">
-          <h2 className="mb-3 font-titre text-lg text-creme uppercase">{bloc.nom}</h2>
+          <h2 className="mb-3 font-titre text-lg text-creme">{bloc.nom}</h2>
 
           <div className="flex flex-col gap-3">
             {bloc.reponses.map((reponse) => {
@@ -195,7 +195,7 @@ export default async function FicheCandidature({
               return (
                 <article
                   key={reponse.id}
-                  className="rounded-xl border border-bord bg-charbon p-4"
+                  className="rounded-carte border border-bord bg-charbon p-4"
                 >
                   <h3 className="flex flex-wrap items-center gap-2 text-[14px] font-semibold text-gris">
                     {reponse.libelleFige}
@@ -204,7 +204,7 @@ export default async function FicheCandidature({
                     {reponse.questionId === null && (
                       <span
                         title="La question a été supprimée depuis. La réponse reste intacte."
-                        className="rounded border border-bord px-1.5 py-0.5 font-mono text-[10px] tracking-wide text-gris uppercase"
+                        className="rounded-micro border border-bord px-1.5 py-0.5 font-mono text-[10px] tracking-wide text-gris uppercase"
                       >
                         question supprimée
                       </span>
@@ -228,7 +228,7 @@ export default async function FicheCandidature({
       {/* Une candidature ancienne n'a pas répondu aux questions ajoutées
           depuis. On le dit, plutôt que de laisser croire à un oubli. */}
       {ajoutees > 0 && (
-        <p className="mb-6 rounded-lg border border-bord bg-braise px-4 py-3 text-[13px] text-gris">
+        <p className="mb-6 rounded-controle border border-bord bg-braise px-4 py-3 text-[13px] text-gris">
           Le questionnaire compte {ajoutees} question{ajoutees > 1 ? 's' : ''} de plus
           aujourd’hui qu’au moment de cet envoi. Ce candidat ne pouvait pas y répondre.
         </p>
@@ -236,7 +236,7 @@ export default async function FicheCandidature({
 
       {/* --- note interne ---------------------------------------------------- */}
       <section className="mb-6">
-        <h2 className="mb-3 font-titre text-lg text-creme uppercase">Note interne</h2>
+        <h2 className="mb-3 font-titre text-lg text-creme">Note interne</h2>
         <FormulaireNote
           action={enregistrerNote.bind(null, candidature.id)}
           note={candidature.noteAdmin}
@@ -244,7 +244,7 @@ export default async function FicheCandidature({
       </section>
 
       {/* --- consentement et suppression -------------------------------------- */}
-      <section className="rounded-xl border border-bord bg-charbon p-5">
+      <section className="rounded-carte border border-bord bg-charbon p-5">
         <h2 className="font-mono text-[10.5px] tracking-[1.4px] text-gris uppercase">
           Consentement et conservation
         </h2>

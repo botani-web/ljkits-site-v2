@@ -15,7 +15,7 @@ export default function PageNouveauGrade() {
         >
           ← Retour aux grades
         </Link>
-        <h1 className="mt-2 font-titre text-2xl uppercase">Nouveau grade</h1>
+        <h1 className="mt-2 font-titre text-2xl">Nouveau grade</h1>
         <p className="mt-1 text-sm text-gris">
           Il sera ajouté en fin de liste ; les flèches du tableau de bord servent ensuite à le
           placer.

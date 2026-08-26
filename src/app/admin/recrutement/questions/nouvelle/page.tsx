@@ -21,10 +21,10 @@ export default async function PageNouvelleQuestion() {
         ← Le questionnaire
       </Link>
 
-      <h1 className="mb-6 font-titre text-2xl uppercase">Nouvelle question</h1>
+      <h1 className="mb-6 font-titre text-2xl">Nouvelle question</h1>
 
       {sections.length === 0 ? (
-        <p className="rounded-2xl border border-bord bg-charbon px-6 py-12 text-center text-gris">
+        <p className="rounded-carte border border-bord bg-charbon px-6 py-12 text-center text-gris">
           Crée d’abord une section : une question doit vivre quelque part.
         </p>
       ) : (

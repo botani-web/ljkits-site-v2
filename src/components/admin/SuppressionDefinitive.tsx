@@ -39,7 +39,7 @@ export function SuppressionDefinitive({
       <button
         type="button"
         onClick={() => setOuvert(true)}
-        className="inline-flex min-h-11 items-center rounded-lg border border-bord px-3 text-[13px] font-semibold text-gris transition-colors hover:border-rouge hover:text-rouge"
+        className="inline-flex min-h-11 items-center rounded-controle border border-bord px-3 text-[13px] font-semibold text-gris transition-colors hover:border-rouge hover:text-rouge"
       >
         Supprimer définitivement
       </button>
@@ -49,7 +49,7 @@ export function SuppressionDefinitive({
   const correspond = saisie.trim().toLowerCase() === pseudoMinecraft.toLowerCase()
 
   return (
-    <form action={envoyer} className="rounded-lg border border-rouge/50 bg-rouge/10 p-4">
+    <form action={envoyer} className="rounded-controle border border-rouge/50 bg-rouge/10 p-4">
       <p className="text-[14px] font-bold text-rouge">
         Suppression définitive, sans retour possible.
       </p>
@@ -75,7 +75,7 @@ export function SuppressionDefinitive({
         onChange={(evenement) => setSaisie(evenement.target.value)}
         autoComplete="off"
         spellCheck={false}
-        className="w-full max-w-xs rounded-lg border border-bord bg-nuit px-3.5 py-2.5 font-mono text-[15px] text-creme focus:border-rouge focus:outline-none"
+        className="w-full max-w-xs rounded-controle border border-bord bg-nuit px-3.5 py-2.5 font-mono text-[15px] text-creme focus:border-rouge focus:outline-none"
       />
 
       {etat.erreur && (
@@ -93,7 +93,7 @@ export function SuppressionDefinitive({
           <button
             type="button"
             disabled
-            className="inline-flex min-h-11 cursor-not-allowed items-center rounded-lg border border-bord px-4 text-[13px] font-semibold text-gris opacity-50"
+            className="inline-flex min-h-11 cursor-not-allowed items-center rounded-controle border border-bord px-4 text-[13px] font-semibold text-gris opacity-50"
           >
             Supprimer définitivement
           </button>
@@ -105,7 +105,7 @@ export function SuppressionDefinitive({
             setOuvert(false)
             setSaisie('')
           }}
-          className="inline-flex min-h-11 items-center rounded-lg border border-bord px-4 text-[13px] text-gris transition-colors hover:text-creme"
+          className="inline-flex min-h-11 items-center rounded-controle border border-bord px-4 text-[13px] text-gris transition-colors hover:text-creme"
         >
           Annuler
         </button>

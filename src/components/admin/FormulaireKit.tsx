@@ -54,8 +54,8 @@ export function FormulaireKit({
       <MessageErreurGlobale message={etat.erreur} />
 
       {/* ------------------------- identité du kit ------------------------- */}
-      <section className="flex flex-col gap-4 rounded-2xl border border-bord bg-charbon px-6 py-6">
-        <h2 className="font-titre text-base uppercase">Identité</h2>
+      <section className="flex flex-col gap-4 rounded-carte border border-bord bg-charbon px-6 py-6">
+        <h2 className="font-titre text-base">Identité</h2>
 
         <div className="grid gap-4 sm:grid-cols-2">
           <ChampTexte
@@ -106,8 +106,8 @@ export function FormulaireKit({
       </section>
 
       {/* --------------------------- prix et type -------------------------- */}
-      <section className="flex flex-col gap-4 rounded-2xl border border-bord bg-charbon px-6 py-6">
-        <h2 className="font-titre text-base uppercase">Prix et catégorie</h2>
+      <section className="flex flex-col gap-4 rounded-carte border border-bord bg-charbon px-6 py-6">
+        <h2 className="font-titre text-base">Prix et catégorie</h2>
 
         <div className="grid gap-4 sm:grid-cols-3">
           <ChampTexte
@@ -170,7 +170,7 @@ export function FormulaireKit({
       </section>
 
       {/* ------------------------ fiche technique -------------------------- */}
-      <section className="rounded-2xl border border-bord bg-charbon px-6 py-6">
+      <section className="rounded-carte border border-bord bg-charbon px-6 py-6">
         <ListeCaracteristiques
           valeurInitiale={kit?.caracteristiques}
           erreurs={etat.champs?.caracteristiques}
@@ -178,8 +178,8 @@ export function FormulaireKit({
       </section>
 
       {/* --------------------- vente et livraison en jeu -------------------- */}
-      <section className="rounded-2xl border border-bord bg-charbon px-6 py-6">
-        <h2 className="mb-4 font-titre text-base uppercase">Vente et livraison</h2>
+      <section className="rounded-carte border border-bord bg-charbon px-6 py-6">
+        <h2 className="mb-4 font-titre text-base">Vente et livraison</h2>
         <ChampsVenteEtLivraison
           tebexPackageId={kit?.tebexPackageId}
           erreurs={etat.champs}
@@ -187,7 +187,7 @@ export function FormulaireKit({
       </section>
 
       {/* ------------------------ description longue ----------------------- */}
-      <section className="rounded-2xl border border-bord bg-charbon px-6 py-6">
+      <section className="rounded-carte border border-bord bg-charbon px-6 py-6">
         <EditeurMarkdown
           nom="descriptionLongue"
           label="Description longue (page du kit)"
@@ -201,7 +201,7 @@ export function FormulaireKit({
         <BoutonSoumettre>{libelleBouton}</BoutonSoumettre>
         <Link
           href="/admin/kits"
-          className="rounded-lg border border-bord px-4 py-2.5 text-sm font-semibold text-gris transition-colors hover:text-creme"
+          className="rounded-controle border border-bord px-4 py-2.5 text-sm font-semibold text-gris transition-colors hover:text-creme"
         >
           Annuler
         </Link>

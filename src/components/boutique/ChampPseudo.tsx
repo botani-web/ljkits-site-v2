@@ -1,27 +1,39 @@
 'use client'
 
-import Image from 'next/image'
 import { useState } from 'react'
 
-import { pseudoValide, urlAvatar } from '@/lib/panier'
+import { classesBouton } from '@/components/ui/Bouton'
+import { pseudoValide } from '@/lib/panier'
 
 /**
- * Saisie du pseudo Minecraft de livraison.
+ * Saisie du pseudo Minecraft qui recevra la livraison.
  *
- * Une fois validé, le skin s'affiche : c'est la confirmation visuelle que le
- * compte est le bon, comme dans la maquette. Le pseudo n'est vérifié que sur
- * sa FORME (3-16 caractères, lettres, chiffres, _) — savoir si le compte
- * existe vraiment demanderait un appel à l'API Mojang, et un joueur peut très
- * bien acheter pour un compte qui n'a jamais rejoint le serveur.
+ * ⚠ VOCABULAIRE. Aucun mot de « compte », « connexion » ou « déconnexion »,
+ * aucun avatar, aucune pastille d'état. Il n'y a pas de comptes sur ce site :
+ * un joueur qui croit s'être inscrit réclamera un mot de passe qui n'existe
+ * pas. Tout ce qui est écrit ici doit dire une seule chose — c'est le pseudo
+ * qui reçoit la livraison.
+ *
+ * Le pseudo n'est vérifié que sur sa FORME (3 à 16 caractères, lettres,
+ * chiffres, tiret bas). Savoir si le pseudo existe vraiment demanderait un
+ * appel à l'API Mojang, et on peut très bien offrir un kit à quelqu'un qui n'a
+ * jamais rejoint le serveur.
+ *
+ * ⚠ Ce qui est saisi ici n'est qu'une COMMODITÉ D'AFFICHAGE, mémorisée dans le
+ * navigateur. La commande est revalidée côté serveur par creerCommande : rien
+ * de ce qui vient d'ici n'est une source de vérité.
  */
 export function ChampPseudo({
   pseudo,
   onValider,
   onChanger,
+  /** Prend le focus à l'ouverture du tiroir quand aucun pseudo n'est défini. */
+  autoFocus = false,
 }: {
   pseudo: string | null
   onValider: (pseudo: string) => void
   onChanger: () => void
+  autoFocus?: boolean
 }) {
   const [saisie, setSaisie] = useState('')
   const [erreur, setErreur] = useState(false)
@@ -37,21 +49,22 @@ export function ChampPseudo({
   }
 
   return (
-    <div className="mb-4 rounded-[9px] border border-bord bg-braise p-3.5">
-      <div className="mb-2.5 font-mono text-[10.5px] tracking-[1.4px] text-gris uppercase">
-        Compte de livraison
-      </div>
+    <div className="rounded-carte border border-bord bg-braise p-4">
+      <p className="font-mono text-[10.5px] font-bold tracking-[.18em] text-gris uppercase">
+        Pseudo de livraison
+      </p>
 
       {pseudo === null ? (
         <>
-          <div className="flex gap-2">
+          <div className="mt-2.5 flex gap-2">
             <label htmlFor="pseudo-minecraft" className="sr-only">
-              Pseudo Minecraft
+              Ton pseudo Minecraft, celui qui recevra la livraison
             </label>
             <input
               id="pseudo-minecraft"
               type="text"
               value={saisie}
+              autoFocus={autoFocus}
               onChange={(evenement) => {
                 setSaisie(evenement.target.value)
                 setErreur(false)
@@ -67,45 +80,46 @@ export function ChampPseudo({
               autoComplete="off"
               spellCheck={false}
               aria-invalid={erreur}
-              aria-describedby={erreur ? 'erreur-pseudo' : undefined}
-              className="min-h-11 min-w-0 flex-1 rounded-[7px] border border-bord bg-nuit px-3 py-2.5 font-mono text-sm text-white placeholder:text-[#5e5473] focus:border-soupe focus:outline-none"
+              aria-describedby={erreur ? 'erreur-pseudo' : 'aide-pseudo'}
+              className="min-h-11 min-w-0 flex-1 rounded-controle border border-bord bg-nuit px-3 font-mono text-sm text-creme placeholder:text-gris focus:border-soupe focus:outline-none"
             />
             <button
               type="button"
               onClick={valider}
-              className="shrink-0 rounded-[7px] bg-soupe px-4 font-mono text-[12.5px] font-bold text-[#1a0f00] transition-colors hover:bg-or"
+              className={classesBouton({ variante: 'plein', className: 'shrink-0' })}
             >
               OK
             </button>
           </div>
 
-          {erreur && (
-            <p id="erreur-pseudo" role="alert" className="mt-2 text-[12.5px] text-oni">
+          {erreur ? (
+            <p id="erreur-pseudo" role="alert" className="mt-2.5 text-[12.5px] text-oni">
               Pseudo invalide : 3 à 16 caractères, lettres, chiffres et _ uniquement.
+            </p>
+          ) : (
+            <p id="aide-pseudo" className="mt-2.5 text-[12.5px] text-gris">
+              C’est ce pseudo qui recevra la livraison en jeu. Vérifie la casse.
             </p>
           )}
         </>
       ) : (
-        <div className="flex items-center gap-3">
-          <Image
-            src={urlAvatar(pseudo, 104)}
-            alt={`Skin de ${pseudo}`}
-            width={52}
-            height={52}
-            unoptimized
-            className="size-13 rounded-md border border-bord [image-rendering:pixelated]"
-          />
-          <div className="min-w-0">
-            <div className="truncate font-mono text-[15px] font-bold">{pseudo}</div>
-            <div className="text-[12.5px] text-vert">Compte sélectionné</div>
-          </div>
+        <div className="mt-2.5 flex items-center gap-3">
+          <p className="min-w-0 flex-1">
+            <span className="block truncate font-mono text-[15px] font-bold text-creme">
+              {pseudo}
+            </span>
+            <span className="mt-0.5 block text-[12.5px] text-gris">
+              recevra la livraison en jeu
+            </span>
+          </p>
+
           <button
             type="button"
             onClick={() => {
               setSaisie(pseudo)
               onChanger()
             }}
-            className="-my-2 ml-auto flex min-h-11 shrink-0 items-center text-xs text-gris underline underline-offset-2 transition-colors hover:text-white"
+            className="-my-2 flex min-h-11 shrink-0 items-center font-mono text-[11.5px] tracking-[.08em] text-gris underline underline-offset-2 transition-colors hover:text-creme"
           >
             Changer
           </button>

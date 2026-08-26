@@ -2,866 +2,921 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Boutique — LJKITS</title>
-<meta name="description" content="Soutiens LJKITS et débloque des kits maison et des cosmétiques. Tout le contenu reste obtenable en jeu, sans payer.">
+<meta name="description" content="Grades, kits exclusifs, particules et messages de mort. Livraison en 90 secondes, achat permanent, aucun abonnement.">
+<meta name="theme-color" content="#0E061F">
 
 <link rel="icon" type="image/png" href="logo-icon.png">
 <link rel="apple-touch-icon" href="logo-icon.png">
 
-<meta property="og:title" content="Boutique — LJKITS">
-<meta property="og:description" content="Soutiens le serveur. Aucun avantage en combat, jamais.">
-<meta property="og:image" content="https://ljkits.eu/og.png">
 <meta property="og:type" content="website">
+<meta property="og:locale" content="fr_FR">
+<meta property="og:site_name" content="LJKITS">
+<meta property="og:title" content="Boutique — LJKITS">
+<meta property="og:description" content="Fais-toi un nom. Grades, kits, particules et messages de mort.">
+<meta property="og:url" content="https://ljkits.eu/boutique">
+<meta property="og:image" content="https://ljkits.eu/og.png">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Outfit:wght@300;400;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Outfit:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 
 <style>
 :root{
-  --nuit:#0E061F;
+  --noir:#0E061F;
   --charbon:#171029;
   --braise:#211736;
   --bord:#2E2245;
   --gris:#9E93AC;
+  --creme:#F2E8D9;
   --soupe:#FE9301;
   --or:#FDC003;
   --oni:#E92813;
   --vert:#5BE06B;
+  --violet:#B98BE0;
+
+  --mono:'JetBrains Mono',ui-monospace,monospace;
+  --corps:'Outfit',system-ui,sans-serif;
+  --titre:'Bungee',system-ui,sans-serif;
+
+  --gouttiere:clamp(18px,4vw,44px);
+  --large:1240px;
 }
 
-*{box-sizing:border-box;margin:0;padding:0}
+*{margin:0;padding:0;box-sizing:border-box}
 html{scroll-behavior:smooth}
-
-body{
-  background:var(--nuit);
-  color:#fff;
-  font-family:'Outfit',system-ui,sans-serif;
-  font-weight:300;
-  line-height:1.6;
-  -webkit-font-smoothing:antialiased;
-}
+body{background:var(--noir);color:var(--creme);font-family:var(--corps);font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
 a{color:inherit;text-decoration:none}
-button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
-:focus-visible{outline:2px solid var(--or);outline-offset:3px;border-radius:4px}
+img{max-width:100%;display:block}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer;border:0;background:none}
+:focus-visible{outline:2px solid var(--or);outline-offset:3px;border-radius:2px}
 
-.wrap{max-width:1200px;margin:0 auto;padding:0 24px}
+.enveloppe{max-width:var(--large);margin:0 auto;padding-left:var(--gouttiere);padding-right:var(--gouttiere)}
+.etiquette{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:var(--soupe)}
+.titre-section{font-family:var(--titre);font-size:clamp(23px,3.4vw,38px);line-height:1.06;letter-spacing:-.01em;margin-top:12px}
+.titre-section .or{color:var(--or)}
+.titre-section .oni{color:var(--oni)}
+.titre-section .violet{color:var(--violet)}
+.chapeau{color:var(--gris);max-width:62ch;margin-top:14px;font-size:clamp(15px,1.6vw,16.5px)}
+.chapeau b{color:var(--creme);font-weight:600}
+.tete-section{margin-bottom:clamp(26px,3.5vw,42px)}
+section{padding:clamp(56px,7vw,96px) 0;position:relative}
 
-/* ---------- NAV ---------- */
+/* ---------- nav ---------- */
+.nav{position:sticky;top:0;z-index:80;background:rgba(14,6,31,.86);backdrop-filter:blur(14px);border-bottom:1px solid var(--bord)}
+.nav-int{max-width:var(--large);margin:0 auto;padding:12px var(--gouttiere);display:flex;align-items:center;gap:26px}
+.nav-logo img{height:24px;width:auto}
+.nav-liens{display:flex;gap:26px;margin-left:8px}
+.nav-liens a{font-family:var(--mono);font-size:12px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--gris);transition:color .18s}
+.nav-liens a:hover{color:var(--creme)}
+.nav-liens a[aria-current="page"]{color:var(--soupe)}
+.nav-droite{margin-left:auto;display:flex;align-items:center;gap:10px}
 
-.nav{
-  position:sticky;top:0;z-index:60;
-  background:rgba(14,6,31,.88);
-  backdrop-filter:blur(14px);
-  border-bottom:1px solid var(--bord);
+.bouton{display:inline-flex;align-items:center;justify-content:center;gap:9px;font-family:var(--mono);font-size:12.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:11px 18px;border-radius:4px;transition:transform .16s,background .16s,border-color .16s,box-shadow .16s}
+.bouton:active{transform:translateY(1px)}
+.bouton-plein{background:var(--soupe);color:#180C02}
+.bouton-plein:hover{background:var(--or);box-shadow:0 8px 26px -8px rgba(254,147,1,.7)}
+.bouton-or{background:var(--or);color:#180C02}
+.bouton-or:hover{background:#FFD84A;box-shadow:0 8px 26px -8px rgba(253,192,3,.75)}
+.bouton-vide{border:1px solid var(--bord);color:var(--creme)}
+.bouton-vide:hover{border-color:var(--soupe);background:var(--braise)}
+.bouton svg{width:16px;height:16px;fill:currentColor;flex:none}
+.nav-burger{display:none;padding:8px;border:1px solid var(--bord);border-radius:4px}
+.nav-burger svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2}
+
+/* ---------- hero ---------- */
+.hero{padding:clamp(50px,6.5vw,84px) 0 clamp(24px,3vw,34px);position:relative;overflow:hidden}
+.hero::before{content:"";position:absolute;inset:-40% -10% auto -10%;height:660px;background:radial-gradient(50% 48% at 24% 26%,rgba(253,192,3,.16),transparent 70%),radial-gradient(44% 42% at 80% 6%,rgba(185,139,224,.13),transparent 72%);pointer-events:none}
+.hero-int{position:relative;display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);gap:clamp(30px,4.5vw,60px);align-items:center}
+.hero h1{font-family:var(--titre);font-size:clamp(34px,6vw,64px);line-height:.96;letter-spacing:-.02em;margin-top:16px}
+.hero h1 .or{color:var(--or)}
+.hero p{color:var(--gris);font-size:clamp(16px,1.8vw,18.5px);margin-top:20px;max-width:52ch}
+.hero p b{color:var(--creme);font-weight:600}
+.hero-actions{display:flex;flex-wrap:wrap;gap:11px;margin-top:28px}
+.hero-actions .bouton{padding:14px 22px;font-size:13px}
+
+/* ---------- APERÇU CHAT (signature) ---------- */
+.apercu{border:1px solid var(--bord);border-radius:5px;background:var(--charbon);overflow:hidden;box-shadow:0 34px 80px -36px rgba(0,0,0,.95)}
+.apercu-tete{display:flex;align-items:center;gap:10px;padding:13px 18px;border-bottom:1px solid var(--bord);background:var(--braise)}
+.apercu-tete .t{font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--soupe)}
+.apercu-tete .live{margin-left:auto;font-family:var(--mono);font-size:10px;color:var(--gris);display:flex;align-items:center;gap:7px}
+.pt{width:6px;height:6px;border-radius:50%;background:var(--vert);box-shadow:0 0 0 3px rgba(91,224,107,.15)}
+
+.chat{padding:18px;font-family:var(--mono);font-size:12.5px;line-height:2;background:linear-gradient(180deg,rgba(14,6,31,.65),rgba(14,6,31,.9))}
+.chat-l{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chat-l.faible{opacity:.42}
+.g8{color:#5B5068}
+.gf{color:var(--creme)}
+.g7{color:var(--gris)}
+.g6{color:var(--or)}
+.g5{color:var(--violet)}
+.gc{color:var(--oni)}
+.ge{color:#F5E96B}
+.ga{color:var(--vert)}
+.gras{font-weight:700}
+
+.apercu-choix{display:flex;gap:6px;padding:14px 18px;border-top:1px solid var(--bord);background:var(--braise);flex-wrap:wrap}
+.ch{font-family:var(--mono);font-size:10.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;padding:8px 13px;border:1px solid var(--bord);border-radius:4px;color:var(--gris);transition:.16s}
+.ch:hover{color:var(--creme);border-color:var(--gris)}
+.ch[aria-pressed="true"]{background:var(--soupe);border-color:var(--soupe);color:#180C02}
+
+/* ---------- bandeau confiance ---------- */
+.confiance{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--bord);border-radius:5px;overflow:hidden;background:var(--charbon);margin-top:clamp(30px,4vw,42px)}
+.cf{padding:18px 20px;display:flex;gap:12px;align-items:flex-start}
+.cf + .cf{border-left:1px solid var(--bord)}
+.cf .v{color:var(--vert);font-family:var(--mono);font-weight:700;flex:none}
+.cf-t{font-weight:600;font-size:14.5px}
+.cf-d{font-family:var(--mono);font-size:10.5px;color:var(--gris);margin-top:4px}
+
+/* ---------- grades ---------- */
+.grades-sec{background:var(--charbon);border-top:1px solid var(--bord);border-bottom:1px solid var(--bord)}
+.grades{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:clamp(26px,3.5vw,38px);align-items:start}
+.grade{position:relative;border:1px solid var(--bord);border-radius:6px;background:var(--braise);overflow:hidden;display:flex;flex-direction:column;transition:transform .2s,border-color .2s,box-shadow .2s}
+.grade:hover{transform:translateY(-3px)}
+.grade.g1:hover{border-color:var(--creme)}
+.grade.g2{border-color:rgba(253,192,3,.5);box-shadow:0 26px 60px -34px rgba(253,192,3,.5)}
+.grade.g2:hover{border-color:var(--or);box-shadow:0 30px 70px -32px rgba(253,192,3,.6)}
+.grade.g3{border-color:rgba(185,139,224,.42)}
+.grade.g3:hover{border-color:var(--violet)}
+
+.ruban{position:absolute;top:16px;right:0;font-family:var(--mono);font-size:9.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;background:var(--or);color:#180C02;padding:5px 13px;border-radius:3px 0 0 3px}
+
+.grade-tete{padding:28px 26px 24px;border-bottom:1px solid var(--bord)}
+.grade.g2 .grade-tete{background:linear-gradient(165deg,rgba(253,192,3,.11),transparent 70%)}
+.grade.g3 .grade-tete{background:linear-gradient(165deg,rgba(185,139,224,.1),transparent 70%)}
+.grade-sym{font-family:var(--mono);font-size:19px;letter-spacing:.12em}
+.g1 .grade-sym{color:var(--creme)}
+.g2 .grade-sym{color:var(--or)}
+.g3 .grade-sym{color:var(--violet)}
+.grade-nom{font-family:var(--titre);font-size:23px;margin-top:12px;letter-spacing:-.01em}
+.g2 .grade-nom{color:var(--or)}
+.g3 .grade-nom{color:var(--violet)}
+.grade-arg{color:var(--gris);font-size:14px;margin-top:8px;min-height:42px}
+.grade-prix{font-family:var(--mono);font-size:36px;font-weight:700;color:var(--creme);margin-top:16px;line-height:1}
+.g2 .grade-prix{color:var(--or)}
+.grade-prix small{font-size:12px;font-weight:500;color:var(--gris);letter-spacing:.14em;text-transform:uppercase;margin-left:8px}
+.grade-perm{font-family:var(--mono);font-size:10.5px;color:var(--vert);margin-top:10px;letter-spacing:.06em}
+
+.grade-corps{padding:22px 26px;flex:1}
+.grade-herite{font-family:var(--mono);font-size:10.5px;color:var(--gris);padding:10px 13px;border:1px solid var(--bord);border-radius:4px;background:var(--noir);margin-bottom:16px;letter-spacing:.06em}
+.grade-herite b{color:var(--soupe);font-weight:700}
+.grade-corps ul{list-style:none}
+.grade-corps li{display:flex;gap:11px;padding:9px 0;border-top:1px solid var(--bord);color:var(--gris);font-size:14.5px}
+.grade-corps li:first-child{border-top:0;padding-top:0}
+.grade-corps li::before{content:"+";font-family:var(--mono);font-weight:700;color:var(--vert);flex:none;line-height:1.6}
+.grade-corps li b{color:var(--creme);font-weight:600}
+.grade-corps li code{font-family:var(--mono);font-size:12.5px;color:var(--or)}
+.grade-pied{padding:0 26px 26px}
+.grade-pied .bouton{width:100%;padding:14px}
+
+/* ---------- vitrine des perks ---------- */
+.vitrine{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:clamp(26px,3.5vw,38px)}
+.vt{border:1px solid var(--bord);border-radius:6px;background:var(--charbon);padding:28px 26px;display:flex;flex-direction:column}
+.vt-tag{font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--or)}
+.vt h3{font-family:var(--titre);font-size:19px;margin-top:12px;letter-spacing:-.01em}
+.vt p{color:var(--gris);font-size:14.5px;margin-top:11px}
+.vt-corps{margin-top:18px;flex:1}
+
+/* choix de particules */
+.parts{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}
+.part{border:1px solid var(--bord);border-radius:4px;background:var(--noir);padding:14px 8px;text-align:center;transition:.16s}
+.part:hover{border-color:var(--soupe)}
+.part-pt{width:9px;height:9px;border-radius:50%;margin:0 auto;animation:pulse 2.4s ease-in-out infinite}
+@keyframes pulse{0%,100%{transform:scale(1);opacity:.85}50%{transform:scale(1.55);opacity:.35}}
+.part-n{font-family:var(--mono);font-size:9px;letter-spacing:.08em;color:var(--gris);margin-top:10px;line-height:1.4}
+
+/* messages de mort */
+.mort{border:1px solid var(--bord);border-radius:4px;background:var(--noir);padding:16px 18px;font-family:var(--mono);font-size:12px;line-height:1.9;min-height:88px}
+.mort-choix{display:flex;gap:5px;flex-wrap:wrap;margin-top:12px}
+.mc{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;padding:7px 11px;border:1px solid var(--bord);border-radius:3px;color:var(--gris);transition:.16s}
+.mc:hover{color:var(--creme)}
+.mc[aria-pressed="true"]{border-color:var(--or);color:var(--or)}
+
+/* mini fiches */
+.mini{border:1px solid var(--bord);border-radius:4px;background:var(--noir);overflow:hidden}
+.mini-l{display:flex;gap:14px;padding:11px 15px;border-bottom:1px solid var(--bord);font-family:var(--mono);font-size:11.5px}
+.mini-l:last-child{border-bottom:0}
+.mini-l span:first-child{color:var(--gris)}
+.mini-l span:last-child{margin-left:auto;color:var(--creme);font-weight:700}
+
+/* ---------- kits ---------- */
+.pack{border:1px solid rgba(233,40,19,.45);border-radius:6px;background:repeating-linear-gradient(135deg,rgba(233,40,19,.06) 0 10px,transparent 10px 22px),var(--charbon);padding:30px 30px;margin-top:clamp(24px,3vw,34px);display:grid;grid-template-columns:minmax(0,1fr) auto;gap:30px;align-items:center;box-shadow:0 26px 60px -38px rgba(233,40,19,.6)}
+.pack-tag{font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--oni)}
+.pack-t{font-family:var(--titre);font-size:clamp(19px,2.6vw,25px);margin-top:10px;letter-spacing:-.01em}
+.pack-d{color:var(--gris);font-size:14.5px;margin-top:10px;max-width:56ch}
+.pack-k{font-family:var(--mono);font-size:11px;color:var(--gris);margin-top:12px;letter-spacing:.04em}
+.pack-prix{text-align:right;flex:none}
+.pack-eco{display:inline-block;font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;background:var(--vert);color:#04240A;padding:4px 10px;border-radius:3px}
+.pack-neuf{font-family:var(--mono);font-size:40px;font-weight:700;color:var(--or);line-height:1;margin-top:10px}
+.pack-vieux{font-family:var(--mono);font-size:13px;color:var(--gris);text-decoration:line-through;margin-top:6px}
+.pack-prix .bouton{margin-top:16px;width:100%}
+
+.kits-outils{display:flex;flex-wrap:wrap;gap:9px;align-items:center;margin-top:26px}
+.filtre{font-family:var(--mono);font-size:11.5px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;padding:9px 14px;border:1px solid var(--bord);border-radius:4px;color:var(--gris);transition:.18s}
+.filtre:hover{color:var(--creme);border-color:var(--gris)}
+.filtre[aria-pressed="true"]{border-color:var(--soupe);color:var(--soupe);background:rgba(254,147,1,.07)}
+.recherche{display:flex;align-items:center;gap:9px;margin-left:auto;border:1px solid var(--bord);border-radius:4px;background:var(--charbon);padding:0 12px;min-width:200px}
+.recherche svg{width:15px;height:15px;stroke:var(--gris);fill:none;stroke-width:2;flex:none}
+.recherche input{border:0;background:none;outline:none;padding:10px 0;width:100%;font-family:var(--mono);font-size:12.5px}
+.recherche input::placeholder{color:var(--gris)}
+
+.grille{display:grid;grid-template-columns:repeat(auto-fill,minmax(232px,1fr));gap:10px;margin-top:16px}
+.art{position:relative;overflow:hidden;border:1px solid var(--bord);border-radius:5px;background:var(--charbon);padding:18px;display:flex;flex-direction:column;transition:border-color .18s,transform .18s,background .18s}
+.art:hover{border-color:var(--soupe);transform:translateY(-2px);background:var(--braise)}
+.art.excl{border-color:rgba(233,40,19,.34)}
+.art.excl:hover{border-color:var(--oni)}
+.art-kanji{position:absolute;right:-6px;bottom:-16px;font-size:70px;line-height:1;color:rgba(233,40,19,.09);pointer-events:none;user-select:none;font-weight:700}
+.art-tete{display:flex;align-items:baseline;gap:9px;flex-wrap:wrap}
+.art-nom{font-family:var(--titre);font-size:16.5px;letter-spacing:-.01em}
+.art.excl .art-nom{color:var(--oni)}
+.art-role{font-family:var(--mono);font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--gris);border:1px solid var(--bord);border-radius:3px;padding:3px 6px}
+.art-d{color:var(--gris);font-size:13.5px;margin-top:10px;flex:1}
+.art-pied{margin-top:14px;padding-top:12px;border-top:1px solid var(--bord);display:flex;align-items:flex-end;gap:10px;position:relative}
+.art-euro{font-family:var(--mono);font-size:20px;font-weight:700;color:var(--or);line-height:1}
+.art-coins{font-family:var(--mono);font-size:9.5px;color:var(--gris);letter-spacing:.06em;margin-top:6px}
+.art-lien{margin-left:auto;font-family:var(--mono);font-size:10.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;background:var(--soupe);color:#180C02;border-radius:3px;padding:8px 12px;transition:background .16s}
+.art-lien:hover{background:var(--or)}
+.vide{border:1px dashed var(--bord);border-radius:5px;padding:44px 24px;text-align:center;margin-top:16px}
+.vide p{font-family:var(--mono);font-size:13px;color:var(--gris)}
+
+/* ---------- livraison ---------- */
+.livraison{background:var(--charbon);border-top:1px solid var(--bord);border-bottom:1px solid var(--bord)}
+.etapes{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:clamp(24px,3vw,34px)}
+.et{border:1px solid var(--bord);border-radius:5px;background:var(--braise);padding:24px 22px}
+.et-n{font-family:var(--mono);font-size:11px;letter-spacing:.2em;color:var(--soupe);font-weight:700}
+.et h3{font-family:var(--titre);font-size:15px;margin-top:12px}
+.et p{color:var(--gris);font-size:14px;margin-top:9px}
+.et code{font-family:var(--mono);font-size:12px;color:var(--or);background:var(--noir);border:1px solid var(--bord);border-radius:3px;padding:2px 6px}
+
+/* ---------- garantie ---------- */
+.garantie{border:1px solid rgba(91,224,107,.34);border-radius:6px;background:var(--charbon);padding:clamp(26px,4vw,42px);display:grid;grid-template-columns:minmax(0,1fr) minmax(0,320px);gap:clamp(24px,4vw,46px);align-items:center;margin-top:clamp(24px,3vw,34px)}
+.garantie h3{font-family:var(--titre);font-size:clamp(19px,2.6vw,26px);line-height:1.1}
+.garantie h3 .vert{color:var(--vert)}
+.garantie p{color:var(--gris);font-size:15px;margin-top:14px;max-width:56ch}
+.garantie b{color:var(--creme);font-weight:600}
+.gl{display:flex;align-items:center;gap:11px;padding:12px 16px;border-bottom:1px solid var(--bord);font-family:var(--mono);font-size:11.5px;color:var(--gris)}
+.gl:last-child{border-bottom:0}
+.gl .x{color:var(--oni);font-weight:700;flex:none}
+.garantie-liste{border:1px solid var(--bord);border-radius:5px;background:var(--noir);overflow:hidden}
+
+/* ---------- faq ---------- */
+.faq{max-width:840px;margin:clamp(24px,3vw,34px) auto 0}
+.q{border-bottom:1px solid var(--bord)}
+.q summary{list-style:none;cursor:pointer;padding:20px 40px 20px 0;position:relative;font-weight:600;font-size:16.5px}
+.q summary::-webkit-details-marker{display:none}
+.q summary::after{content:"+";position:absolute;right:6px;top:50%;transform:translateY(-50%);font-family:var(--mono);font-size:20px;color:var(--soupe);line-height:1}
+.q[open] summary::after{content:"–"}
+.q summary:hover{color:var(--or)}
+.q p{color:var(--gris);padding:0 40px 22px 0;font-size:15px;margin-top:-4px}
+.q p + p{padding-top:0;margin-top:-10px}
+.q code{font-family:var(--mono);font-size:13px;color:var(--or)}
+
+/* ---------- cta ---------- */
+.final{text-align:center;position:relative;overflow:hidden}
+.final::before{content:"";position:absolute;inset:auto -20% -60% -20%;height:420px;background:radial-gradient(50% 60% at 50% 100%,rgba(253,192,3,.18),transparent 72%);pointer-events:none}
+.final h2{font-family:var(--titre);font-size:clamp(25px,4.6vw,48px);line-height:1.02;letter-spacing:-.02em;position:relative}
+.final h2 .or{color:var(--or)}
+.final > .enveloppe > p{color:var(--gris);margin-top:18px;position:relative;max-width:52ch;margin-left:auto;margin-right:auto}
+.final-actions{display:flex;justify-content:center;flex-wrap:wrap;gap:11px;margin-top:28px;position:relative}
+.final-actions .bouton{padding:15px 26px;font-size:13px}
+
+/* ---------- pied ---------- */
+footer{border-top:1px solid var(--bord);background:var(--charbon);padding:clamp(46px,6vw,64px) 0 0}
+.pied{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:36px}
+.pied-marque img{height:24px;margin-bottom:16px}
+.pied-marque p{color:var(--gris);font-size:14px;max-width:34ch}
+.pied-col h4{font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--soupe);margin-bottom:14px}
+.pied-col a{display:block;color:var(--gris);font-size:14.5px;padding:5px 0;transition:color .18s}
+.pied-col a:hover{color:var(--creme)}
+.pied-bas{margin-top:44px;border-top:1px solid var(--bord);padding:22px 0 28px;font-family:var(--mono);font-size:11px;color:var(--gris);display:flex;flex-wrap:wrap;gap:10px 26px}
+
+/* ---------- toast ---------- */
+.toast{position:fixed;left:50%;bottom:26px;z-index:200;transform:translateX(-50%) translateY(150%);background:var(--soupe);color:#180C02;font-family:var(--mono);font-size:12.5px;font-weight:700;letter-spacing:.06em;padding:13px 22px;border-radius:5px;transition:transform .3s cubic-bezier(.2,.9,.3,1.2);box-shadow:0 16px 40px rgba(0,0,0,.6)}
+.toast.on{transform:translateX(-50%) translateY(0)}
+
+/* ---------- responsive ---------- */
+@media(max-width:1024px){
+  .hero-int{grid-template-columns:1fr}
+  .apercu{max-width:520px}
+  .grades{grid-template-columns:1fr}
+  .grade.g2{order:-1}
+  .vitrine{grid-template-columns:1fr}
+  .etapes{grid-template-columns:1fr 1fr}
+  .confiance{grid-template-columns:1fr 1fr}
+  .cf:nth-child(3){border-left:0}
+  .cf:nth-child(n+3){border-top:1px solid var(--bord)}
+  .garantie{grid-template-columns:1fr}
+  .pied{grid-template-columns:1fr 1fr 1fr}
+  .pied-marque{grid-column:1/-1}
 }
-.nav-in{
-  max-width:1200px;margin:0 auto;padding:14px 24px;
-  display:flex;align-items:center;justify-content:space-between;gap:20px;
+@media(max-width:860px){
+  .nav-liens{display:none}
+  .nav-burger{display:inline-flex}
+  .nav-droite .bouton-vide{display:none}
+  .recherche{margin-left:0;width:100%}
+  .pack{grid-template-columns:1fr}
+  .pack-prix{text-align:left}
+  .parts{grid-template-columns:repeat(3,1fr)}
 }
-.nav-logo img{height:22px;width:auto;display:block}
-.nav-links{display:flex;align-items:center;gap:26px;font-size:14px;font-weight:400}
-.nav-links a{color:var(--gris);transition:color .16s}
-.nav-links a:hover{color:#fff}
-.nav-links a.actif{color:var(--or)}
-.nav-droite{display:flex;align-items:center;gap:12px}
-
-.compte{
-  display:flex;align-items:center;gap:9px;
-  background:var(--charbon);border:1px solid var(--bord);
-  padding:6px 12px 6px 8px;border-radius:8px;
-  font-size:14px;transition:border-color .16s;
+@media(max-width:560px){
+  .confiance{grid-template-columns:1fr}
+  .cf + .cf{border-left:0;border-top:1px solid var(--bord)}
+  .etapes{grid-template-columns:1fr}
+  .grille{grid-template-columns:1fr 1fr;gap:8px}
+  .art-d{display:none}
+  .parts{grid-template-columns:repeat(2,1fr)}
+  .pied{grid-template-columns:1fr 1fr}
+  .hero-actions .bouton{flex:1 1 100%}
+  .chat{font-size:11px}
 }
-.compte:hover{border-color:var(--soupe)}
-.compte img{width:26px;height:26px;image-rendering:pixelated;border-radius:4px;display:block}
-.compte-pseudo{font-family:'JetBrains Mono',monospace;font-size:13px}
-.compte-vide{color:var(--gris)}
-
-.btn-panier{
-  position:relative;
-  background:var(--soupe);color:#1a0f00;
-  font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;
-  padding:9px 16px;border-radius:8px;
-  transition:background .16s,transform .16s;
-}
-.btn-panier:hover{background:var(--or);transform:translateY(-1px)}
-.pastille{
-  position:absolute;top:-7px;right:-7px;
-  background:var(--oni);color:#fff;
-  min-width:20px;height:20px;border-radius:10px;
-  font-size:11px;font-weight:700;
-  display:none;align-items:center;justify-content:center;padding:0 5px;
-}
-.pastille.on{display:flex}
-@media(max-width:860px){.nav-links{display:none}}
-
-/* ---------- HERO ---------- */
-
-.hero{position:relative;padding:64px 0 40px;overflow:hidden}
-.hero::before{
-  content:"";position:absolute;left:-20%;right:-20%;top:0;height:400px;
-  background:
-    radial-gradient(ellipse 30% 40% at 50% 6%, rgba(233,40,19,.15), transparent 70%),
-    radial-gradient(ellipse 60% 70% at 50% 0%, rgba(254,147,1,.08), transparent 65%);
-  pointer-events:none;
-}
-.hero-in{position:relative;text-align:center}
-.eyebrow{
-  font-family:'JetBrains Mono',monospace;
-  font-size:12px;letter-spacing:3px;text-transform:uppercase;font-weight:700;
-  color:var(--oni);text-shadow:0 0 18px rgba(233,40,19,.35);margin-bottom:14px;
-}
-h1{
-  font-family:'Bungee',cursive;font-weight:400;text-transform:uppercase;
-  font-size:clamp(30px,5vw,54px);line-height:1.05;
-}
-h1 .accent{
-  background:linear-gradient(180deg,var(--or) 18%,var(--soupe) 82%);
-  -webkit-background-clip:text;background-clip:text;color:transparent;
-  filter:drop-shadow(0 0 26px rgba(254,147,1,.4));
-}
-.hero p.sous{max-width:540px;margin:16px auto 0;color:var(--gris);font-size:17px}
-
-.promesse{
-  margin:36px auto 0;max-width:800px;
-  border:1px solid var(--bord);border-left:3px solid var(--vert);
-  background:linear-gradient(100deg,rgba(91,224,107,.06),transparent 60%);
-  border-radius:10px;padding:20px 24px;text-align:left;
-  display:flex;gap:16px;align-items:flex-start;
-}
-.promesse-ico{font-family:'Bungee',cursive;font-size:20px;color:var(--vert);line-height:1;padding-top:3px}
-.promesse h2{font-size:15.5px;font-weight:700;margin-bottom:5px}
-.promesse p{color:var(--gris);font-size:14.5px}
-.promesse strong{color:#fff;font-weight:600}
-
-/* ---------- ONGLETS ---------- */
-
-.onglets{
-  display:flex;gap:8px;flex-wrap:wrap;
-  border-bottom:1px solid var(--bord);
-  margin:44px 0 32px;
-}
-.onglet{
-  font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;
-  letter-spacing:.5px;text-transform:uppercase;
-  color:var(--gris);padding:11px 18px;
-  border-bottom:2px solid transparent;
-  transition:color .16s,border-color .16s;
-}
-.onglet:hover{color:#fff}
-.onglet.actif{color:var(--or);border-bottom-color:var(--soupe)}
-
-/* ---------- LAYOUT ---------- */
-
-.grille{display:grid;grid-template-columns:1fr 370px;gap:28px;align-items:start;padding-bottom:70px}
-@media(max-width:1040px){.grille{grid-template-columns:1fr}}
-
-.vue{display:none}
-.vue.on{display:block}
-
-.sec-head{margin-bottom:22px}
-.sec-head h2{font-family:'Bungee',cursive;font-weight:400;text-transform:uppercase;font-size:clamp(20px,2.6vw,27px)}
-.sec-head p{color:var(--gris);margin-top:6px;font-size:15.5px;max-width:620px}
-
-/* ---------- GRADES ---------- */
-
-.grades{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
-@media(max-width:1240px){.grades{grid-template-columns:1fr}}
-@media(max-width:1040px){.grades{grid-template-columns:repeat(3,1fr)}}
-@media(max-width:840px){.grades{grid-template-columns:1fr}}
-
-.grade{
-  position:relative;background:var(--charbon);
-  border:1px solid var(--bord);border-radius:12px;
-  padding:24px 22px 22px;display:flex;flex-direction:column;
-  transition:transform .18s,border-color .18s;
-}
-.grade:hover{transform:translateY(-3px);border-color:#3d2f5c}
-.grade--phare{border-color:var(--soupe);background:linear-gradient(165deg,#2a1330 0%,var(--charbon) 55%)}
-.grade-tag{
-  position:absolute;top:-11px;left:22px;
-  font-family:'JetBrains Mono',monospace;font-size:10.5px;font-weight:700;
-  letter-spacing:1.5px;text-transform:uppercase;
-  background:var(--soupe);color:#1a0f00;padding:4px 10px;border-radius:4px;
-}
-.grade-nom{font-family:'Bungee',cursive;font-weight:400;font-size:21px;text-transform:uppercase;color:var(--or)}
-.grade-jp{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--gris);letter-spacing:2px;margin-top:2px}
-.grade-prix{font-family:'Bungee',cursive;font-size:32px;margin:16px 0 0}
-.grade-prix span{font-family:'Outfit',sans-serif;font-size:13.5px;font-weight:400;color:var(--gris)}
-.grade ul{list-style:none;margin:16px 0 20px;display:flex;flex-direction:column;gap:8px}
-.grade li{font-size:14px;color:#d8d2e2;padding-left:21px;position:relative}
-.grade li::before{content:"✦";position:absolute;left:0;top:0;color:var(--soupe);font-size:11px}
-.grade li.herite{color:var(--gris)}
-.grade li.herite::before{content:"↳";color:var(--bord)}
-
-/* ---------- KITS ---------- */
-
-.kits{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
-@media(max-width:620px){.kits{grid-template-columns:1fr}}
-
-.kit{
-  background:var(--charbon);border:1px solid var(--bord);border-radius:12px;
-  padding:20px;display:flex;flex-direction:column;
-  transition:transform .18s,border-color .18s;
-}
-.kit:hover{transform:translateY(-3px);border-color:#3d2f5c}
-.kit-top{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
-.kit-nom{font-family:'Bungee',cursive;font-weight:400;font-size:18px;text-transform:uppercase}
-.kit-kanji{font-family:'JetBrains Mono',monospace;font-size:14px;color:var(--bord)}
-.kit-role{
-  font-family:'JetBrains Mono',monospace;font-size:10.5px;
-  letter-spacing:1.4px;text-transform:uppercase;color:var(--oni);margin-top:5px;
-}
-.kit p{color:var(--gris);font-size:14px;margin:10px 0 16px;flex-grow:1}
-
-.ligne-prix{display:flex;align-items:center;gap:9px;padding-top:12px;border-top:1px solid var(--bord);margin-bottom:14px}
-.prix-euro{font-family:'Bungee',cursive;font-size:19px;color:var(--soupe)}
-.prix-sep{color:var(--bord);font-size:12.5px}
-.prix-coins{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--gris)}
-.prix-coins b{color:var(--or);font-weight:700}
-
-/* ---------- BOUTONS ---------- */
-
-.btn{
-  display:block;width:100%;text-align:center;
-  font-family:'JetBrains Mono',monospace;font-size:12.5px;font-weight:700;letter-spacing:.5px;
-  padding:11px 16px;border-radius:7px;margin-top:auto;
-  transition:transform .16s,background .16s,border-color .16s,color .16s;
-}
-.btn--plein{background:var(--soupe);color:#1a0f00}
-.btn--plein:hover:not(:disabled){background:var(--or);transform:translateY(-1px)}
-.btn--vide{border:1px solid var(--bord);color:#fff}
-.btn--vide:hover:not(:disabled){border-color:var(--soupe);color:var(--or)}
-.btn--dedans{background:var(--braise);border:1px solid var(--vert);color:var(--vert)}
-.btn:disabled{opacity:.5;cursor:default;transform:none}
-
-.pack{
-  margin-top:18px;border:1px dashed var(--soupe);border-radius:12px;
-  background:linear-gradient(100deg,rgba(254,147,1,.07),transparent 55%);
-  padding:22px 24px;display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;
-}
-.pack-txt h3{font-family:'Bungee',cursive;font-weight:400;font-size:19px;text-transform:uppercase}
-.pack-txt p{color:var(--gris);font-size:14px;margin-top:3px}
-.pack-prix{display:flex;align-items:baseline;gap:11px}
-.pack-prix .barre{color:var(--gris);text-decoration:line-through;font-size:15px}
-.pack-prix .final{font-family:'Bungee',cursive;font-size:30px;color:var(--or)}
-.pack .btn{margin-top:0;width:auto;padding:11px 24px}
-
-/* ---------- PANIER ---------- */
-
-.panier{
-  background:var(--charbon);border:1px solid var(--bord);border-radius:12px;
-  padding:22px;position:sticky;top:88px;
-}
-.panier h2{font-family:'Bungee',cursive;font-weight:400;font-size:17px;text-transform:uppercase;margin-bottom:4px}
-.panier-sous{color:var(--gris);font-size:13px;margin-bottom:16px}
-
-.joueur{
-  background:var(--braise);border:1px solid var(--bord);border-radius:9px;
-  padding:14px;margin-bottom:16px;
-}
-.joueur-lab{
-  font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:1.4px;
-  text-transform:uppercase;color:var(--gris);margin-bottom:9px;
-}
-.joueur-form{display:flex;gap:8px}
-.joueur-form input{
-  flex:1;min-width:0;
-  background:var(--nuit);border:1px solid var(--bord);border-radius:7px;
-  color:#fff;padding:9px 11px;font-family:'JetBrains Mono',monospace;font-size:13px;
-}
-.joueur-form input::placeholder{color:#5e5473}
-.joueur-form input:focus{outline:none;border-color:var(--soupe)}
-.joueur-form button{
-  background:var(--soupe);color:#1a0f00;border-radius:7px;padding:0 14px;
-  font-family:'JetBrains Mono',monospace;font-size:12.5px;font-weight:700;
-  transition:background .16s;
-}
-.joueur-form button:hover{background:var(--or)}
-
-.joueur-ok{display:flex;align-items:center;gap:12px}
-.joueur-ok img{width:52px;height:52px;image-rendering:pixelated;border-radius:6px;border:1px solid var(--bord);display:block}
-.joueur-ok-nom{font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:700}
-.joueur-ok-lab{font-size:12.5px;color:var(--vert)}
-.joueur-changer{margin-left:auto;font-size:12px;color:var(--gris);text-decoration:underline;text-underline-offset:2px}
-.joueur-changer:hover{color:#fff}
-.joueur-err{color:var(--oni);font-size:12.5px;margin-top:8px;display:none}
-.joueur-err.on{display:block}
-
-.lignes{display:flex;flex-direction:column;gap:9px;margin-bottom:16px}
-.vide{text-align:center;color:var(--gris);font-size:14px;padding:26px 10px;border:1px dashed var(--bord);border-radius:9px}
-.ligne{display:flex;align-items:center;gap:11px;background:var(--braise);border:1px solid var(--bord);border-radius:9px;padding:11px 13px}
-.ligne-nom{font-size:14px;font-weight:600}
-.ligne-type{font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--gris);text-transform:uppercase;letter-spacing:1px}
-.ligne-euro{font-family:'JetBrains Mono',monospace;font-size:14px;color:var(--or);font-weight:700}
-.ligne-x{color:var(--gris);font-size:17px;line-height:1;padding:0 2px;transition:color .16s}
-.ligne-x:hover{color:var(--oni)}
-
-.total{display:flex;align-items:baseline;justify-content:space-between;padding-top:14px;border-top:1px solid var(--bord)}
-.total-lab{font-size:14px;color:var(--gris)}
-.total-val{font-family:'Bungee',cursive;font-size:26px;color:var(--or)}
-.tva{font-size:11.5px;color:var(--gris);text-align:right;margin-top:2px}
-
-.panier .btn{margin-top:16px}
-.panier-note{font-size:12px;color:var(--gris);margin-top:11px;text-align:center}
-
-/* ---------- INFOS ---------- */
-
-.infos{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
-@media(max-width:880px){.infos{grid-template-columns:1fr}}
-.info{background:var(--braise);border:1px solid var(--bord);border-radius:10px;padding:18px 20px}
-.info h3{font-size:14.5px;font-weight:700;margin-bottom:6px}
-.info p{color:var(--gris);font-size:13.5px}
-.info a{color:var(--soupe);text-decoration:underline;text-underline-offset:2px}
-.info code{font-family:'JetBrains Mono',monospace;font-size:12.5px;color:var(--or)}
-
-.parents{margin-top:14px;border:1px solid var(--bord);border-radius:10px;padding:17px 20px;color:var(--gris);font-size:13px}
-.parents strong{color:#fff;font-weight:600}
-
-/* ---------- MODALE ---------- */
-
-.fond{
-  position:fixed;inset:0;z-index:80;
-  background:rgba(6,2,14,.82);backdrop-filter:blur(4px);
-  display:none;align-items:center;justify-content:center;padding:24px;
-}
-.fond.on{display:flex}
-.modale{background:var(--charbon);border:1px solid var(--bord);border-radius:14px;max-width:440px;width:100%;padding:28px}
-.modale h2{font-family:'Bungee',cursive;font-weight:400;font-size:20px;text-transform:uppercase;margin-bottom:10px}
-.modale p{color:var(--gris);font-size:14.5px;margin-bottom:14px}
-.modale-recap{background:var(--braise);border:1px solid var(--bord);border-radius:9px;padding:14px;margin-bottom:18px;font-size:14px}
-.modale-recap div{display:flex;justify-content:space-between;gap:12px;padding:3px 0}
-.modale-recap .t{border-top:1px solid var(--bord);margin-top:8px;padding-top:9px;font-weight:700;color:var(--or)}
-.modale .btn{margin-top:0}
-.modale-fermer{display:block;width:100%;text-align:center;color:var(--gris);font-size:13px;margin-top:12px}
-.modale-fermer:hover{color:#fff}
-
-/* ---------- FOOTER ---------- */
-
-footer{border-top:1px solid var(--bord);padding:32px 0 40px}
-.foot-in{display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap}
-.foot-in img{height:20px;width:auto}
-.foot-links{display:flex;gap:22px;font-size:14px}
-.foot-links a{color:var(--gris);transition:color .16s}
-.foot-links a:hover{color:#fff}
-.foot-legal{color:var(--bord);font-size:12px;margin-top:16px;font-family:'JetBrains Mono',monospace}
-
-@media(prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}html{scroll-behavior:auto}}
 </style>
 </head>
 <body>
 
+<!-- ═══════════ NAV ═══════════ -->
 <nav class="nav">
-  <div class="nav-in">
-    <a class="nav-logo" href="/" aria-label="LJKITS — accueil">
-      <img src="logo-texte.png" alt="LJKits" width="81" height="22">
-    </a>
-    <div class="nav-links">
-      <a href="/">Accueil</a>
-      <a href="/boutique" class="actif">Boutique</a>
-      <a href="/#kits">Kits</a>
-      <a href="https://discord.gg/9KYbUznDr7">Discord</a>
+  <div class="nav-int">
+    <a class="nav-logo" href="/" aria-label="LJKITS, accueil"><img src="logo-texte.png" alt="LJKITS" width="88" height="24"></a>
+    <div class="nav-liens">
+      <a href="/classement">Classement</a>
+      <a href="/kits">Kits</a>
+      <a href="/#evenements">Événements</a>
+      <a href="/boutique" aria-current="page">Boutique</a>
+      <a href="/reglement">Règlement</a>
     </div>
     <div class="nav-droite">
-      <button class="compte" id="navCompte" type="button">
-        <img id="navSkin" src="https://mc-heads.net/avatar/MHF_Steve/52" alt="">
-        <span class="compte-pseudo compte-vide" id="navPseudo">Ton pseudo</span>
-      </button>
-      <button class="btn-panier" id="btnPanier" type="button">
-        Panier
-        <span class="pastille" id="pastille">0</span>
+      <a class="bouton bouton-vide" data-discord href="#" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.317 4.37a19.79 19.79 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.058a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128c.126-.094.252-.192.372-.291a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.099.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>
+        Discord
+      </a>
+      <button class="bouton bouton-plein" onclick="copierIP()">Copier l'IP</button>
+      <button class="nav-burger" aria-label="Menu" onclick="document.querySelector('.nav-liens').style.display='flex'">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
       </button>
     </div>
   </div>
 </nav>
 
+<!-- ═══════════ HERO ═══════════ -->
 <header class="hero">
-  <div class="wrap hero-in">
-    <p class="eyebrow">Soutenir le serveur</p>
-    <h1>La boutique <span class="accent">LJKITS</span></h1>
-    <p class="sous">Des cosmétiques et des kits maison. Rien qui ne se gagne aussi à la soupe et à l'épée.</p>
-
-    <div class="promesse">
-      <div class="promesse-ico">✓</div>
-      <div>
-        <h2>Zéro pay-to-win, et c'est vérifiable</h2>
-        <p>Chaque kit vendu ici s'obtient <strong>aussi en coins</strong>, gagnés en jouant — le prix en jeu est affiché sur chaque carte. Les grades ne donnent <strong>aucun avantage en combat</strong> : que du cosmétique et du confort.</p>
+  <div class="enveloppe hero-int">
+    <div>
+      <div class="etiquette">Boutique · livraison en 90 secondes</div>
+      <h1>Fais-toi<br><span class="or">un nom</span>.</h1>
+      <p>
+        Tout le monde a la même épée et les mêmes cinq cœurs. La seule chose qui te
+        distingue, c'est <b>ce que les autres voient de toi</b> : ton nom en couleur
+        dans le chat, les particules qui explosent quand tu tues, et le message que
+        tout le monde lit à côté de ton kill.
+      </p>
+      <div class="hero-actions">
+        <a class="bouton bouton-or" href="#grades">Voir les grades</a>
+        <a class="bouton bouton-vide" href="#kits">Voir les kits</a>
       </div>
+    </div>
+
+    <!-- SIGNATURE : le chat du serveur, en direct -->
+    <div class="apercu">
+      <div class="apercu-tete">
+        <span class="t">Aperçu en jeu</span>
+        <span class="live"><span class="pt"></span>Chat du serveur</span>
+      </div>
+      <div class="chat" id="chat"></div>
+      <div class="apercu-choix" role="group" aria-label="Choisir un grade à prévisualiser">
+        <button class="ch" aria-pressed="false" data-g="aucun">Sans grade</button>
+        <button class="ch" aria-pressed="false" data-g="ronin">Ronin</button>
+        <button class="ch" aria-pressed="true"  data-g="samourai">Samouraï</button>
+        <button class="ch" aria-pressed="false" data-g="shogun">Shogun</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="enveloppe">
+    <div class="confiance">
+      <div class="cf"><span class="v">✓</span><div><div class="cf-t">Livré en 90 secondes</div><div class="cf-d">Automatique, sans ticket</div></div></div>
+      <div class="cf"><span class="v">✓</span><div><div class="cf-t">Achat permanent</div><div class="cf-d">Aucun abonnement, jamais repris</div></div></div>
+      <div class="cf"><span class="v">✓</span><div><div class="cf-t">Paiement sécurisé</div><div class="cf-d">Traité par Tebex, vendeur officiel</div></div></div>
+      <div class="cf"><span class="v">✓</span><div><div class="cf-t">Zéro pay-to-win</div><div class="cf-d">Aucun avantage en combat</div></div></div>
     </div>
   </div>
 </header>
 
-<main class="wrap">
-
-  <div class="onglets">
-    <button class="onglet actif" data-vue="grades" type="button">Grades</button>
-    <button class="onglet" data-vue="kits" type="button">Kits exclusifs</button>
-    <button class="onglet" data-vue="aide" type="button">Comment ça marche</button>
-  </div>
-
-  <div class="grille">
-    <div>
-
-      <section class="vue on" id="vue-grades">
-        <div class="sec-head">
-          <h2>Les grades</h2>
-          <p>Un préfixe, des effets, un rôle Discord. Chaque grade inclut tout ce que contient le précédent.</p>
-        </div>
-
-        <div class="grades">
-
-          <article class="grade">
-            <div class="grade-nom">Ronin</div>
-            <div class="grade-jp">浪人 · le sans-maître</div>
-            <div class="grade-prix">5 €<span> / à vie</span></div>
-            <ul>
-              <li>Préfixe Ronin dans le chat et le TAB</li>
-              <li>Couleur de pseudo au choix</li>
-              <li>Particules à la mort de ta cible</li>
-              <li>Rôle Discord et salon réservé</li>
-            </ul>
-            <button class="btn btn--vide" data-ajout="ronin" type="button">Ajouter au panier</button>
-          </article>
-
-          <article class="grade grade--phare">
-            <div class="grade-tag">Le plus pris</div>
-            <div class="grade-nom">Samouraï</div>
-            <div class="grade-jp">侍 · celui qui sert</div>
-            <div class="grade-prix">10 €<span> / à vie</span></div>
-            <ul>
-              <li class="herite">Tout le grade Ronin</li>
-              <li>Message de mort personnalisé</li>
-              <li>3 placements enregistrés par kit</li>
-              <li>Statistiques détaillées par kit</li>
-              <li>Trail de particules en courant</li>
-            </ul>
-            <button class="btn btn--plein" data-ajout="samourai" type="button">Ajouter au panier</button>
-          </article>
-
-          <article class="grade">
-            <div class="grade-nom">Shogun</div>
-            <div class="grade-jp">将軍 · le commandant</div>
-            <div class="grade-prix">20 €<span> / à vie</span></div>
-            <ul>
-              <li class="herite">Tout le grade Samouraï</li>
-              <li>Accès prioritaire quand c'est plein</li>
-              <li>Symbole unique à côté du pseudo</li>
-              <li>Animation d'arrivée au spawn</li>
-              <li>Ton nom gravé sur l'holo du spawn</li>
-            </ul>
-            <button class="btn btn--vide" data-ajout="shogun" type="button">Ajouter au panier</button>
-          </article>
-
-        </div>
-      </section>
-
-      <section class="vue" id="vue-kits">
-        <div class="sec-head">
-          <h2>Kits exclusifs</h2>
-          <p>Six kits pensés et codés pour LJKITS. Aucun ne frappe plus fort que les kits gratuits : ils jouent autrement.</p>
-        </div>
-
-        <div class="kits">
-
-          <article class="kit">
-            <div class="kit-top"><div class="kit-nom">Yumi</div><div class="kit-kanji">弓</div></div>
-            <div class="kit-role">Contrôle</div>
-            <p>Ses flèches font à peine mal mais ralentissent net. Personne ne s'échappe d'une zone couverte par un Yumi.</p>
-            <div class="ligne-prix">
-              <span class="prix-euro">4 €</span><span class="prix-sep">ou</span>
-              <span class="prix-coins"><b>12 000</b> coins</span>
-            </div>
-            <button class="btn btn--vide" data-ajout="yumi" type="button">Ajouter au panier</button>
-          </article>
-
-          <article class="kit">
-            <div class="kit-top"><div class="kit-nom">Kitsune</div><div class="kit-kanji">狐</div></div>
-            <div class="kit-role">Tromperie</div>
-            <p>Laisse un leurre à ton image, qui disparaît en fumée cinq secondes plus tard. Aucun dégât : juste le doute.</p>
-            <div class="ligne-prix">
-              <span class="prix-euro">4 €</span><span class="prix-sep">ou</span>
-              <span class="prix-coins"><b>15 000</b> coins</span>
-            </div>
-            <button class="btn btn--vide" data-ajout="kitsune" type="button">Ajouter au panier</button>
-          </article>
-
-          <article class="kit">
-            <div class="kit-top"><div class="kit-nom">Tanuki</div><div class="kit-kanji">狸</div></div>
-            <div class="kit-role">Embuscade</div>
-            <p>Se déguise en bloc de la map quatre secondes, à condition de ne plus bouger. Pour tendre un piège ou sauver sa peau.</p>
-            <div class="ligne-prix">
-              <span class="prix-euro">4 €</span><span class="prix-sep">ou</span>
-              <span class="prix-coins"><b>15 000</b> coins</span>
-            </div>
-            <button class="btn btn--vide" data-ajout="tanuki" type="button">Ajouter au panier</button>
-          </article>
-
-          <article class="kit">
-            <div class="kit-top"><div class="kit-nom">Kenshi</div><div class="kit-kanji">剣士</div></div>
-            <div class="kit-role">Duelliste</div>
-            <p>Ses trois premiers coups sur une cible frappent plus fort. Après, la lame s'émousse : il faut décrocher pour la ré-aiguiser.</p>
-            <div class="ligne-prix">
-              <span class="prix-euro">4 €</span><span class="prix-sep">ou</span>
-              <span class="prix-coins"><b>18 000</b> coins</span>
-            </div>
-            <button class="btn btn--vide" data-ajout="kenshi" type="button">Ajouter au panier</button>
-          </article>
-
-          <article class="kit">
-            <div class="kit-top"><div class="kit-nom">Onryo</div><div class="kit-kanji">怨霊</div></div>
-            <div class="kit-role">Rancune</div>
-            <p>À sa mort, son fantôme s'accroche au tueur et le ralentit cinq secondes. Ça ne le sauve pas — ça se paie.</p>
-            <div class="ligne-prix">
-              <span class="prix-euro">4 €</span><span class="prix-sep">ou</span>
-              <span class="prix-coins"><b>18 000</b> coins</span>
-            </div>
-            <button class="btn btn--vide" data-ajout="onryo" type="button">Ajouter au panier</button>
-          </article>
-
-          <article class="kit">
-            <div class="kit-top"><div class="kit-nom">Sakura</div><div class="kit-kanji">桜</div></div>
-            <div class="kit-role">Soutien</div>
-            <p>Soigne les alliés autour de lui toutes les huit secondes. Inutile en solo, décisif en team.</p>
-            <div class="ligne-prix">
-              <span class="prix-euro">4 €</span><span class="prix-sep">ou</span>
-              <span class="prix-coins"><b>20 000</b> coins</span>
-            </div>
-            <button class="btn btn--vide" data-ajout="sakura" type="button">Ajouter au panier</button>
-          </article>
-
-        </div>
-
-        <div class="pack">
-          <div class="pack-txt">
-            <h3>Les six kits</h3>
-            <p>Le pack complet, débloqué d'un coup sur ton compte.</p>
-          </div>
-          <div class="pack-prix">
-            <span class="barre">24 €</span>
-            <span class="final">18 €</span>
-          </div>
-          <button class="btn btn--plein" data-ajout="pack" type="button">Ajouter le pack</button>
-        </div>
-      </section>
-
-      <section class="vue" id="vue-aide">
-        <div class="sec-head">
-          <h2>Comment ça marche</h2>
-          <p>Trois étapes, et le contenu arrive sur ton compte en jeu.</p>
-        </div>
-
-        <div class="infos">
-          <div class="info">
-            <h3>1. Entre ton pseudo</h3>
-            <p>Celui de ton compte Minecraft, exactement comme en jeu. Ton skin s'affiche pour confirmer que c'est le bon.</p>
-          </div>
-          <div class="info">
-            <h3>2. Choisis et paie</h3>
-            <p>Ajoute au panier, puis règle par carte, PayPal ou Paysafecard. Le paiement est traité par notre prestataire.</p>
-          </div>
-          <div class="info">
-            <h3>3. Reçois en jeu</h3>
-            <p>Le contenu est activé automatiquement, en général sous une minute. Reconnecte-toi si tu étais déjà en ligne.</p>
-          </div>
-        </div>
-
-        <div class="infos" style="margin-top:14px">
-          <div class="info">
-            <h3>Un souci de livraison ?</h3>
-            <p>Ouvre un ticket sur le <a href="https://discord.gg/9KYbUznDr7">Discord</a> avec ton pseudo et l'e-mail utilisé au paiement.</p>
-          </div>
-          <div class="info">
-            <h3>Je me suis trompé de pseudo</h3>
-            <p>Contacte-nous vite sur le Discord : tant que le contenu n'est pas consommé, on peut le transférer.</p>
-          </div>
-          <div class="info">
-            <h3>Lier son Discord</h3>
-            <p>Fais <code>/discord</code> en jeu et colle le code dans le salon de vérification pour récupérer ton rôle.</p>
-          </div>
-        </div>
-
-        <div class="parents">
-          <strong>Note aux parents.</strong> Cette boutique propose des achats facultatifs sur un serveur Minecraft. Tout le contenu vendu s'obtient également en jouant, sans dépenser d'argent. Nous recommandons aux parents de superviser les achats de leurs enfants. Les achats sont définitifs une fois le contenu livré ; en cas de sanction pour triche, aucun remboursement n'est effectué.
-        </div>
-      </section>
-
+<!-- ═══════════ GRADES ═══════════ -->
+<section class="grades-sec" id="grades">
+  <div class="enveloppe">
+    <div class="tete-section">
+      <div class="etiquette">Les grades</div>
+      <h2 class="titre-section">Trois façons de se faire <span class="or">reconnaître</span></h2>
+      <p class="chapeau">
+        Permanents et cumulatifs : chaque grade contient tout ce que donne le
+        précédent. <b>Un seul achat, à vie</b> — pas d'abonnement, pas de
+        renouvellement, rien qui expire.
+      </p>
     </div>
 
-    <aside class="panier" id="panier">
-      <h2>Ton panier</h2>
-      <p class="panier-sous">La livraison se fait sur le compte indiqué ci-dessous.</p>
-
-      <div class="joueur">
-        <div class="joueur-lab">Compte de livraison</div>
-
-        <div id="joueurForm">
-          <div class="joueur-form">
-            <input id="inPseudo" type="text" placeholder="Ton pseudo Minecraft" maxlength="16"
-                   autocomplete="off" spellcheck="false" aria-label="Pseudo Minecraft">
-            <button id="btnPseudo" type="button">OK</button>
-          </div>
-          <p class="joueur-err" id="errPseudo">Pseudo invalide : 3 à 16 caractères, lettres, chiffres et _ uniquement.</p>
+    <div class="grades">
+      <article class="grade g1">
+        <div class="grade-tete">
+          <div class="grade-sym">❀</div>
+          <div class="grade-nom">Ronin</div>
+          <p class="grade-arg">Ton nom sort du lot dans le chat et au spawn.</p>
+          <div class="grade-prix">5 <small>€</small></div>
+          <div class="grade-perm">Permanent · livré en 90 s</div>
         </div>
-
-        <div class="joueur-ok" id="joueurOk" hidden>
-          <img id="skinJoueur" src="" alt="">
-          <div>
-            <div class="joueur-ok-nom" id="nomJoueur"></div>
-            <div class="joueur-ok-lab">Compte sélectionné</div>
-          </div>
-          <button class="joueur-changer" id="btnChanger" type="button">Changer</button>
+        <div class="grade-corps">
+          <ul>
+            <li><b>Préfixe et symbole</b> dans le chat et le TAB</li>
+            <li>Rôle Discord et <b>salon réservé</b> aux soutiens</li>
+            <li>Ton nom sur <b>l'hologramme des soutiens</b>, au spawn</li>
+            <li><code>/stats &lt;joueur&gt;</code> — la fiche complète de n'importe qui</li>
+            <li>Bonus de coins <b>×1,15</b> sur chaque kill</li>
+          </ul>
         </div>
-      </div>
-
-      <div class="lignes" id="lignes"></div>
-
-      <div class="total">
-        <span class="total-lab">Total</span>
-        <div style="text-align:right">
-          <div class="total-val" id="total">0 €</div>
-          <div class="tva">TVA incluse</div>
+        <div class="grade-pied">
+          <a class="bouton bouton-vide" href="#" data-tebex="ronin">Prendre le Ronin — 5 €</a>
         </div>
-      </div>
+      </article>
 
-      <button class="btn btn--plein" id="btnPayer" type="button" disabled>Passer au paiement</button>
-      <p class="panier-note" id="note">Entre ton pseudo pour commander.</p>
-    </aside>
+      <article class="grade g2">
+        <div class="ruban">Le plus pris</div>
+        <div class="grade-tete">
+          <div class="grade-sym">❀❀</div>
+          <div class="grade-nom">Samouraï</div>
+          <p class="grade-arg">Chacun de tes kills devient un petit spectacle.</p>
+          <div class="grade-prix">10 <small>€</small></div>
+          <div class="grade-perm">Permanent · livré en 90 s</div>
+        </div>
+        <div class="grade-corps">
+          <div class="grade-herite"><b>Tout le Ronin</b>, plus :</div>
+          <ul>
+            <li><b>Particules à la mort de ta cible</b> — 7 chorégraphies au choix</li>
+            <li><b>Message de mort personnalisé</b> — 7 styles, 5 variantes chacun</li>
+            <li>Bonus de coins <b>×1,3</b> sur chaque kill</li>
+          </ul>
+        </div>
+        <div class="grade-pied">
+          <a class="bouton bouton-or" href="#" data-tebex="samourai">Prendre le Samouraï — 10 €</a>
+        </div>
+      </article>
 
+      <article class="grade g3">
+        <div class="grade-tete">
+          <div class="grade-sym">❀❀❀</div>
+          <div class="grade-nom">Shogun</div>
+          <p class="grade-arg">Tu défies qui tu veux, et tu revois chaque combat.</p>
+          <div class="grade-prix">20 <small>€</small></div>
+          <div class="grade-perm">Permanent · livré en 90 s</div>
+        </div>
+        <div class="grade-corps">
+          <div class="grade-herite"><b>Tout le Samouraï</b>, plus :</div>
+          <ul>
+            <li><code>/duel &lt;joueur&gt;</code> — <b>défie qui tu veux</b> en 1v1 en cage</li>
+            <li><b>Historique de tes 10 derniers combats</b> — adversaire, kits, vie restante</li>
+            <li>Bonus de coins <b>×1,5</b> sur chaque kill</li>
+          </ul>
+        </div>
+        <div class="grade-pied">
+          <a class="bouton bouton-vide" href="#" data-tebex="shogun">Prendre le Shogun — 20 €</a>
+        </div>
+      </article>
+    </div>
   </div>
-</main>
+</section>
 
+<!-- ═══════════ VITRINE DES PERKS ═══════════ -->
+<section>
+  <div class="enveloppe">
+    <div class="tete-section">
+      <div class="etiquette">Ce que ça donne, concrètement</div>
+      <h2 class="titre-section">Regarde avant de <span class="or">choisir</span></h2>
+      <p class="chapeau">
+        Les deux perks les plus visibles du Samouraï, en vrai. Tu choisis ton style
+        une fois en jeu, et tu peux en changer quand tu veux.
+      </p>
+    </div>
+
+    <div class="vitrine">
+      <article class="vt">
+        <div class="vt-tag">Samouraï et plus</div>
+        <h3>Particules à la mort de ta cible</h3>
+        <p>Sept chorégraphies complètes qui se déclenchent sur le corps de ta victime. Tout le monde autour les voit.</p>
+        <div class="vt-corps">
+          <div class="parts">
+            <div class="part"><div class="part-pt" style="background:#FE9301"></div><div class="part-n">Brasier</div></div>
+            <div class="part"><div class="part-pt" style="background:#E92813;animation-delay:.2s"></div><div class="part-n">Hémorragie</div></div>
+            <div class="part"><div class="part-pt" style="background:#B98BE0;animation-delay:.4s"></div><div class="part-n">Vortex des âmes</div></div>
+            <div class="part"><div class="part-pt" style="background:#8FB8E0;animation-delay:.6s"></div><div class="part-n">Orage</div></div>
+            <div class="part"><div class="part-pt" style="background:#F19FD0;animation-delay:.8s"></div><div class="part-n">Sakura</div></div>
+            <div class="part"><div class="part-pt" style="background:#FDC003;animation-delay:1s"></div><div class="part-n">Détonation</div></div>
+            <div class="part"><div class="part-pt" style="background:#6E56A8;animation-delay:1.2s"></div><div class="part-n">Portail du vide</div></div>
+            <div class="part" style="display:flex;align-items:center;justify-content:center"><div class="part-n" style="margin:0;color:var(--soupe)">+ à venir</div></div>
+          </div>
+        </div>
+      </article>
+
+      <article class="vt">
+        <div class="vt-tag">Samouraï et plus</div>
+        <h3>Ton message de mort</h3>
+        <p>Sept styles, cinq variantes chacun. Diffusé au tueur, à la victime et à tout le monde dans un rayon de 20 blocs.</p>
+        <div class="vt-corps">
+          <div class="mort" id="apercuMort"></div>
+          <div class="mort-choix" role="group" aria-label="Choisir un style de message">
+            <button class="mc" aria-pressed="true"  data-m="0">Katana</button>
+            <button class="mc" aria-pressed="false" data-m="1">Spectral</button>
+            <button class="mc" aria-pressed="false" data-m="2">Sobre</button>
+            <button class="mc" aria-pressed="false" data-m="3">Brutal</button>
+            <button class="mc" aria-pressed="false" data-m="4">Soupe</button>
+            <button class="mc" aria-pressed="false" data-m="5">Légende</button>
+            <button class="mc" aria-pressed="false" data-m="6">Technique</button>
+          </div>
+        </div>
+      </article>
+
+      <article class="vt">
+        <div class="vt-tag">Shogun uniquement</div>
+        <h3>Défie qui tu veux</h3>
+        <p>La commande <code style="font-family:var(--mono);font-size:13px;color:var(--or)">/duel</code> envoie une invitation. Si l'autre accepte, vous partez tous les deux en cage, kit PvP forcé, sans que rien ne compte au classement.</p>
+        <div class="vt-corps">
+          <div class="mini">
+            <div class="mini-l"><span>Kit imposé</span><span>PvP, pour les deux</span></div>
+            <div class="mini-l"><span>Consentement</span><span>Obligatoire</span></div>
+            <div class="mini-l"><span>Kills et coins</span><span>Non comptés</span></div>
+            <div class="mini-l"><span>Classement</span><span>Aucun impact</span></div>
+          </div>
+        </div>
+      </article>
+
+      <article class="vt">
+        <div class="vt-tag">Shogun uniquement</div>
+        <h3>Rejoue tes dix derniers combats</h3>
+        <p>Chaque duel est archivé : qui, avec quel kit, contre quel kit, et avec combien de vie il s'en est sorti. C'est le seul endroit du serveur où tu peux savoir pourquoi tu perds.</p>
+        <div class="vt-corps">
+          <div class="mini">
+            <div class="mini-l"><span style="color:var(--vert)">Victoire</span><span>Kuroshiro_ · Kenshi vs Ninja · 1,5 ❤</span></div>
+            <div class="mini-l"><span style="color:var(--oni)">Défaite</span><span>Nyxaria · Kenshi vs Thor · 0 ❤</span></div>
+            <div class="mini-l"><span style="color:var(--vert)">Victoire</span><span>Bolduc · Kenshi vs Vampire · 3 ❤</span></div>
+            <div class="mini-l"><span style="color:var(--vert)">Victoire</span><span>Zeframe · Kenshi vs Anchor · 4,5 ❤</span></div>
+          </div>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ KITS ═══════════ -->
+<section class="grades-sec" id="kits">
+  <div class="enveloppe">
+    <div class="tete-section">
+      <div class="etiquette">Les kits</div>
+      <h2 class="titre-section">Débloque-les <span class="or">tout de suite</span></h2>
+      <p class="chapeau">
+        Vingt-sept kits disponibles à l'unité. Chacun affiche aussi son prix en coins,
+        pour que tu voies exactement combien d'heures de jeu tu économises.
+      </p>
+    </div>
+
+    <div class="pack">
+      <div>
+        <div class="pack-tag">La meilleure affaire du serveur</div>
+        <div class="pack-t">Les six kits exclusifs, ensemble</div>
+        <p class="pack-d">
+          Les six kits écrits spécialement pour LJKITS, introuvables ailleurs. Achetés
+          séparément, il faudrait 98 000 coins — soit une centaine d'heures de jeu.
+        </p>
+        <div class="pack-k">Sakura · Yumi · Tanuki · Kenshi · Onryo · Kitsune</div>
+      </div>
+      <div class="pack-prix">
+        <span class="pack-eco">Économise 6 €</span>
+        <div class="pack-neuf">18 €</div>
+        <div class="pack-vieux">24 € à l'unité</div>
+        <a class="bouton bouton-or" href="#" data-tebex="pack-exclusifs">Prendre le pack</a>
+      </div>
+    </div>
+
+    <div class="kits-outils">
+      <button class="filtre" aria-pressed="true"  data-f="tous">Tous</button>
+      <button class="filtre" aria-pressed="false" data-f="classique">Classiques · 2 €</button>
+      <button class="filtre" aria-pressed="false" data-f="exclusif">Exclusifs · 4 €</button>
+      <label class="recherche">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input type="search" id="champRecherche" placeholder="Chercher un kit" aria-label="Chercher un kit">
+      </label>
+    </div>
+
+    <div class="grille" id="grille"></div>
+    <div class="vide" id="vide" hidden><p>Aucun kit ne correspond à cette recherche.</p></div>
+  </div>
+</section>
+
+<!-- ═══════════ LIVRAISON ═══════════ -->
+<section class="livraison">
+  <div class="enveloppe">
+    <div class="tete-section">
+      <div class="etiquette">De la commande au jeu</div>
+      <h2 class="titre-section">Quatre étapes, une minute et demie</h2>
+    </div>
+    <div class="etapes">
+      <div class="et">
+        <div class="et-n">ÉTAPE 01</div>
+        <h3>Ton pseudo</h3>
+        <p>Tu renseignes ton pseudo Minecraft exact. C'est lui qui reçoit la livraison, vérifie la casse.</p>
+      </div>
+      <div class="et">
+        <div class="et-n">ÉTAPE 02</div>
+        <h3>Le paiement</h3>
+        <p>Chez Tebex, jamais sur ce site. Carte, PayPal, Apple Pay et Google Pay acceptés.</p>
+      </div>
+      <div class="et">
+        <div class="et-n">ÉTAPE 03</div>
+        <h3>La livraison</h3>
+        <p>Automatique en jeu sous 90 secondes. Hors ligne, ça t'attend à la prochaine connexion.</p>
+      </div>
+      <div class="et">
+        <div class="et-n">ÉTAPE 04</div>
+        <h3>Le rôle Discord</h3>
+        <p>Posé dans les 5 minutes, si ton compte est lié avec <code>/discord</code> en jeu.</p>
+      </div>
+    </div>
+
+    <div class="garantie">
+      <div>
+        <div class="etiquette">L'engagement</div>
+        <h3>Ton achat ne te rendra <span class="vert">jamais plus fort</span></h3>
+        <p>
+          C'est ce qui fait que le serveur vaut le coup d'être joué. Les kits vendus
+          ont exactement les mêmes statistiques que ceux débloqués en coins, et les
+          grades ne touchent ni aux dégâts, ni à la vie, ni au knockback.
+          <b>Cette liste ne bougera pas.</b>
+        </p>
+      </div>
+      <div class="garantie-liste">
+        <div class="gl"><span class="x">✗</span><span>Des coins, jamais en vente</span></div>
+        <div class="gl"><span class="x">✗</span><span>Du stuff ou de l'armure</span></div>
+        <div class="gl"><span class="x">✗</span><span>Des dégâts ou de la vie</span></div>
+        <div class="gl"><span class="x">✗</span><span>Des points de classement</span></div>
+        <div class="gl"><span class="x">✗</span><span>Une place dans le staff</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ FAQ ═══════════ -->
+<section>
+  <div class="enveloppe">
+    <div class="tete-section" style="text-align:center">
+      <div class="etiquette">Avant d'acheter</div>
+      <h2 class="titre-section">Les questions qui reviennent</h2>
+    </div>
+
+    <div class="faq">
+      <details class="q">
+        <summary>Combien de temps je garde mon grade ?</summary>
+        <p>À vie. Pas d'abonnement, pas de renouvellement, rien qui expire. Les grades et les kits achetés ne sont jamais repris, y compris aux resets de classement. Les seuls grades temporaires sont ceux gagnés au classement mensuel, qui durent 30 jours.</p>
+      </details>
+      <details class="q">
+        <summary>Le bonus de coins, ce n'est pas du pay-to-win ?</summary>
+        <p>C'est la bonne question, alors voici la vraie réponse : le bonus fait débloquer les kits plus vite, il ne donne aucun avantage en combat. Comme les kits sont équilibrés entre eux et qu'aucun n'est objectivement meilleur, arriver plus tôt au Kitsune ne fait gagner aucun duel. Et si un kit devenait trop fort, c'est le kit qui serait corrigé — pas le grade.</p>
+      </details>
+      <details class="q">
+        <summary>Je n'ai rien reçu.</summary>
+        <p>Reconnecte-toi d'abord : la livraison se fait en jeu, et si tu étais hors ligne au moment du paiement, elle t'attend à la connexion suivante. Si au bout de 10 minutes en ligne tu n'as toujours rien, ouvre un ticket sur le Discord avec ton numéro de commande Tebex. C'est traité dans la journée.</p>
+      </details>
+      <details class="q">
+        <summary>J'ai changé de pseudo Minecraft, je perds tout ?</summary>
+        <p>Non, les achats sont rattachés à l'UUID du compte et pas au pseudo affiché. En revanche, si tu commandes en tapant un pseudo qui n'est pas le tien, c'est l'autre compte qui reçoit — et ce n'est pas réversible.</p>
+      </details>
+      <details class="q">
+        <summary>Comment se passe un remboursement ?</summary>
+        <p>Tebex est le vendeur officiel : les demandes se font auprès d'eux et suivent leurs conditions. Un remboursement entraîne automatiquement le retrait de ce qui a été livré en jeu.</p>
+        <p>Un rejet de paiement bancaire après avoir reçu son achat entraîne un bannissement définitif de la boutique.</p>
+      </details>
+      <details class="q">
+        <summary>J'ai moins de 18 ans.</summary>
+        <p>Demande l'accord de la personne qui possède le moyen de paiement avant d'acheter. Ce n'est pas une formule de style : la quasi-totalité des litiges sur les serveurs Minecraft viennent d'achats faits sans autorisation, et ça finit toujours mal pour le joueur.</p>
+      </details>
+      <details class="q">
+        <summary>Où part l'argent ?</summary>
+        <p>Dans l'hébergement, en premier lieu : le VPS et le nom de domaine coûtent une quarantaine d'euros par mois, et Tebex prélève environ 7,5 % en gérant la TVA, la fraude et les litiges. Le développement est bénévole. Ce qui dépasse sert à payer des créateurs pour faire venir du monde — un serveur PvP vide n'intéresse personne.</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ CTA ═══════════ -->
+<section class="final">
+  <div class="enveloppe">
+    <div class="etiquette">Livré en 90 secondes</div>
+    <h2>Le prochain kill peut être <span class="or">le tien</span>.</h2>
+    <p>Un grade se prend une fois et se garde à vie. Tu peux aussi tout débloquer en jouant — les deux chemins mènent au même endroit.</p>
+    <div class="final-actions">
+      <a class="bouton bouton-or" href="#grades">Choisir un grade</a>
+      <button class="bouton bouton-vide" onclick="copierIP()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+        <span data-ip>mc.ljkits.eu</span>
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ PIED ═══════════ -->
 <footer>
-  <div class="wrap">
-    <div class="foot-in">
-      <img src="logo-texte.png" alt="LJKits" width="73" height="20">
-      <div class="foot-links">
-        <a href="/">Accueil</a>
+  <div class="enveloppe">
+    <div class="pied">
+      <div class="pied-marque">
+        <img src="logo-texte.png" alt="LJKITS" width="88" height="24">
+        <p>Le PvP Soup à l'ancienne. Serveur français, développé sans pay-to-win, par nostalgie du soup de 2014.</p>
+      </div>
+      <div class="pied-col">
+        <h4>Serveur</h4>
+        <a href="/classement">Classement</a>
+        <a href="/kits">Les 29 kits</a>
+        <a href="/#evenements">Événements</a>
+      </div>
+      <div class="pied-col">
+        <h4>Communauté</h4>
+        <a data-discord href="#" target="_blank" rel="noopener">Discord</a>
+        <a href="/reglement">Règlement</a>
         <a href="/boutique">Boutique</a>
-        <a href="https://discord.gg/9KYbUznDr7">Discord</a>
+      </div>
+      <div class="pied-col">
+        <h4>Jouer</h4>
+        <a href="#" onclick="copierIP();return false;" data-ip>mc.ljkits.eu</a>
+        <a href="/">Java 1.8 → 1.21</a>
       </div>
     </div>
-    <p class="foot-legal">LJKITS · hommage indépendant, sans lien avec les anciens administrateurs de MJKits. Non affilié à Mojang Studios.</p>
+    <div class="pied-bas">
+      <span>© 2026 LJKITS</span>
+      <span>Paiements traités par Tebex, vendeur officiel.</span>
+      <span>Hommage indépendant, sans lien avec les anciens administrateurs de MJKits.</span>
+      <span>Not an official Minecraft product. Not approved by or associated with Mojang or Microsoft.</span>
+    </div>
   </div>
 </footer>
 
-<div class="fond" id="fond">
-  <div class="modale" role="dialog" aria-modal="true" aria-labelledby="modaleTitre">
-    <h2 id="modaleTitre">Récapitulatif</h2>
-    <p>Vérifie le pseudo : c'est sur ce compte que tout sera livré.</p>
-    <div class="modale-recap" id="recap"></div>
-    <button class="btn btn--plein" id="btnCheckout" type="button">Aller au paiement</button>
-    <button class="modale-fermer" id="btnAnnuler" type="button">Revenir au panier</button>
-  </div>
-</div>
+<div class="toast" id="toast" role="status" aria-live="polite">Adresse copiée</div>
 
 <script>
-const CATALOGUE = {
-  ronin:    { nom:"Grade Ronin",    type:"Grade", prix:5 },
-  samourai: { nom:"Grade Samouraï", type:"Grade", prix:10 },
-  shogun:   { nom:"Grade Shogun",   type:"Grade", prix:20 },
-  yumi:     { nom:"Kit Yumi",       type:"Kit",   prix:4 },
-  kitsune:  { nom:"Kit Kitsune",    type:"Kit",   prix:4 },
-  tanuki:   { nom:"Kit Tanuki",     type:"Kit",   prix:4 },
-  kenshi:   { nom:"Kit Kenshi",     type:"Kit",   prix:4 },
-  onryo:    { nom:"Kit Onryo",      type:"Kit",   prix:4 },
-  sakura:   { nom:"Kit Sakura",     type:"Kit",   prix:4 },
-  pack:     { nom:"Pack 6 kits",    type:"Pack",  prix:18 }
+/* ═══════════════════════════════════════════════════
+   CONFIGURATION
+   ═══════════════════════════════════════════════════ */
+const IP      = 'mc.ljkits.eu';
+const DISCORD = 'https://discord.gg/ljkits';
+
+document.querySelectorAll('[data-ip]').forEach(e => e.textContent = IP);
+document.querySelectorAll('[data-discord]').forEach(e => e.href = DISCORD);
+
+let minuteurToast;
+function copierIP(){ navigator.clipboard?.writeText(IP).then(afficherToast).catch(afficherToast); }
+function afficherToast(){
+  const t = document.getElementById('toast');
+  t.classList.add('on');
+  clearTimeout(minuteurToast);
+  minuteurToast = setTimeout(() => t.classList.remove('on'), 2200);
+}
+
+/* ═══════════════════════════════════════════════════
+   APERÇU DU CHAT
+   Les préfixes reprennent exactement teams.sk :
+   Shogun §5❀❀❀ · Samouraï §6❀❀ · Ronin §f❀
+   ═══════════════════════════════════════════════════ */
+const PREFIXES = {
+  aucun:    '',
+  ronin:    '<span class="gf">❀</span> ',
+  samourai: '<span class="g6">❀❀</span> ',
+  shogun:   '<span class="g5">❀❀❀</span> '
 };
 
-let panier = [];
-let joueur = null;
-
-const $ = (id) => document.getElementById(id);
-
-document.querySelectorAll('.onglet').forEach(o => {
-  o.addEventListener('click', () => {
-    document.querySelectorAll('.onglet').forEach(x => x.classList.remove('actif'));
-    document.querySelectorAll('.vue').forEach(v => v.classList.remove('on'));
-    o.classList.add('actif');
-    $('vue-' + o.dataset.vue).classList.add('on');
-  });
-});
-
-function pseudoValide(p) {
-  return /^[A-Za-z0-9_]{3,16}$/.test(p);
+function dessinerChat(grade){
+  const p = PREFIXES[grade];
+  document.getElementById('chat').innerHTML = `
+    <div class="chat-l faible"><span class="g8">[</span><span class="gc">✖</span><span class="g8">]</span> <span class="g7">Bolduc a vidé le bol de</span> <span class="gf">Zeframe</span></div>
+    <div class="chat-l faible"><span class="gf">Kuroshiro_</span><span class="g7">: gg</span></div>
+    <div class="chat-l">${p}<span class="gf">Toi</span><span class="g7">: à qui le tour</span></div>
+    <div class="chat-l"><span class="g8">[</span><span class="ge">⚔</span><span class="g8">]</span> <span class="g7">Kenshi —</span> <span class="ge">premier coup, +60 %</span></div>
+    <div class="chat-l"><span class="g8">[</span><span class="gc">✖</span><span class="g8">]</span> <span class="g7">Le katana de</span> ${p}<span class="gf">Toi</span> <span class="g7">a trouvé</span> <span class="gf">Nyxaria</span></div>
+    <div class="chat-l"><span class="g8">[</span><span class="g6">★</span><span class="g8">]</span> <span class="g7">Tu gagnes</span> <span class="g6">26 coins</span> <span class="g8">·</span> <span class="g7">série de 4</span></div>
+    <div class="chat-l faible"><span class="gf">Nyxaria</span><span class="g7">: sérieux ce kit</span></div>`;
 }
 
-function connecter(p) {
-  joueur = p;
-  $('joueurForm').hidden = true;
-  $('joueurOk').hidden = false;
-  $('skinJoueur').src = 'https://mc-heads.net/avatar/' + encodeURIComponent(p) + '/104';
-  $('skinJoueur').alt = 'Skin de ' + p;
-  $('nomJoueur').textContent = p;
-  $('navSkin').src = 'https://mc-heads.net/avatar/' + encodeURIComponent(p) + '/52';
-  $('navPseudo').textContent = p;
-  $('navPseudo').classList.remove('compte-vide');
-  rendre();
-}
-
-function deconnecter() {
-  joueur = null;
-  $('joueurForm').hidden = false;
-  $('joueurOk').hidden = true;
-  $('inPseudo').value = '';
-  $('navSkin').src = 'https://mc-heads.net/avatar/MHF_Steve/52';
-  $('navPseudo').textContent = 'Ton pseudo';
-  $('navPseudo').classList.add('compte-vide');
-  rendre();
-  $('inPseudo').focus();
-}
-
-$('btnPseudo').addEventListener('click', () => {
-  const p = $('inPseudo').value.trim();
-  if (!pseudoValide(p)) { $('errPseudo').classList.add('on'); return; }
-  $('errPseudo').classList.remove('on');
-  connecter(p);
-});
-
-$('inPseudo').addEventListener('keydown', (e) => { if (e.key === 'Enter') $('btnPseudo').click(); });
-$('inPseudo').addEventListener('input', () => $('errPseudo').classList.remove('on'));
-$('btnChanger').addEventListener('click', deconnecter);
-
-$('navCompte').addEventListener('click', () => {
-  $('panier').scrollIntoView({ behavior:'smooth', block:'center' });
-  if (!joueur) setTimeout(() => $('inPseudo').focus(), 400);
-});
-$('btnPanier').addEventListener('click', () => {
-  $('panier').scrollIntoView({ behavior:'smooth', block:'center' });
-});
-
-document.querySelectorAll('[data-ajout]').forEach(b => {
+document.querySelectorAll('.ch').forEach(b => {
   b.addEventListener('click', () => {
-    const id = b.dataset.ajout;
-    if (panier.includes(id)) {
-      panier = panier.filter(x => x !== id);
-    } else {
-      panier.push(id);
-    }
-    rendre();
+    document.querySelectorAll('.ch').forEach(x => x.setAttribute('aria-pressed', 'false'));
+    b.setAttribute('aria-pressed', 'true');
+    dessinerChat(b.dataset.g);
   });
 });
+dessinerChat('samourai');
 
-function total() {
-  return panier.reduce((s, id) => s + CATALOGUE[id].prix, 0);
+/* ═══════════════════════════════════════════════════
+   APERÇU DES MESSAGES DE MORT
+   ⚠️ Un exemple par style — les 35 vrais textes sont
+   dans messages-mort.sk. À remplacer par les vrais.
+   ═══════════════════════════════════════════════════ */
+const MORTS = [
+  '<span class="g8">[</span><span class="gc">✖</span><span class="g8">]</span> <span class="g7">Le katana de</span> <span class="gf">Toi</span> <span class="g7">a trouvé la gorge de</span> <span class="gf">Nyxaria</span>',
+  '<span class="g8">[</span><span class="gc">✖</span><span class="g8">]</span> <span class="g5">L\'esprit de</span> <span class="gf">Toi</span> <span class="g5">a emporté</span> <span class="gf">Nyxaria</span> <span class="g5">de l\'autre côté</span>',
+  '<span class="g8">[</span><span class="gc">✖</span><span class="g8">]</span> <span class="gf">Toi</span> <span class="g7">a tué</span> <span class="gf">Nyxaria</span>',
+  '<span class="g8">[</span><span class="gc">✖</span><span class="g8">]</span> <span class="gf">Toi</span> <span class="gc">a démoli</span> <span class="gf">Nyxaria</span> <span class="gc">sans lui laisser une soupe</span>',
+  '<span class="g8">[</span><span class="gc">✖</span><span class="g8">]</span> <span class="gf">Nyxaria</span> <span class="g6">a renversé son bol devant</span> <span class="gf">Toi</span>',
+  '<span class="g8">[</span><span class="gc">✖</span><span class="g8">]</span> <span class="g6">On racontera longtemps comment</span> <span class="gf">Toi</span> <span class="g6">a fait tomber</span> <span class="gf">Nyxaria</span>',
+  '<span class="g8">[</span><span class="gc">✖</span><span class="g8">]</span> <span class="gf">Toi</span> <span class="g7">élimine</span> <span class="gf">Nyxaria</span> <span class="g8">·</span> <span class="g7">Kenshi vs Thor</span> <span class="g8">·</span> <span class="ga">1,5 ❤ restants</span>'
+];
+
+function dessinerMort(i){
+  document.getElementById('apercuMort').innerHTML = MORTS[i];
+}
+document.querySelectorAll('.mc').forEach(b => {
+  b.addEventListener('click', () => {
+    document.querySelectorAll('.mc').forEach(x => x.setAttribute('aria-pressed', 'false'));
+    b.setAttribute('aria-pressed', 'true');
+    dessinerMort(+b.dataset.m);
+  });
+});
+dessinerMort(0);
+
+/* ═══════════════════════════════════════════════════
+   KITS
+   ⚠️ En production : le panier ne transporte que
+   {type, slug}, les prix sont relus côté serveur.
+   Un kit sans tebexPackageId ne doit PAS apparaître
+   avec un bouton actif.
+   ═══════════════════════════════════════════════════ */
+const KITS = [
+  {s:'archer',    n:'Archer',    r:'Distance',        c:300,  d:"Un arc et 64 flèches. Tu harcèles, tu finis."},
+  {s:'fireman',   n:'Fireman',   r:'Immunité',        c:300,  d:"Immunisé au feu et à la lave."},
+  {s:'fisherman', n:'Fisherman', r:'Accroche',        c:400,  d:"La canne ramène ta cible vers toi."},
+  {s:'camel',     n:'Camel',     r:'Terrain',         c:400,  d:"Vitesse II sur le sable et le grès."},
+  {s:'magma',     n:'Magma',     r:'Riposte',         c:500,  d:"Qui te frappe s'enflamme."},
+  {s:'viper',     n:'Viper',     r:'Poison',          c:500,  d:"Chaque coup empoisonne 4 secondes."},
+  {s:'kangaroo',  n:'Kangaroo',  r:'Mobilité',        c:800,  d:"Un bond qui traverse trous et groupes."},
+  {s:'anchor',    n:'Anchor',    r:'Zone',            c:1000, d:"Aura de lenteur permanente sur 5 blocs."},
+  {s:'sponger',   n:'Sponger',   r:'Mobilité',        c:1000, d:"Cinq éponges propulsives."},
+  {s:'stomper',   n:'Stomper',   r:'Impact',          c:1200, d:"La chute devient une arme de zone."},
+  {s:'monk',      n:'Monk',      r:'Disruption',      c:1200, d:"Mélange la hotbar de sa cible."},
+  {s:'switcher',  n:'Switcher',  r:'Disruption',      c:1500, d:"Une boule de neige et vous échangez de place."},
+  {s:'berserker', n:'Berserker', r:'Dernier souffle', c:1500, d:"Sous 1,75 ❤, tu frappes plus fort."},
+  {s:'spiderman', n:'Spiderman', r:'Piège',           c:1800, d:"Une toile immobilise ta cible 8 secondes."},
+  {s:'thor',      n:'Thor',      r:'Burst',           c:2000, d:"La foudre tombe où tu vises, à 25 blocs."},
+  {s:'vampire',   n:'Vampire',   r:'Soin',            c:2000, d:"Chaque kill te rend toute ta vie."},
+  {s:'reaper',    n:'Reaper',    r:'Corruption',      c:2000, d:"Sa faux inflige des dégâts de wither."},
+  {s:'grandpa',   n:'Grand-Pa',  r:'Éjection',        c:2000, d:"Un bâton qui envoie très loin."},
+  {s:'gladiator', n:'Gladiator', r:'Duel',            c:2500, d:"Enferme ta cible avec toi dans une cage."},
+  {s:'ninja',     n:'Ninja',     r:'Chasse',          c:2500, d:"Un sneak te téléporte sur le joueur marqué."},
+  {s:'phantom',   n:'Phantom',   r:'Furtif',          c:3500, d:"Invisible tant que tu ne frappes personne."},
+
+  {s:'sakura',  n:'Sakura',  r:'Soutien',   c:10000, x:true, k:'桜',   d:"Tu soignes les alliés autour de toi."},
+  {s:'yumi',    n:'Yumi',    r:'Contrôle',  c:12000, x:true, k:'弓',   d:"Des flèches faibles mais ralentissantes."},
+  {s:'tanuki',  n:'Tanuki',  r:'Embuscade', c:15000, x:true, k:'狸',   d:"Un clone part à ta place, tu disparais."},
+  {s:'kenshi',  n:'Kenshi',  r:'Duelliste', c:18000, x:true, k:'剣士', d:"Tes trois premiers coups frappent plus fort."},
+  {s:'onryo',   n:'Onryo',   r:'Rancune',   c:18000, x:true, k:'怨霊', d:"À ta mort, ton fantôme ralentit ton tueur."},
+  {s:'kitsune', n:'Kitsune', r:'Tromperie', c:25000, x:true, k:'狐',   d:"Une queue par kill, transformation à neuf."}
+];
+
+let filtre = 'tous', recherche = '';
+
+function dessinerKits(){
+  const l = KITS.filter(k => {
+    const f = filtre === 'tous' ? true : filtre === 'exclusif' ? !!k.x : !k.x;
+    if(!f) return false;
+    if(!recherche) return true;
+    return (k.n + ' ' + k.r + ' ' + k.d).toLowerCase().includes(recherche.toLowerCase());
+  });
+
+  document.getElementById('vide').hidden = l.length > 0;
+  document.getElementById('grille').innerHTML = l.map(k => `
+    <article class="art ${k.x ? 'excl' : ''}">
+      ${k.k ? `<div class="art-kanji" aria-hidden="true">${k.k}</div>` : ''}
+      <div class="art-tete">
+        <span class="art-nom">${k.n}</span>
+        <span class="art-role">${k.r}</span>
+      </div>
+      <p class="art-d">${k.d}</p>
+      <div class="art-pied">
+        <div>
+          <div class="art-euro">${k.x ? '4' : '2'} €</div>
+          <div class="art-coins">ou ${k.c.toLocaleString('fr-FR')} coins</div>
+        </div>
+        <a class="art-lien" href="#" data-tebex="${k.s}">Prendre</a>
+      </div>
+    </article>`).join('');
 }
 
-function rendre() {
-  document.querySelectorAll('[data-ajout]').forEach(b => {
-    const dedans = panier.includes(b.dataset.ajout);
-    b.textContent = dedans ? '✓ Dans le panier' : (b.dataset.ajout === 'pack' ? 'Ajouter le pack' : 'Ajouter au panier');
-    b.classList.toggle('btn--dedans', dedans);
+document.querySelectorAll('.filtre').forEach(f => {
+  f.addEventListener('click', () => {
+    document.querySelectorAll('.filtre').forEach(x => x.setAttribute('aria-pressed', 'false'));
+    f.setAttribute('aria-pressed', 'true');
+    filtre = f.dataset.f;
+    dessinerKits();
   });
-
-  const box = $('lignes');
-  box.innerHTML = '';
-
-  if (panier.length === 0) {
-    const v = document.createElement('div');
-    v.className = 'vide';
-    v.innerHTML = 'Ton panier est vide.<br>Ajoute un grade ou un kit.';
-    box.appendChild(v);
-  } else {
-    panier.forEach(id => {
-      const a = CATALOGUE[id];
-      const l = document.createElement('div');
-      l.className = 'ligne';
-
-      const g = document.createElement('div');
-      g.style.flex = '1';
-      g.style.minWidth = '0';
-      const n = document.createElement('div');
-      n.className = 'ligne-nom';
-      n.textContent = a.nom;
-      const t = document.createElement('div');
-      t.className = 'ligne-type';
-      t.textContent = a.type;
-      g.append(n, t);
-
-      const e = document.createElement('div');
-      e.className = 'ligne-euro';
-      e.textContent = a.prix + ' €';
-
-      const x = document.createElement('button');
-      x.className = 'ligne-x';
-      x.type = 'button';
-      x.textContent = '×';
-      x.setAttribute('aria-label', 'Retirer ' + a.nom);
-      x.addEventListener('click', () => {
-        panier = panier.filter(y => y !== id);
-        rendre();
-      });
-
-      l.append(g, e, x);
-      box.appendChild(l);
-    });
-  }
-
-  $('total').textContent = total() + ' €';
-
-  const p = $('pastille');
-  p.textContent = panier.length;
-  p.classList.toggle('on', panier.length > 0);
-
-  $('btnPayer').disabled = !(panier.length > 0 && joueur !== null);
-
-  if (panier.length === 0) {
-    $('note').textContent = 'Ajoute un article pour continuer.';
-  } else if (!joueur) {
-    $('note').textContent = 'Entre ton pseudo pour commander.';
-  } else {
-    $('note').textContent = 'Livraison sur le compte ' + joueur + '.';
-  }
-}
-
-$('btnPayer').addEventListener('click', () => {
-  const r = $('recap');
-  r.innerHTML = '';
-
-  const j = document.createElement('div');
-  const j1 = document.createElement('span');
-  j1.textContent = 'Compte';
-  const j2 = document.createElement('span');
-  j2.textContent = joueur;
-  j2.style.fontFamily = "'JetBrains Mono', monospace";
-  j.append(j1, j2);
-  r.appendChild(j);
-
-  panier.forEach(id => {
-    const a = CATALOGUE[id];
-    const d = document.createElement('div');
-    const s1 = document.createElement('span');
-    s1.textContent = a.nom;
-    const s2 = document.createElement('span');
-    s2.textContent = a.prix + ' €';
-    d.append(s1, s2);
-    r.appendChild(d);
-  });
-
-  const t = document.createElement('div');
-  t.className = 't';
-  const t1 = document.createElement('span');
-  t1.textContent = 'Total';
-  const t2 = document.createElement('span');
-  t2.textContent = total() + ' €';
-  t.append(t1, t2);
-  r.appendChild(t);
-
-  $('fond').classList.add('on');
 });
-
-$('btnAnnuler').addEventListener('click', () => $('fond').classList.remove('on'));
-$('fond').addEventListener('click', (e) => { if (e.target === $('fond')) $('fond').classList.remove('on'); });
-document.addEventListener('keydown', (e) => { if (e.key === 'Escape') $('fond').classList.remove('on'); });
-
-$('btnCheckout').addEventListener('click', () => {
-  // MAQUETTE — ici viendra l'appel à l'API du prestataire de paiement :
-  // création du panier avec username = joueur, puis redirection vers le checkout.
-  alert('Maquette : redirection vers le paiement.\n\nCompte : ' + joueur + '\nTotal : ' + total() + ' €');
+document.getElementById('champRecherche').addEventListener('input', e => {
+  recherche = e.target.value.trim();
+  dessinerKits();
 });
-
-rendre();
+dessinerKits();
 </script>
 
 </body>

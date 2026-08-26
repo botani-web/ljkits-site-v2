@@ -18,7 +18,7 @@ export default async function PageNouveauKit() {
         >
           ← Retour aux kits
         </Link>
-        <h1 className="mt-2 font-titre text-2xl uppercase">Nouveau kit</h1>
+        <h1 className="mt-2 font-titre text-2xl">Nouveau kit</h1>
         <p className="mt-1 text-sm text-gris">
           Il sera ajouté en fin de liste ; les flèches du tableau de bord servent ensuite à
           le placer.

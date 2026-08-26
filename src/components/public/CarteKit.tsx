@@ -1,5 +1,6 @@
-import Link from 'next/link'
-
+import { Badge } from '@/components/ui/Badge'
+import { CarteLien, KanjiFiligrane } from '@/components/ui/Carte'
+import { LignesLore } from '@/components/ui/LignesLore'
 import { formaterCoins, formaterEuros } from '@/lib/format'
 
 /**
@@ -21,113 +22,107 @@ export type KitEnCarte = {
   caracteristiques: { libelle: string; valeur: string }[]
 }
 
+/**
+ * La carte d'un kit dans la grille de /kits.
+ *
+ * Elle est bâtie comme un tooltip d'item : un nom, un rôle encadré, une
+ * phrase, puis les caractéristiques en lignes clé/valeur monospace, et le prix
+ * en pied. Les kits exclusifs portent leur kanji en filigrane dans l'angle bas
+ * droit et passent en rouge oni.
+ */
 export function CarteKit({ kit }: { kit: KitEnCarte }) {
   const exclusif = kit.type === 'EXCLUSIF'
 
   return (
-    <Link
+    <CarteLien
       href={`/kits/${kit.slug}`}
-      className={`flex flex-col rounded-xl border p-5 transition-all hover:-translate-y-[3px] hover:border-[#3d2f5c] ${
-        exclusif
-          ? 'border-[#3a2a55] bg-linear-[168deg] from-[#1d1233] to-charbon'
-          : 'border-bord bg-charbon'
-      }`}
+      ton={exclusif ? 'oni' : 'defaut'}
+      className="group p-5.5 pb-4.5"
     >
-      <div className="flex items-start justify-between gap-2.5">
-        <div>
-          <h2
-            className={`font-titre text-[19px] leading-[1.15] uppercase ${
-              exclusif ? 'text-violet' : 'text-white'
+      {/* Le filigrane n'existe que sur les exclusifs : c'est ce qui les
+          distingue au premier coup d'œil dans une grille de vingt-neuf. */}
+      {exclusif && kit.kanji && <KanjiFiligrane>{kit.kanji}</KanjiFiligrane>}
+
+      <div className="relative flex flex-wrap items-baseline gap-2.5">
+        <h2
+          className={`font-titre text-[19px] tracking-[-.01em] ${
+            exclusif ? 'text-oni' : ''
+          }`}
+        >
+          {kit.nom}
+        </h2>
+
+        <Badge className="transition-colors group-hover:border-soupe group-hover:text-soupe">
+          {kit.role}
+        </Badge>
+
+        {kit.bientot && <Badge ton="soupe">Bientôt</Badge>}
+      </div>
+
+      {/*
+        `min-h` sur la description : sans elle, une phrase courte remonte le
+        bloc de caractéristiques et les lignes clé/valeur ne s'alignent plus
+        d'une carte à l'autre sur la même rangée.
+      */}
+      <p className="relative mt-3 min-h-11 text-[14.5px] text-gris">
+        {kit.descriptionCourte}
+      </p>
+
+      <LignesLore lignes={kit.caracteristiques} taille="compacte" className="relative" />
+
+      <div className="relative mt-4.5 flex items-end gap-3 border-t border-bord pt-3.5">
+        <PrixKit
+          prixCoins={kit.prixCoins}
+          mention={kit.prixCoins === 0 && kit.kitDeDepart ? 'Kit de départ' : undefined}
+        />
+
+        {/*
+          Pas un <Badge> : celui-ci force les majuscules et un interlettrage
+          large, illisibles sur « ou 4,50 € ». Le prix en euros garde sa casse
+          et son symbole.
+        */}
+        {kit.prixEurosCentimes !== null && (
+          <span
+            className={`ml-auto shrink-0 rounded-micro border px-2.25 py-1.25 font-mono text-[11px] ${
+              exclusif ? 'border-soupe/40 text-soupe' : 'border-bord text-gris'
             }`}
           >
-            {kit.nom}
-          </h2>
-          <div
-            className={`mt-1.5 font-mono text-[10.5px] tracking-[1.4px] uppercase ${
-              exclusif ? 'text-violet' : 'text-oni'
-            }`}
-          >
-            {kit.role}
-          </div>
-        </div>
-        {kit.kanji && (
-          <div className="shrink-0 font-mono text-[15px] text-bord" aria-hidden="true">
-            {kit.kanji}
-          </div>
+            ou {formaterEuros(kit.prixEurosCentimes)}
+          </span>
         )}
       </div>
-
-      <p className="my-3 grow text-sm text-gris">{kit.descriptionCourte}</p>
-
-      {kit.caracteristiques.length > 0 && (
-        <dl className="mb-3.5 flex flex-col gap-1.5 rounded-lg border border-bord bg-nuit px-3.5 py-3">
-          {kit.caracteristiques.map((carac, index) => (
-            <div key={index} className="flex justify-between gap-2.5">
-              <dt className="shrink-0 font-mono text-[10.5px] tracking-[1px] text-gris uppercase">
-                {carac.libelle}
-              </dt>
-              <dd className="text-right font-mono text-xs text-[#d8d2e2]">{carac.valeur}</dd>
-            </div>
-          ))}
-        </dl>
-      )}
-
-      <div className="flex items-center justify-between gap-2.5 border-t border-bord pt-3">
-        <PrixKit prixCoins={kit.prixCoins} />
-
-        <div className="flex flex-wrap justify-end gap-1.5">
-          {kit.bientot && <Badge variante="bientot">Bientôt</Badge>}
-          {kit.kitDeDepart && <Badge variante="depart">Kit de départ</Badge>}
-          {kit.prixEurosCentimes !== null && (
-            <Badge variante="euro">ou {formaterEuros(kit.prixEurosCentimes)}</Badge>
-          )}
-        </div>
-      </div>
-    </Link>
+    </CarteLien>
   )
 }
 
-/** Le prix en coins, ou « Gratuit » en vert quand il vaut zéro. */
+/**
+ * Le prix en coins, ou « Gratuit » en vert quand il vaut zéro.
+ *
+ * `mention` remplace le mot « coins » sous le chiffre — sur un kit offert, il
+ * n'y a pas de coins à annoncer, mais il y a une raison à donner.
+ */
 export function PrixKit({
   prixCoins,
+  mention,
   taille = 'carte',
 }: {
   prixCoins: number
+  mention?: string
   taille?: 'carte' | 'detail'
 }) {
-  const classeTaille = taille === 'detail' ? 'text-2xl' : 'text-[17px]'
-
-  if (prixCoins === 0) {
-    return <span className={`font-titre text-vert ${classeTaille}`}>Gratuit</span>
-  }
+  const gratuit = prixCoins === 0
+  const classeTaille = taille === 'detail' ? 'text-[30px]' : 'text-[17px]'
 
   return (
-    <span className={`font-titre text-or ${classeTaille}`}>
-      {formaterCoins(prixCoins)}
-      <small className="ml-1 font-corps text-[11px] font-normal text-gris">coins</small>
-    </span>
-  )
-}
-
-/** Les pastilles du pied de carte : « ou 4 € », « Kit de départ », « Bientôt ». */
-export function Badge({
-  variante,
-  children,
-}: {
-  variante: 'euro' | 'depart' | 'bientot'
-  children: React.ReactNode
-}) {
-  const styles = {
-    euro: 'border-[#3a2a55] bg-violet/13 text-violet',
-    depart: 'border-[#28442c] bg-vert/11 text-vert',
-    bientot: 'border-soupe/35 bg-soupe/11 text-soupe',
-  }[variante]
-
-  return (
-    <span
-      className={`rounded border px-2.5 py-1 font-mono text-[10px] font-bold tracking-[1.2px] uppercase ${styles}`}
-    >
-      {children}
-    </span>
+    <p className="leading-tight">
+      <span
+        className={`font-mono font-bold ${classeTaille} ${gratuit ? 'text-vert' : 'text-or'}`}
+      >
+        {gratuit ? 'Gratuit' : formaterCoins(prixCoins)}
+      </span>
+      <span className="mt-1 block font-mono text-[10.5px] font-medium tracking-[.1em] text-gris uppercase">
+        {mention ?? (gratuit ? 'Offert' : 'coins')}
+      </span>
+    </p>
   )
 }

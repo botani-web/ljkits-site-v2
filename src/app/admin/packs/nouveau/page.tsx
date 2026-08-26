@@ -23,7 +23,7 @@ export default async function PageNouveauPack() {
         >
           ← Retour aux packs
         </Link>
-        <h1 className="mt-2 font-titre text-2xl uppercase">Nouveau pack</h1>
+        <h1 className="mt-2 font-titre text-2xl">Nouveau pack</h1>
       </div>
 
       <FormulairePack

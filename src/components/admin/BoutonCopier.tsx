@@ -20,7 +20,7 @@ export function BoutonCopier({ texte, libelle }: { texte: string; libelle: strin
     <button
       type="button"
       onClick={copier}
-      className="inline-flex min-h-11 items-center rounded-lg border border-bord px-3 text-[13px] font-semibold text-gris transition-colors hover:border-soupe hover:text-soupe sm:min-h-0 sm:py-1.5"
+      className="inline-flex min-h-11 items-center rounded-controle border border-bord px-3 text-[13px] font-semibold text-gris transition-colors hover:border-soupe hover:text-soupe sm:min-h-0 sm:py-1.5"
     >
       {copie ? '✓ Copié' : libelle}
     </button>

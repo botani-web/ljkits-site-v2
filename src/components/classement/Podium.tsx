@@ -1,106 +1,90 @@
-import Image from 'next/image'
-
+import { LignesLore } from '@/components/ui/LignesLore'
 import type { LigneClassement } from '@/lib/classement'
-import { urlAvatar } from '@/lib/avatar'
 import { formaterCoins, formaterRatio } from '@/lib/format'
 
 /**
- * Le podium : les trois premiers, mis en avant au-dessus de la liste.
+ * Le podium : les trois premiers, au-dessus de la liste.
  *
- * Affiché dans l'ordre 2 — 1 — 3, comme sur l'accueil : la première marche est
- * au centre et plus haute. Seuls la bordure, la pastille de rang et le cadre de
- * la tête prennent l'accent or / argent / bronze ; le reste de la carte suit la
- * palette habituelle (charbon sur bordure `bord`).
+ * Chaque marche porte son chiffre en très grand filigrane dans l'angle haut
+ * droit, et le lot que la place rapporte en pied. Or, argent, bronze — la
+ * première marche reçoit en plus un léger dégradé, c'est la seule différence
+ * de traitement entre les trois.
+ *
+ * Composant serveur : il n'a aucun état.
  */
 const MARCHES = [
   {
-    rang: 2,
-    bordure: 'border-argent/45',
-    pastille: 'bg-argent text-nuit',
-    cadre: 'border-argent/60',
-    valeur: 'text-argent',
+    bordure: 'border-or/50',
+    fond: 'bg-linear-160 from-or/10 to-braise',
+    chiffre: 'text-or/30',
+    nom: 'text-or',
   },
-  {
-    rang: 1,
-    bordure: 'border-or/60',
-    pastille: 'bg-linear-[135deg] from-soupe to-or text-nuit',
-    cadre: 'border-or',
-    valeur: 'text-or',
-  },
-  {
-    rang: 3,
-    bordure: 'border-bronze/50',
-    pastille: 'bg-bronze text-nuit',
-    cadre: 'border-bronze/60',
-    valeur: 'text-bronze',
-  },
+  { bordure: 'border-argent/30', fond: 'bg-braise', chiffre: 'text-argent/20', nom: 'text-argent' },
+  { bordure: 'border-bronze/30', fond: 'bg-braise', chiffre: 'text-bronze/20', nom: 'text-bronze' },
 ] as const
 
 export function Podium({
   lignes,
+  /** « points » ou « kills », affiché à côté de la valeur. */
   unite,
+  /** Sur le classement à vie : morts, ratio K/D et record de série. */
   avecDetails,
+  /** Le lot de chaque place, dans l'ordre. Vide sur le classement à vie. */
+  lots,
 }: {
   lignes: LigneClassement[]
-  /** « points » ou « kills », affiché sous la valeur. */
   unite: string
-  /** Sur le classement à vie : ratio K/D et record de série. */
   avecDetails: boolean
+  lots: string[]
 }) {
   return (
-    <div className="mb-6 grid items-end gap-4 sm:grid-cols-3">
-      {MARCHES.map((marche) => {
-        const joueur = lignes.find((ligne) => ligne.rang === marche.rang)
-        if (!joueur) return <span key={marche.rang} className="hidden sm:block" />
-
-        const premier = marche.rang === 1
+    <div className="grid gap-3.5 lg:grid-cols-3">
+      {lignes.slice(0, 3).map((ligne, index) => {
+        const marche = MARCHES[index]
 
         return (
           <article
-            key={marche.rang}
-            className={`relative rounded-xl border bg-charbon px-5 text-center ${marche.bordure} ${
-              premier ? 'pt-9 pb-7' : 'pt-7 pb-5'
-            }`}
+            key={ligne.pseudo}
+            className={`relative overflow-hidden rounded-carte border p-6.5 ${marche.bordure} ${marche.fond}`}
           >
-            <div
-              className={`absolute -top-3 left-1/2 -translate-x-1/2 rounded-full px-4 py-1 font-titre text-[13px] ${marche.pastille}`}
+            <span
+              aria-hidden="true"
+              className={`absolute top-4 right-5 font-titre text-[44px] leading-none max-[860px]:text-[34px] ${marche.chiffre}`}
             >
-              {marche.rang}
-            </div>
+              {index + 1}
+            </span>
 
-            <Image
-              src={urlAvatar(joueur.pseudo, premier ? 160 : 128)}
-              alt=""
-              width={premier ? 80 : 64}
-              height={premier ? 80 : 64}
-              unoptimized
-              className={`mx-auto mb-3 rounded-xl border-2 [image-rendering:pixelated] ${marche.cadre} ${
-                premier ? 'size-20' : 'size-16'
-              }`}
-            />
+            <h3
+              className={`truncate pr-14 font-titre text-[clamp(17px,2.2vw,23px)] tracking-[-.01em] ${marche.nom}`}
+            >
+              {ligne.pseudo}
+            </h3>
 
-            <div className={`truncate font-bold ${premier ? 'text-[18px]' : 'text-[16px]'}`}>
-              {joueur.pseudo}
-            </div>
+            <p className="mt-2.5 font-mono text-base font-bold text-soupe">
+              {formaterCoins(ligne.valeur)} {unite}
+            </p>
 
-            <div className={`mt-1.5 font-titre ${premier ? 'text-2xl' : 'text-xl'} ${marche.valeur}`}>
-              {formaterCoins(joueur.valeur)}
-            </div>
-            <div className="font-mono text-[10.5px] tracking-[1.2px] text-gris uppercase">
-              {unite}
-            </div>
+            {/*
+              Sur la semaine et le mois, la base ne donne que le total de
+              points : pas de lignes de détail à afficher. LignesLore ne rend
+              rien sur un tableau vide, la marche reste simplement plus courte.
+            */}
+            {avecDetails && (
+              <LignesLore
+                lignes={[
+                  { libelle: 'Kills', valeur: formaterCoins(ligne.valeur) },
+                  { libelle: 'Morts', valeur: formaterCoins(ligne.morts ?? 0) },
+                  { libelle: 'K/D', valeur: formaterRatio(ligne.valeur, ligne.morts ?? 0) },
+                  { libelle: 'Record de série', valeur: String(ligne.recordSerie ?? 0) },
+                ]}
+                taille="compacte"
+              />
+            )}
 
-            {avecDetails && joueur.morts !== null && (
-              <div className="mt-3 flex justify-center gap-4 border-t border-bord pt-3 font-mono text-[11px] text-gris">
-                <span>
-                  K/D <b className="font-bold text-creme">{formaterRatio(joueur.valeur, joueur.morts)}</b>
-                </span>
-                {joueur.recordSerie !== null && (
-                  <span>
-                    Série <b className="font-bold text-creme">{joueur.recordSerie}</b>
-                  </span>
-                )}
-              </div>
+            {lots[index] && (
+              <p className="mt-3.5 border-t border-bord pt-3 font-mono text-[11.5px] leading-relaxed text-vert">
+                {lots[index]}
+              </p>
             )}
           </article>
         )

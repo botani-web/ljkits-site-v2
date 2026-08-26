@@ -58,13 +58,13 @@ export function FormulaireQuestion({
   return (
     <form action={envoyer} className="flex max-w-2xl flex-col gap-6">
       {etat.erreur && (
-        <p role="alert" className="rounded-lg border border-rouge/40 bg-rouge/10 px-4 py-3 text-sm text-rouge">
+        <p role="alert" className="rounded-controle border border-rouge/40 bg-rouge/10 px-4 py-3 text-sm text-rouge">
           {etat.erreur}
         </p>
       )}
 
       {reponsesRattachees > 0 && (
-        <p className="rounded-lg border border-bord bg-braise px-4 py-3 text-[13px] text-gris">
+        <p className="rounded-controle border border-bord bg-braise px-4 py-3 text-[13px] text-gris">
           {reponsesRattachees} réponse{reponsesRattachees > 1 ? 's' : ''} déjà
           enregistrée{reponsesRattachees > 1 ? 's' : ''} pour cette question. Les
           modifier ici ne change <strong className="text-creme">rien</strong> aux
@@ -81,7 +81,7 @@ export function FormulaireQuestion({
           id="sectionId"
           name="sectionId"
           defaultValue={question?.sectionId ?? sections[0]?.id}
-          className="w-full rounded-lg border border-bord bg-nuit px-3.5 py-2.5 text-[15px] text-creme focus:border-soupe focus:outline-none"
+          className="w-full rounded-controle border border-bord bg-nuit px-3.5 py-2.5 text-[15px] text-creme focus:border-soupe focus:outline-none"
         >
           {sections.map((section) => (
             <option key={section.id} value={section.id}>
@@ -124,7 +124,7 @@ export function FormulaireQuestion({
           name="type"
           value={type}
           onChange={(evenement) => setType(evenement.target.value as TypeQuestion)}
-          className="w-full rounded-lg border border-bord bg-nuit px-3.5 py-2.5 text-[15px] text-creme focus:border-soupe focus:outline-none"
+          className="w-full rounded-controle border border-bord bg-nuit px-3.5 py-2.5 text-[15px] text-creme focus:border-soupe focus:outline-none"
         >
           {TYPES.map((valeur) => (
             <option key={valeur} value={valeur}>

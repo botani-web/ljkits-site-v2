@@ -64,7 +64,7 @@ export function ListeCaracteristiques({
               onChange={(e) => modifier(ligne.cle, 'libelle', e.target.value)}
               placeholder="Libellé"
               aria-label="Libellé de la caractéristique"
-              className="w-2/5 min-w-0 rounded-lg border border-bord bg-nuit px-3 py-2 text-sm text-creme placeholder:text-gris/60 focus:border-soupe focus:outline-none"
+              className="w-2/5 min-w-0 rounded-controle border border-bord bg-nuit px-3 py-2 text-sm text-creme placeholder:text-gris/60 focus:border-soupe focus:outline-none"
             />
             <input
               name="caracValeur"
@@ -72,13 +72,13 @@ export function ListeCaracteristiques({
               onChange={(e) => modifier(ligne.cle, 'valeur', e.target.value)}
               placeholder="Valeur"
               aria-label="Valeur de la caractéristique"
-              className="min-w-0 flex-1 rounded-lg border border-bord bg-nuit px-3 py-2 text-sm text-creme placeholder:text-gris/60 focus:border-soupe focus:outline-none"
+              className="min-w-0 flex-1 rounded-controle border border-bord bg-nuit px-3 py-2 text-sm text-creme placeholder:text-gris/60 focus:border-soupe focus:outline-none"
             />
             <button
               type="button"
               onClick={() => retirer(ligne.cle)}
               aria-label="Retirer cette ligne"
-              className="shrink-0 rounded-lg border border-bord px-3 text-gris transition-colors hover:border-rouge hover:text-rouge"
+              className="shrink-0 rounded-controle border border-bord px-3 text-gris transition-colors hover:border-rouge hover:text-rouge"
             >
               ✕
             </button>
@@ -90,7 +90,7 @@ export function ListeCaracteristiques({
         <button
           type="button"
           onClick={ajouter}
-          className="mt-2.5 rounded-lg border border-bord px-3.5 py-2 text-[13px] font-semibold text-gris transition-colors hover:border-soupe hover:text-soupe"
+          className="mt-2.5 rounded-controle border border-bord px-3.5 py-2 text-[13px] font-semibold text-gris transition-colors hover:border-soupe hover:text-soupe"
         >
           + Ajouter une ligne
         </button>

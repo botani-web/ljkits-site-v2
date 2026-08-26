@@ -41,7 +41,7 @@ export default async function TableauDeBordCommandes({
   return (
     <>
       <div className="mb-6">
-        <h1 className="font-titre text-2xl uppercase">Les commandes</h1>
+        <h1 className="font-titre text-2xl">Les commandes</h1>
         <p className="mt-1 text-sm text-gris">
           {total} commande{total > 1 ? 's' : ''} au total. Tant que le paiement n’est pas
           branché, elles restent en attente et se livrent à la main.
@@ -58,10 +58,10 @@ export default async function TableauDeBordCommandes({
             <Link
               key={cle}
               href={cle === 'TOUTES' ? '/admin/commandes' : `/admin/commandes?statut=${cle}`}
-              className={`rounded-lg border px-3.5 py-2 font-mono text-[12.5px] font-bold tracking-wide uppercase transition-colors ${
+              className={`rounded-controle border px-3.5 py-2 font-mono text-[12.5px] font-bold tracking-wide uppercase transition-colors ${
                 actif
-                  ? 'border-soupe bg-soupe text-[#1a0f00]'
-                  : 'border-bord text-gris hover:border-[#3d2f5c] hover:text-creme'
+                  ? 'border-soupe bg-soupe text-encre'
+                  : 'border-bord text-gris hover:border-soupe hover:text-creme'
               }`}
             >
               {cle === 'TOUTES' ? 'Toutes' : STATUTS[cle].label} ({nombre})
@@ -71,7 +71,7 @@ export default async function TableauDeBordCommandes({
       </div>
 
       {commandes.length === 0 ? (
-        <p className="rounded-2xl border border-bord bg-charbon px-6 py-12 text-center text-gris">
+        <p className="rounded-carte border border-bord bg-charbon px-6 py-12 text-center text-gris">
           {filtre === null
             ? 'Aucune commande pour l’instant.'
             : `Aucune commande avec le statut « ${STATUTS[filtre].label} ».`}
@@ -82,7 +82,7 @@ export default async function TableauDeBordCommandes({
             <Link
               key={commande.id}
               href={`/admin/commandes/${commande.id}`}
-              className="flex flex-wrap items-center gap-4 rounded-xl border border-bord bg-charbon px-4 py-3.5 transition-colors hover:border-[#43305E]"
+              className="flex flex-wrap items-center gap-4 rounded-carte border border-bord bg-charbon px-4 py-3.5 transition-colors hover:border-soupe"
             >
               <div className="font-mono text-[13px] font-bold text-or">
                 {formaterNumeroCommande(commande.numero)}

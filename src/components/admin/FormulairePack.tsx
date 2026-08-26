@@ -56,8 +56,8 @@ export function FormulairePack({
     <form action={envoyer} className="flex flex-col gap-6">
       <MessageErreurGlobale message={etat.erreur} />
 
-      <section className="flex flex-col gap-4 rounded-2xl border border-bord bg-charbon px-6 py-6">
-        <h2 className="font-titre text-base uppercase">Identité</h2>
+      <section className="flex flex-col gap-4 rounded-carte border border-bord bg-charbon px-6 py-6">
+        <h2 className="font-titre text-base">Identité</h2>
 
         <div className="grid gap-4 sm:grid-cols-2">
           <ChampTexte
@@ -90,8 +90,8 @@ export function FormulairePack({
         />
       </section>
 
-      <section className="flex flex-col gap-4 rounded-2xl border border-bord bg-charbon px-6 py-6">
-        <h2 className="font-titre text-base uppercase">Prix et disponibilité</h2>
+      <section className="flex flex-col gap-4 rounded-carte border border-bord bg-charbon px-6 py-6">
+        <h2 className="font-titre text-base">Prix et disponibilité</h2>
 
         <div className="grid gap-4 sm:grid-cols-2">
           <ChampTexte
@@ -131,8 +131,8 @@ export function FormulairePack({
         </div>
       </section>
 
-      <section className="rounded-2xl border border-bord bg-charbon px-6 py-6">
-        <h2 className="mb-1.5 font-titre text-base uppercase">Kits inclus</h2>
+      <section className="rounded-carte border border-bord bg-charbon px-6 py-6">
+        <h2 className="mb-1.5 font-titre text-base">Kits inclus</h2>
         <p className="mb-4 text-[13px] text-gris">
           Sert à documenter le contenu du pack. La livraison, elle, dépend uniquement des
           commandes console saisies plus bas.
@@ -146,7 +146,7 @@ export function FormulairePack({
               <label
                 key={kit.id}
                 htmlFor={`kit-${kit.id}`}
-                className="flex cursor-pointer items-center gap-2.5 rounded-lg border border-bord bg-nuit px-3 py-2.5 transition-colors hover:border-[#43305E]"
+                className="flex cursor-pointer items-center gap-2.5 rounded-controle border border-bord bg-nuit px-3 py-2.5 transition-colors hover:border-soupe"
               >
                 <input
                   id={`kit-${kit.id}`}
@@ -170,8 +170,8 @@ export function FormulairePack({
         )}
       </section>
 
-      <section className="rounded-2xl border border-bord bg-charbon px-6 py-6">
-        <h2 className="mb-4 font-titre text-base uppercase">Vente et livraison</h2>
+      <section className="rounded-carte border border-bord bg-charbon px-6 py-6">
+        <h2 className="mb-4 font-titre text-base">Vente et livraison</h2>
         <ChampsVenteEtLivraison
           tebexPackageId={pack?.tebexPackageId}
           erreurs={etat.champs}
@@ -182,7 +182,7 @@ export function FormulairePack({
         <BoutonSoumettre>{libelleBouton}</BoutonSoumettre>
         <Link
           href="/admin/packs"
-          className="rounded-lg border border-bord px-4 py-2.5 text-sm font-semibold text-gris transition-colors hover:text-creme"
+          className="rounded-controle border border-bord px-4 py-2.5 text-sm font-semibold text-gris transition-colors hover:text-creme"
         >
           Annuler
         </Link>

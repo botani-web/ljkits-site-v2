@@ -2,78 +2,93 @@
 
 import { useEffect, useState } from 'react'
 
+import { Panneau } from '@/components/ui/Panneau'
+
 /**
- * Décompte jusqu'à la prochaine remise à zéro du classement.
+ * Décompte jusqu'à la prochaine remise à zéro du classement, en panneau de
+ * quatre cases.
  *
  * Composant client, et pas une valeur calculée au rendu : la page est statique
  * avec une revalidation de 60 secondes, un décompte figé au build serait faux
  * dès la minute suivante.
  *
  * L'heure vient du navigateur, donc elle diffère forcément de celle du serveur.
- * Le premier rendu affiche donc un tiret, et le décompte se remplit après le
+ * Le premier rendu affiche donc des tirets, et le décompte se remplit après le
  * montage — sinon React signalerait une divergence d'hydratation.
+ *
+ * ⚠ `finUnix` vient de la table `config_classement`, écrite par le serveur
+ * Minecraft. Jamais d'une date en dur : le cycle mensuel est glissant, et le
+ * serveur peut décaler un reset.
  */
 export function CompteARebours({
-  /** Timestamp unix en SECONDES de la prochaine remise à zéro. */
+  /** Timestamp unix en SECONDES de la prochaine remise à zéro, ou null à vie. */
   finUnix,
-  libelle,
+  titre,
+  pied,
 }: {
-  finUnix: number
-  libelle: string
+  finUnix: number | null
+  titre: string
+  pied: string
 }) {
   const [restant, setRestant] = useState<number | null>(null)
 
   useEffect(() => {
+    if (finUnix === null) return
+
     function calculer() {
-      setRestant(finUnix - Math.floor(Date.now() / 1000))
+      setRestant(finUnix! - Math.floor(Date.now() / 1000))
     }
 
     calculer()
-    // Chaque seconde : la minute affichée bascule ainsi pile à l'heure.
+    // Chaque seconde : la seconde affichée bascule ainsi pile à l'heure.
     const minuteur = setInterval(calculer, 1000)
     return () => clearInterval(minuteur)
   }, [finUnix])
 
+  const cases = decouper(finUnix, restant)
+
   return (
-    <div className="flex flex-wrap items-center justify-center gap-2.5 rounded-xl border border-bord bg-charbon px-5 py-3">
-      <svg
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        aria-hidden="true"
-        className="size-4 text-soupe"
-      >
-        <circle cx="12" cy="12" r="9" />
-        <path d="M12 7v5l3 2" />
-      </svg>
-
-      <span className="font-mono text-[11px] tracking-[1.4px] text-gris uppercase">
-        {libelle}
-      </span>
-
-      <span aria-live="polite" className="font-titre text-[15px] text-or">
-        {formater(restant)}
-      </span>
-    </div>
+    <Panneau titre={titre} pied={<p className="font-mono text-[11px] text-gris">{pied}</p>}>
+      <div className="flex gap-2 p-4.5">
+        {cases.map((une) => (
+          <div
+            key={une.unite}
+            className="flex-1 rounded-controle border border-bord bg-nuit px-1 py-3 text-center"
+          >
+            <div className="font-mono text-[clamp(19px,2.4vw,24px)] leading-none font-bold text-or">
+              {une.valeur}
+            </div>
+            <div className="mt-1.75 font-mono text-[9px] tracking-[.14em] text-gris uppercase">
+              {une.unite}
+            </div>
+          </div>
+        ))}
+      </div>
+    </Panneau>
   )
 }
 
 /**
- * `null` = pas encore monté côté client.
- * Une valeur négative ou nulle = le serveur n'a pas encore repoussé la date ;
- * on annonce une remise à zéro imminente plutôt qu'un décompte négatif.
+ * Découpe le reste en jours / heures / minutes / secondes.
+ *
+ * `null` = pas encore monté côté client, ou classement à vie : quatre tirets,
+ * ou quatre infinis. Une valeur négative signifie que le serveur Minecraft n'a
+ * pas encore repoussé la date — on affiche des zéros plutôt qu'un décompte
+ * négatif, la remise à zéro est imminente.
  */
-function formater(restant: number | null): string {
-  if (restant === null) return '—'
-  if (restant <= 0) return 'imminente'
+function decouper(finUnix: number | null, restant: number | null) {
+  const unites = ['Jours', 'Heures', 'Min', 'Sec']
 
-  const jours = Math.floor(restant / 86_400)
-  const heures = Math.floor((restant % 86_400) / 3_600)
-  const minutes = Math.floor((restant % 3_600) / 60)
+  if (finUnix === null) return unites.map((unite) => ({ unite, valeur: '∞' }))
+  if (restant === null) return unites.map((unite) => ({ unite, valeur: '—' }))
 
-  if (jours > 0) return `${jours} j ${heures} h ${minutes} min`
-  if (heures > 0) return `${heures} h ${minutes} min`
-  return `${minutes} min`
+  const seconds = Math.max(0, restant)
+  const deuxChiffres = (valeur: number) => String(valeur).padStart(2, '0')
+
+  return [
+    { unite: 'Jours', valeur: String(Math.floor(seconds / 86_400)) },
+    { unite: 'Heures', valeur: deuxChiffres(Math.floor((seconds % 86_400) / 3_600)) },
+    { unite: 'Min', valeur: deuxChiffres(Math.floor((seconds % 3_600) / 60)) },
+    { unite: 'Sec', valeur: deuxChiffres(seconds % 60) },
+  ]
 }

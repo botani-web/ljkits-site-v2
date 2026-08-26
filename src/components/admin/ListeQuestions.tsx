@@ -48,7 +48,7 @@ function resumerBornes(question: {
 export function ListeQuestions({ sections }: { sections: SectionAvecQuestions[] }) {
   if (sections.length === 0) {
     return (
-      <p className="rounded-2xl border border-bord bg-charbon px-6 py-12 text-center text-gris">
+      <p className="rounded-carte border border-bord bg-charbon px-6 py-12 text-center text-gris">
         Aucune section. Crée-en une pour commencer le questionnaire.
       </p>
     )
@@ -59,7 +59,7 @@ export function ListeQuestions({ sections }: { sections: SectionAvecQuestions[] 
       {sections.map((section, indexSection) => (
         <section
           key={section.id}
-          className={`rounded-xl border bg-charbon ${
+          className={`rounded-carte border bg-charbon ${
             section.actif ? 'border-bord' : 'border-bord/50 opacity-60'
           }`}
         >
@@ -79,7 +79,7 @@ export function ListeQuestions({ sections }: { sections: SectionAvecQuestions[] 
             </div>
 
             <div className="min-w-[160px] flex-1">
-              <h3 className="font-titre text-[15px] text-creme uppercase">{section.nom}</h3>
+              <h3 className="font-titre text-[15px] text-creme">{section.nom}</h3>
               <p className="mt-0.5 text-[13px] text-gris">
                 {section.questions.length} question
                 {section.questions.length > 1 ? 's' : ''}

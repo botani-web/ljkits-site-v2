@@ -2,6 +2,8 @@
 
 import { useFormStatus } from 'react-dom'
 
+import { classesBouton } from '@/components/ui/Bouton'
+
 /**
  * Bouton d'envoi qui se désactive pendant que la Server Action tourne.
  * useFormStatus() lit l'état du <form> parent : ce composant doit donc être
@@ -20,7 +22,11 @@ export function BoutonSoumettre({
     <button
       type="submit"
       disabled={pending}
-      className="inline-flex min-h-11 items-center justify-center rounded-lg bg-linear-[135deg] from-soupe to-or px-5 text-sm font-bold text-[#1A1005] transition-all hover:shadow-[0_4px_18px_rgba(254,147,1,.35)] disabled:cursor-not-allowed disabled:opacity-60 disabled:shadow-none"
+      className={classesBouton({
+        variante: 'plein',
+        className:
+          'disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:bg-soupe disabled:hover:shadow-none',
+      })}
     >
       {pending ? enCours : children}
     </button>

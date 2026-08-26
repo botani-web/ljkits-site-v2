@@ -36,7 +36,7 @@ export default async function PageModifierPack({
         >
           ← Retour aux packs
         </Link>
-        <h1 className="mt-2 font-titre text-2xl uppercase">Modifier « {pack.nom} »</h1>
+        <h1 className="mt-2 font-titre text-2xl">Modifier « {pack.nom} »</h1>
       </div>
 
       <FormulairePack

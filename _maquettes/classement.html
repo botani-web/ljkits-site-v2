@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Classement — LJKITS</title>
+<meta name="description" content="Le classement complet de LJKITS : top 100 hebdomadaire, mensuel et à vie, détail des points, récompenses et palmarès des anciens champions.">
+<meta name="theme-color" content="#0E061F">
+
+<link rel="icon" type="image/png" href="logo-icon.png">
+<link rel="apple-touch-icon" href="logo-icon.png">
+
+<meta property="og:type" content="website">
+<meta property="og:locale" content="fr_FR">
+<meta property="og:site_name" content="LJKITS">
+<meta property="og:title" content="Classement — LJKITS">
+<meta property="og:description" content="Top 100, détail des points, récompenses et palmarès.">
+<meta property="og:url" content="https://ljkits.eu/classement">
+<meta property="og:image" content="https://ljkits.eu/og.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Outfit:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --noir:#0E061F;
+  --charbon:#171029;
+  --braise:#211736;
+  --bord:#2E2245;
+  --gris:#9E93AC;
+  --creme:#F2E8D9;
+  --soupe:#FE9301;
+  --or:#FDC003;
+  --oni:#E92813;
+  --vert:#5BE06B;
+  --argent:#C9C3D4;
+  --bronze:#C08A4A;
+
+  --mono:'JetBrains Mono',ui-monospace,monospace;
+  --corps:'Outfit',system-ui,sans-serif;
+  --titre:'Bungee',system-ui,sans-serif;
+
+  --gouttiere:clamp(18px,4vw,44px);
+  --large:1240px;
+}
+
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  background:var(--noir);color:var(--creme);
+  font-family:var(--corps);font-size:16px;line-height:1.6;
+  -webkit-font-smoothing:antialiased;overflow-x:hidden;
+}
+a{color:inherit;text-decoration:none}
+img{max-width:100%;display:block}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer;border:0;background:none}
+:focus-visible{outline:2px solid var(--or);outline-offset:3px;border-radius:2px}
+
+.enveloppe{max-width:var(--large);margin:0 auto;padding-left:var(--gouttiere);padding-right:var(--gouttiere)}
+.etiquette{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:var(--soupe)}
+.titre-section{font-family:var(--titre);font-size:clamp(23px,3.4vw,36px);line-height:1.06;letter-spacing:-.01em;margin-top:12px}
+.titre-section .or{color:var(--or)}
+.titre-section .oni{color:var(--oni)}
+.chapeau{color:var(--gris);max-width:62ch;margin-top:14px;font-size:clamp(15px,1.6vw,16.5px)}
+.tete-section{margin-bottom:clamp(26px,3.5vw,42px)}
+section{padding:clamp(56px,7vw,96px) 0;position:relative}
+
+/* ---------- navigation ---------- */
+.nav{position:sticky;top:0;z-index:80;background:rgba(14,6,31,.86);backdrop-filter:blur(14px);border-bottom:1px solid var(--bord)}
+.nav-int{max-width:var(--large);margin:0 auto;padding:12px var(--gouttiere);display:flex;align-items:center;gap:26px}
+.nav-logo img{height:24px;width:auto}
+.nav-liens{display:flex;gap:26px;margin-left:8px}
+.nav-liens a{font-family:var(--mono);font-size:12px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--gris);transition:color .18s}
+.nav-liens a:hover{color:var(--creme)}
+.nav-liens a[aria-current="page"]{color:var(--soupe)}
+.nav-droite{margin-left:auto;display:flex;align-items:center;gap:10px}
+
+.bouton{display:inline-flex;align-items:center;gap:9px;font-family:var(--mono);font-size:12.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:11px 18px;border-radius:4px;transition:transform .16s,background .16s,border-color .16s}
+.bouton:active{transform:translateY(1px)}
+.bouton-plein{background:var(--soupe);color:#180C02}
+.bouton-plein:hover{background:var(--or)}
+.bouton-vide{border:1px solid var(--bord);color:var(--creme)}
+.bouton-vide:hover{border-color:var(--soupe);background:var(--braise)}
+.bouton svg{width:16px;height:16px;fill:currentColor;flex:none}
+.nav-burger{display:none;padding:8px;border:1px solid var(--bord);border-radius:4px}
+.nav-burger svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2}
+
+/* ---------- hero ---------- */
+.hero{padding:clamp(48px,6vw,80px) 0 clamp(30px,4vw,42px);position:relative;overflow:hidden}
+.hero::before{
+  content:"";position:absolute;inset:-40% -10% auto -10%;height:600px;
+  background:radial-gradient(50% 48% at 24% 28%,rgba(253,192,3,.13),transparent 70%),
+             radial-gradient(42% 40% at 80% 6%,rgba(233,40,19,.12),transparent 72%);
+  pointer-events:none;
+}
+.hero-int{position:relative;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,330px);gap:clamp(28px,4vw,56px);align-items:end}
+.hero h1{font-family:var(--titre);font-size:clamp(36px,6.4vw,68px);line-height:.96;letter-spacing:-.02em;margin-top:16px}
+.hero h1 .or{color:var(--or)}
+.hero p{color:var(--gris);font-size:clamp(16px,1.8vw,18px);max-width:54ch;margin-top:18px}
+.hero p b{color:var(--creme);font-weight:600}
+
+/* compte à rebours */
+.rebours{border:1px solid var(--bord);border-radius:5px;background:var(--charbon);overflow:hidden}
+.rebours-tete{padding:13px 18px;border-bottom:1px solid var(--bord);background:var(--braise);font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--soupe)}
+.rebours-corps{padding:18px;display:flex;gap:8px}
+.rb-case{flex:1;text-align:center;border:1px solid var(--bord);border-radius:4px;background:var(--noir);padding:12px 4px}
+.rb-n{font-family:var(--mono);font-size:clamp(19px,2.4vw,24px);font-weight:700;color:var(--or);line-height:1}
+.rb-u{font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--gris);margin-top:7px}
+.rebours-pied{padding:12px 18px;border-top:1px solid var(--bord);font-family:var(--mono);font-size:11px;color:var(--gris);background:rgba(14,6,31,.5)}
+
+/* ---------- barre d'outils ---------- */
+.outils{position:sticky;top:49px;z-index:60;background:rgba(14,6,31,.94);backdrop-filter:blur(12px);border-top:1px solid var(--bord);border-bottom:1px solid var(--bord);padding:14px 0}
+.outils-int{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+.onglets{display:flex;gap:6px;flex-wrap:wrap}
+.onglet{font-family:var(--mono);font-size:11.5px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;padding:10px 16px;border:1px solid var(--bord);border-radius:4px;color:var(--gris);transition:.18s}
+.onglet:hover{color:var(--creme);border-color:var(--gris)}
+.onglet[aria-selected="true"]{background:var(--soupe);border-color:var(--soupe);color:#180C02}
+
+.recherche{display:flex;align-items:center;gap:9px;margin-left:auto;border:1px solid var(--bord);border-radius:4px;background:var(--charbon);padding:0 12px;min-width:230px}
+.recherche svg{width:15px;height:15px;stroke:var(--gris);fill:none;stroke-width:2;flex:none}
+.recherche input{border:0;background:none;outline:none;padding:10px 0;width:100%;font-family:var(--mono);font-size:12.5px}
+.recherche input::placeholder{color:var(--gris)}
+
+/* ---------- carte "ta position" ---------- */
+.ma-place{
+  border:1px solid var(--or);border-radius:5px;
+  background:linear-gradient(150deg,rgba(253,192,3,.08),var(--charbon) 62%);
+  padding:22px 24px;margin-top:26px;
+  display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:22px;align-items:center;
+}
+.mp-rang{font-family:var(--titre);font-size:clamp(30px,4vw,44px);color:var(--or);line-height:1}
+.mp-rang small{display:block;font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--gris);margin-top:6px}
+.mp-nom{font-family:var(--titre);font-size:clamp(18px,2.4vw,24px);letter-spacing:-.01em}
+.mp-detail{font-family:var(--mono);font-size:11.5px;color:var(--gris);margin-top:6px}
+.mp-ecart{font-family:var(--mono);font-size:12px;color:var(--vert);margin-top:8px}
+.mp-pts{font-family:var(--mono);font-size:clamp(22px,3vw,30px);font-weight:700;color:var(--soupe);text-align:right;line-height:1}
+.mp-pts small{display:block;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--gris);font-weight:500;margin-top:6px}
+.mp-fermer{position:absolute;top:12px;right:14px;font-family:var(--mono);font-size:16px;color:var(--gris)}
+
+/* ---------- podium ---------- */
+.podium{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:clamp(26px,3.5vw,38px)}
+.marche{position:relative;overflow:hidden;border:1px solid var(--bord);border-radius:5px;background:var(--braise);padding:26px 24px}
+.marche.m1{border-color:rgba(253,192,3,.5);background:linear-gradient(160deg,rgba(253,192,3,.1),var(--braise) 58%)}
+.marche.m2{border-color:rgba(201,195,212,.32)}
+.marche.m3{border-color:rgba(192,138,74,.32)}
+.marche-place{position:absolute;top:16px;right:20px;font-family:var(--titre);font-size:44px;line-height:1;color:var(--bord)}
+.marche.m1 .marche-place{color:rgba(253,192,3,.32)}
+.marche.m2 .marche-place{color:rgba(201,195,212,.2)}
+.marche.m3 .marche-place{color:rgba(192,138,74,.22)}
+.marche-nom{font-family:var(--titre);font-size:clamp(17px,2.2vw,23px);letter-spacing:-.01em;padding-right:54px}
+.marche.m1 .marche-nom{color:var(--or)}
+.marche.m2 .marche-nom{color:var(--argent)}
+.marche.m3 .marche-nom{color:var(--bronze)}
+.marche-pts{font-family:var(--mono);font-size:16px;font-weight:700;color:var(--soupe);margin-top:10px}
+.marche-lignes{margin-top:16px;border-top:1px solid var(--bord);padding-top:12px}
+.marche-l{display:flex;gap:12px;font-family:var(--mono);font-size:11.5px;padding:3px 0}
+.marche-l span:first-child{color:var(--gris)}
+.marche-l span:last-child{margin-left:auto;color:var(--creme);font-weight:700}
+.marche-lot{margin-top:14px;padding-top:12px;border-top:1px solid var(--bord);font-family:var(--mono);font-size:11.5px;color:var(--vert);line-height:1.5}
+
+/* ---------- table ---------- */
+.table{border:1px solid var(--bord);border-radius:5px;overflow:hidden;background:var(--charbon);margin-top:14px}
+.table-entete{
+  display:grid;grid-template-columns:56px minmax(0,1fr) repeat(4,64px) 92px 28px;
+  gap:12px;padding:12px 18px;border-bottom:1px solid var(--bord);background:var(--braise);
+  font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--gris);
+}
+.table-entete span:nth-child(n+3):nth-child(-n+7){text-align:right}
+
+.ligne{border-bottom:1px solid var(--bord)}
+.ligne:last-child{border-bottom:0}
+.ligne-tete{
+  position:relative;width:100%;text-align:left;
+  display:grid;grid-template-columns:56px minmax(0,1fr) repeat(4,64px) 92px 28px;
+  gap:12px;padding:13px 18px;align-items:center;transition:background .16s;
+}
+.ligne-tete:hover{background:var(--braise)}
+.ligne.moi .ligne-tete{background:rgba(253,192,3,.07)}
+.ligne.moi .ligne-tete::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--or)}
+
+/* barre de proportion en fond */
+.ligne-jauge{position:absolute;left:0;top:0;bottom:0;background:rgba(254,147,1,.055);pointer-events:none}
+
+.c-rang{font-family:var(--mono);font-size:13px;color:var(--gris);position:relative}
+.c-rang.top3{color:var(--or);font-weight:700}
+.c-nom{position:relative;min-width:0}
+.c-pseudo{font-weight:600;font-size:15.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.c-grade{font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;margin-left:8px}
+.g-shogun{color:#B98BE0}
+.g-samourai{color:var(--or)}
+.g-ronin{color:var(--creme)}
+.c-num{font-family:var(--mono);font-size:13px;color:var(--gris);text-align:right;position:relative}
+.c-pts{font-family:var(--mono);font-size:15px;font-weight:700;color:var(--soupe);text-align:right;position:relative}
+.c-fleche{font-family:var(--mono);font-size:13px;color:var(--gris);text-align:center;position:relative;transition:transform .2s}
+.ligne.ouvert .c-fleche{transform:rotate(90deg);color:var(--soupe)}
+
+.detail{display:none;padding:6px 18px 22px;background:var(--braise);border-top:1px solid var(--bord)}
+.ligne.ouvert .detail{display:block}
+.detail-grille{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:14px}
+.det{border:1px solid var(--bord);border-radius:4px;background:var(--noir);padding:14px 16px}
+.det-lbl{font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--gris)}
+.det-val{font-family:var(--mono);font-size:19px;font-weight:700;margin-top:8px;color:var(--creme)}
+.det-pts{font-family:var(--mono);font-size:11px;color:var(--soupe);margin-top:5px}
+.det-barre{height:4px;border-radius:2px;background:var(--bord);margin-top:10px;overflow:hidden}
+.det-barre i{display:block;height:100%;background:var(--soupe)}
+.detail-note{font-family:var(--mono);font-size:11px;color:var(--gris);margin-top:14px;line-height:1.6}
+
+.charger{width:100%;padding:16px;font-family:var(--mono);font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--soupe);border-top:1px solid var(--bord);background:var(--braise);transition:background .16s}
+.charger:hover{background:var(--bord)}
+
+.aucun{border:1px dashed var(--bord);border-radius:5px;padding:48px 24px;text-align:center;margin-top:14px}
+.aucun p{font-family:var(--mono);font-size:13px;color:var(--gris)}
+.aucun button{margin-top:14px;font-family:var(--mono);font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--soupe);border-bottom:1px solid var(--soupe);padding-bottom:2px}
+
+/* ---------- barème ---------- */
+.bareme{background:var(--charbon);border-top:1px solid var(--bord);border-bottom:1px solid var(--bord)}
+.bareme-grille{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:clamp(24px,3vw,34px)}
+.br{border:1px solid var(--bord);border-radius:5px;background:var(--braise);padding:24px 22px}
+.br-n{font-family:var(--titre);font-size:clamp(26px,3.4vw,36px);color:var(--or);line-height:1}
+.br h3{font-family:var(--titre);font-size:15px;margin-top:14px}
+.br p{color:var(--gris);font-size:14px;margin-top:9px}
+.br-note{font-family:var(--mono);font-size:11px;color:var(--gris);margin-top:12px;padding-top:10px;border-top:1px solid var(--bord)}
+
+.antifarm{border:1px solid rgba(233,40,19,.4);border-radius:5px;background:repeating-linear-gradient(135deg,rgba(233,40,19,.05) 0 10px,transparent 10px 22px),var(--braise);padding:24px 26px;margin-top:14px;display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap}
+.antifarm h3{font-family:var(--titre);font-size:16px;color:var(--oni);flex:none}
+.antifarm p{color:var(--gris);font-size:14.5px;flex:1 1 380px}
+.antifarm b{color:var(--creme);font-weight:600}
+
+/* ---------- récompenses ---------- */
+.lots{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:clamp(24px,3vw,34px)}
+.lot-bloc{border:1px solid var(--bord);border-radius:5px;background:var(--charbon);overflow:hidden}
+.lot-tete{padding:18px 22px;border-bottom:1px solid var(--bord);background:var(--braise)}
+.lot-tete h3{font-family:var(--titre);font-size:17px}
+.lot-tete .quand{font-family:var(--mono);font-size:11px;color:var(--gris);margin-top:6px;letter-spacing:.06em}
+.lot-l{display:grid;grid-template-columns:52px 1fr auto;gap:14px;align-items:center;padding:13px 22px;border-bottom:1px solid var(--bord)}
+.lot-l:last-child{border-bottom:0}
+.lot-rang{font-family:var(--mono);font-size:12.5px;font-weight:700;color:var(--gris)}
+.lot-l.or .lot-rang{color:var(--or)}
+.lot-l.ar .lot-rang{color:var(--argent)}
+.lot-l.br .lot-rang{color:var(--bronze)}
+.lot-quoi{font-family:var(--mono);font-size:12.5px;color:var(--creme);font-weight:700}
+.lot-plus{font-family:var(--mono);font-size:11px;color:var(--vert);text-align:right}
+
+/* ---------- reset ---------- */
+.reset-duo{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:clamp(24px,3vw,34px)}
+.rs{border:1px solid var(--bord);border-radius:5px;background:var(--braise);padding:26px 24px}
+.rs.garde{border-color:rgba(91,224,107,.3)}
+.rs.perd{border-color:rgba(233,40,19,.3)}
+.rs h3{font-family:var(--titre);font-size:16px}
+.rs.garde h3{color:var(--vert)}
+.rs.perd h3{color:var(--oni)}
+.rs ul{list-style:none;margin-top:14px}
+.rs li{display:flex;gap:12px;padding:8px 0;border-top:1px solid var(--bord);color:var(--gris);font-size:15px}
+.rs li:first-child{border-top:0;padding-top:0}
+.rs li::before{content:"✓";font-family:var(--mono);font-weight:700;color:var(--vert);flex:none}
+.rs.perd li::before{content:"✗";color:var(--oni)}
+
+/* ---------- palmarès ---------- */
+.palmares{background:var(--charbon);border-top:1px solid var(--bord);border-bottom:1px solid var(--bord)}
+.pal-table{border:1px solid var(--bord);border-radius:5px;overflow:hidden;background:var(--braise);margin-top:clamp(24px,3vw,34px)}
+.pal-l{display:grid;grid-template-columns:150px minmax(0,1fr) auto;gap:16px;align-items:center;padding:15px 22px;border-bottom:1px solid var(--bord)}
+.pal-l:last-child{border-bottom:0}
+.pal-periode{font-family:var(--mono);font-size:11.5px;color:var(--gris);letter-spacing:.06em}
+.pal-nom{font-family:var(--titre);font-size:16px;color:var(--or)}
+.pal-nom small{display:block;font-family:var(--mono);font-size:11px;color:var(--gris);font-weight:400;letter-spacing:.04em;margin-top:4px}
+.pal-pts{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--soupe);text-align:right}
+.pal-vide{padding:38px 22px;text-align:center;font-family:var(--mono);font-size:12.5px;color:var(--gris);line-height:1.7}
+
+/* ---------- cta ---------- */
+.final{text-align:center;position:relative;overflow:hidden}
+.final::before{content:"";position:absolute;inset:auto -20% -60% -20%;height:400px;background:radial-gradient(50% 60% at 50% 100%,rgba(254,147,1,.16),transparent 72%);pointer-events:none}
+.final h2{font-family:var(--titre);font-size:clamp(25px,4.6vw,46px);line-height:1.02;letter-spacing:-.02em;position:relative}
+.final h2 .or{color:var(--or)}
+.final > .enveloppe > p{color:var(--gris);margin-top:18px;position:relative;max-width:52ch;margin-left:auto;margin-right:auto}
+.final-ip{display:inline-flex;align-items:center;gap:14px;border:1px solid var(--bord);border-radius:5px;background:var(--charbon);padding:16px 22px;margin-top:28px;position:relative;font-family:var(--mono);font-size:clamp(15px,2.4vw,21px);font-weight:700;color:var(--or);transition:border-color .18s}
+.final-ip:hover{border-color:var(--soupe)}
+.final-ip svg{width:19px;height:19px;stroke:var(--gris);fill:none;stroke-width:2;flex:none}
+
+/* ---------- pied ---------- */
+footer{border-top:1px solid var(--bord);background:var(--charbon);padding:clamp(46px,6vw,64px) 0 0}
+.pied{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:36px}
+.pied-marque img{height:24px;margin-bottom:16px}
+.pied-marque p{color:var(--gris);font-size:14px;max-width:34ch}
+.pied-col h4{font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--soupe);margin-bottom:14px}
+.pied-col a{display:block;color:var(--gris);font-size:14.5px;padding:5px 0;transition:color .18s}
+.pied-col a:hover{color:var(--creme)}
+.pied-bas{margin-top:44px;border-top:1px solid var(--bord);padding:22px 0 28px;font-family:var(--mono);font-size:11px;color:var(--gris);display:flex;flex-wrap:wrap;gap:10px 26px}
+
+/* ---------- toast ---------- */
+.toast{position:fixed;left:50%;bottom:26px;z-index:200;transform:translateX(-50%) translateY(150%);background:var(--soupe);color:#180C02;font-family:var(--mono);font-size:12.5px;font-weight:700;letter-spacing:.06em;padding:13px 22px;border-radius:5px;transition:transform .3s cubic-bezier(.2,.9,.3,1.2);box-shadow:0 16px 40px rgba(0,0,0,.6)}
+.toast.on{transform:translateX(-50%) translateY(0)}
+
+/* ---------- responsive ---------- */
+@media(max-width:1024px){
+  .hero-int{grid-template-columns:1fr;align-items:start}
+  .rebours{max-width:420px}
+  .lots,.reset-duo{grid-template-columns:1fr}
+  .bareme-grille{grid-template-columns:1fr 1fr}
+  .pied{grid-template-columns:1fr 1fr 1fr}
+  .pied-marque{grid-column:1/-1}
+  /* la table perd les colonnes secondaires */
+  .table-entete,.ligne-tete{grid-template-columns:48px minmax(0,1fr) 76px 26px}
+  .table-entete span:nth-child(3),.table-entete span:nth-child(4),
+  .table-entete span:nth-child(5),.table-entete span:nth-child(6),
+  .c-num{display:none}
+}
+@media(max-width:860px){
+  .nav-liens{display:none}
+  .nav-burger{display:inline-flex}
+  .nav-droite .bouton-vide{display:none}
+  .podium{grid-template-columns:1fr}
+  .marche-place{font-size:34px}
+  .recherche{margin-left:0;order:-1;width:100%}
+  .detail-grille{grid-template-columns:1fr 1fr}
+  .pal-l{grid-template-columns:1fr auto;gap:10px}
+  .pal-periode{grid-column:1/-1}
+}
+@media(max-width:560px){
+  .bareme-grille{grid-template-columns:1fr}
+  .ma-place{grid-template-columns:auto 1fr;gap:16px}
+  .mp-pts{grid-column:1/-1;text-align:left;padding-top:12px;border-top:1px solid var(--bord)}
+  .mp-pts small{display:inline;margin-left:8px}
+  .pied{grid-template-columns:1fr 1fr}
+  .onglets{width:100%}
+  .onglet{flex:1;text-align:center}
+}
+@media(prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important}
+  html{scroll-behavior:auto}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════ NAV ═══════════ -->
+<nav class="nav">
+  <div class="nav-int">
+    <a class="nav-logo" href="/" aria-label="LJKITS, accueil">
+      <img src="logo-texte.png" alt="LJKITS" width="88" height="24">
+    </a>
+    <div class="nav-liens">
+      <a href="/classement" aria-current="page">Classement</a>
+      <a href="/kits">Kits</a>
+      <a href="/#evenements">Événements</a>
+      <a href="/boutique">Boutique</a>
+      <a href="/reglement">Règlement</a>
+    </div>
+    <div class="nav-droite">
+      <a class="bouton bouton-vide" data-discord href="#" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.317 4.37a19.79 19.79 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.058a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128c.126-.094.252-.192.372-.291a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.099.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>
+        Discord
+      </a>
+      <button class="bouton bouton-plein" onclick="copierIP()">Copier l'IP</button>
+      <button class="nav-burger" aria-label="Menu" onclick="document.querySelector('.nav-liens').style.display='flex'">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<!-- ═══════════ HERO ═══════════ -->
+<header class="hero">
+  <div class="enveloppe hero-int">
+    <div>
+      <div class="etiquette">Top 100 · mis à jour en direct</div>
+      <h1>Le <span class="or">tableau</span></h1>
+      <p>
+        Tout ce que tu fais en jeu se transforme en points. Le tableau se vide chaque
+        lundi et les dix premiers repartent avec des coins. <b>Cherche ton pseudo</b>
+        pour voir ta place exacte, même au fond du classement.
+      </p>
+    </div>
+
+    <div class="rebours">
+      <div class="rebours-tete" id="reboursTitre">Reset hebdomadaire dans</div>
+      <div class="rebours-corps">
+        <div class="rb-case"><div class="rb-n" id="rbJ">—</div><div class="rb-u">Jours</div></div>
+        <div class="rb-case"><div class="rb-n" id="rbH">—</div><div class="rb-u">Heures</div></div>
+        <div class="rb-case"><div class="rb-n" id="rbM">—</div><div class="rb-u">Min</div></div>
+        <div class="rb-case"><div class="rb-n" id="rbS">—</div><div class="rb-u">Sec</div></div>
+      </div>
+      <div class="rebours-pied" id="reboursPied">Lundi 00h00 · les coins et les kits restent acquis</div>
+    </div>
+  </div>
+</header>
+
+<!-- ═══════════ OUTILS ═══════════ -->
+<div class="outils">
+  <div class="enveloppe outils-int">
+    <div class="onglets" role="tablist" aria-label="Période du classement">
+      <button class="onglet" role="tab" aria-selected="true"  data-p="semaine">Semaine</button>
+      <button class="onglet" role="tab" aria-selected="false" data-p="mois">Mois</button>
+      <button class="onglet" role="tab" aria-selected="false" data-p="avie">À vie</button>
+    </div>
+    <label class="recherche">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input type="search" id="champRecherche" placeholder="Cherche ton pseudo" aria-label="Chercher un joueur">
+    </label>
+  </div>
+</div>
+
+<!-- ═══════════ CLASSEMENT ═══════════ -->
+<section style="padding-top:clamp(30px,4vw,44px)">
+  <div class="enveloppe">
+    <div id="maPlace"></div>
+    <div class="podium" id="podium"></div>
+
+    <div class="table">
+      <div class="table-entete">
+        <span>Rang</span><span>Joueur</span>
+        <span>Kills</span><span>Séries</span><span>Zones</span><span>KOTH</span>
+        <span>Points</span><span></span>
+      </div>
+      <div id="lignes"></div>
+      <button class="charger" id="boutonCharger">Afficher le top 100</button>
+    </div>
+
+    <div class="aucun" id="aucun" hidden>
+      <p>Aucun joueur ne correspond à cette recherche sur cette période.</p>
+      <button onclick="reinitialiser()">Réafficher le classement</button>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ BARÈME ═══════════ -->
+<section class="bareme" id="bareme">
+  <div class="enveloppe">
+    <div class="tete-section">
+      <div class="etiquette">Le barème</div>
+      <h2 class="titre-section">Comment on marque <span class="or">des points</span></h2>
+      <p class="chapeau">
+        Quatre actions rapportent, et une seule est à la portée de tout le monde en
+        permanence. Les trois autres valent cher parce qu'elles demandent d'aller
+        chercher les autres joueurs là où ils sont.
+      </p>
+    </div>
+
+    <div class="bareme-grille">
+      <div class="br">
+        <div class="br-n">+1</div>
+        <h3>Un kill</h3>
+        <p>La base. Chaque joueur tué vaut un point, quel que soit son niveau ou son kit.</p>
+        <div class="br-note">Le suicide ne compte pas.</div>
+      </div>
+      <div class="br">
+        <div class="br-n">+3</div>
+        <h3>Série stoppée</h3>
+        <p>Tuer un joueur en pleine série rapporte trois fois plus. Plus sa série est longue, plus il vaut cher en coins.</p>
+        <div class="br-note">Cumulé avec le point de kill.</div>
+      </div>
+      <div class="br">
+        <div class="br-n">+5</div>
+        <h3>Zone tenue</h3>
+        <p>Rester seul dans une zone de contrôle assez longtemps pour la valider. Un plafond journalier empêche d'en vivre.</p>
+        <div class="br-note">500 coins maximum par 24 h.</div>
+      </div>
+      <div class="br">
+        <div class="br-n">+10</div>
+        <h3>KOTH remporté</h3>
+        <p>L'action la plus rentable du serveur, et la plus disputée : tout le monde converge au même endroit.</p>
+        <div class="br-note">Lancement auto dès 6 joueurs.</div>
+      </div>
+    </div>
+
+    <div class="antifarm">
+      <h3>Anti-farm</h3>
+      <p>
+        Retuer la même personne en moins de <b>60 secondes</b> ne rapporte ni point,
+        ni kill, ni série — seulement 2 coins. S'arranger avec un ami pour monter au
+        classement ne fonctionne pas, et n'a jamais fonctionné.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ RÉCOMPENSES ═══════════ -->
+<section>
+  <div class="enveloppe">
+    <div class="tete-section">
+      <div class="etiquette">Ce que ça rapporte</div>
+      <h2 class="titre-section">Les récompenses, jusqu'à la <span class="or">dixième place</span></h2>
+      <p class="chapeau">
+        Deux classements distincts sont récompensés. Tu peux gagner sur les deux la
+        même semaine, les lots se cumulent. Le classement à vie, lui, ne rapporte
+        rien d'autre que d'y figurer.
+      </p>
+    </div>
+
+    <div class="lots">
+      <div class="lot-bloc">
+        <div class="lot-tete">
+          <h3>Classement hebdomadaire</h3>
+          <div class="quand">Reset chaque lundi à 00h00</div>
+        </div>
+        <div class="lot-l or"><span class="lot-rang">1<sup>er</sup></span><span class="lot-quoi">5 000 coins</span><span class="lot-plus">Titre Champion · 7 jours</span></div>
+        <div class="lot-l ar"><span class="lot-rang">2<sup>e</sup></span><span class="lot-quoi">3 000 coins</span><span class="lot-plus"></span></div>
+        <div class="lot-l br"><span class="lot-rang">3<sup>e</sup></span><span class="lot-quoi">2 000 coins</span><span class="lot-plus"></span></div>
+        <div class="lot-l"><span class="lot-rang">4<sup>e</sup> — 10<sup>e</sup></span><span class="lot-quoi">1 000 coins</span><span class="lot-plus"></span></div>
+      </div>
+
+      <div class="lot-bloc">
+        <div class="lot-tete">
+          <h3>Classement mensuel</h3>
+          <div class="quand">Cycle glissant de 30 jours</div>
+        </div>
+        <div class="lot-l or"><span class="lot-rang">1<sup>er</sup></span><span class="lot-quoi">15 000 coins</span><span class="lot-plus">Shogun · 30 jours</span></div>
+        <div class="lot-l ar"><span class="lot-rang">2<sup>e</sup></span><span class="lot-quoi">10 000 coins</span><span class="lot-plus">Samouraï · 30 jours</span></div>
+        <div class="lot-l br"><span class="lot-rang">3<sup>e</sup></span><span class="lot-quoi">7 000 coins</span><span class="lot-plus">Ronin · 30 jours</span></div>
+        <div class="lot-l"><span class="lot-rang">4<sup>e</sup> — 10<sup>e</sup></span><span class="lot-quoi">3 000 coins</span><span class="lot-plus"></span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ CE QUE LE RESET CHANGE ═══════════ -->
+<section class="bareme">
+  <div class="enveloppe">
+    <div class="tete-section">
+      <div class="etiquette">Sans mauvaise surprise</div>
+      <h2 class="titre-section">Ce que le reset <span class="oni">ne touche pas</span></h2>
+      <p class="chapeau">
+        Le reset est partiel. Seuls les compteurs de la période repartent à zéro —
+        rien de ce que tu as gagné en jouant n'est repris.
+      </p>
+    </div>
+
+    <div class="reset-duo">
+      <div class="rs garde">
+        <h3>Tu gardes</h3>
+        <ul>
+          <li>Tous tes coins, jusqu'au dernier</li>
+          <li>Tous les kits que tu as débloqués</li>
+          <li>Ton grade et tout ce qui a été acheté</li>
+          <li>Ton compteur de kills à vie</li>
+          <li>La disposition de tes kits dans l'inventaire</li>
+        </ul>
+      </div>
+      <div class="rs perd">
+        <h3>Tu repars à zéro</h3>
+        <ul>
+          <li>Tes points de la période concernée</li>
+          <li>Ta place dans le classement de la période</li>
+          <li>Le titre Champion, s'il n'est pas reconduit</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ PALMARÈS ═══════════ -->
+<section class="palmares">
+  <div class="enveloppe">
+    <div class="tete-section">
+      <div class="etiquette">Le palmarès</div>
+      <h2 class="titre-section">Ceux qui l'ont déjà <span class="or">tenu</span></h2>
+      <p class="chapeau">
+        Le classement se vide, pas le palmarès. Chaque première place est archivée ici
+        définitivement — c'est la seule chose du serveur qu'aucun reset ne reprend.
+      </p>
+    </div>
+    <div class="pal-table" id="palmares"></div>
+  </div>
+</section>
+
+<!-- ═══════════ CTA ═══════════ -->
+<section class="final">
+  <div class="enveloppe">
+    <div class="etiquette">Il reste de la place</div>
+    <h2>Un kill, et tu es <span class="or">dans le tableau</span>.</h2>
+    <p>Le classement compte tout le monde, pas seulement le top 100. Ton premier point te donne un rang.</p>
+    <button class="final-ip" onclick="copierIP()">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+      <span data-ip>mc.ljkits.eu</span>
+    </button>
+  </div>
+</section>
+
+<!-- ═══════════ PIED ═══════════ -->
+<footer>
+  <div class="enveloppe">
+    <div class="pied">
+      <div class="pied-marque">
+        <img src="logo-texte.png" alt="LJKITS" width="88" height="24">
+        <p>Le PvP Soup à l'ancienne. Serveur français, développé sans pay-to-win, par nostalgie du soup de 2014.</p>
+      </div>
+      <div class="pied-col">
+        <h4>Serveur</h4>
+        <a href="/classement">Classement</a>
+        <a href="/kits">Les 29 kits</a>
+        <a href="/#evenements">Événements</a>
+      </div>
+      <div class="pied-col">
+        <h4>Communauté</h4>
+        <a data-discord href="#" target="_blank" rel="noopener">Discord</a>
+        <a href="/reglement">Règlement</a>
+        <a href="/boutique">Boutique</a>
+      </div>
+      <div class="pied-col">
+        <h4>Jouer</h4>
+        <a href="#" onclick="copierIP();return false;" data-ip>mc.ljkits.eu</a>
+        <a href="/">Java 1.8 → 1.21</a>
+      </div>
+    </div>
+    <div class="pied-bas">
+      <span>© 2026 LJKITS</span>
+      <span>Hommage indépendant, sans lien avec les anciens administrateurs de MJKits.</span>
+      <span>Not an official Minecraft product. Not approved by or associated with Mojang or Microsoft.</span>
+    </div>
+  </div>
+</footer>
+
+<div class="toast" id="toast" role="status" aria-live="polite">Adresse copiée</div>
+
+<script>
+/* ═══════════════════════════════════════════════════
+   CONFIGURATION
+   ═══════════════════════════════════════════════════ */
+const IP      = 'mc.ljkits.eu';
+const DISCORD = 'https://discord.gg/ljkits';
+
+document.querySelectorAll('[data-ip]').forEach(e => e.textContent = IP);
+document.querySelectorAll('[data-discord]').forEach(e => e.href = DISCORD);
+
+let minuteurToast;
+function copierIP(){
+  navigator.clipboard?.writeText(IP).then(afficherToast).catch(afficherToast);
+}
+function afficherToast(){
+  const t = document.getElementById('toast');
+  t.classList.add('on');
+  clearTimeout(minuteurToast);
+  minuteurToast = setTimeout(() => t.classList.remove('on'), 2200);
+}
+
+/* ═══════════════════════════════════════════════════
+   COMPTE À REBOURS
+   Hebdo : lundi 00h00 UTC. Mensuel : cycle glissant,
+   la vraie date vient de la table config_classement.
+   ═══════════════════════════════════════════════════ */
+function prochainLundiUTC(){
+  const n = new Date();
+  const c = new Date(Date.UTC(n.getUTCFullYear(), n.getUTCMonth(), n.getUTCDate()));
+  c.setUTCDate(c.getUTCDate() + ((8 - c.getUTCDay()) % 7 || 7));
+  return c;
+}
+/* ⚠️ MAQUETTE : échéance mensuelle simulée à +18 jours. */
+const ECHEANCE_MENSUELLE = new Date(Date.now() + 18 * 864e5);
+
+function cible(){
+  if(periode === 'mois')  return ECHEANCE_MENSUELLE;
+  if(periode === 'avie')  return null;
+  return prochainLundiUTC();
+}
+
+function majRebours(){
+  const c = cible();
+  const titre = document.getElementById('reboursTitre');
+  const pied  = document.getElementById('reboursPied');
+
+  if(!c){
+    titre.textContent = 'Classement à vie';
+    ['rbJ','rbH','rbM','rbS'].forEach(i => document.getElementById(i).textContent = '∞');
+    pied.textContent = 'Jamais réinitialisé, depuis l\'ouverture du serveur';
+    return;
+  }
+
+  titre.textContent = periode === 'mois' ? 'Reset mensuel dans' : 'Reset hebdomadaire dans';
+  pied.textContent  = periode === 'mois'
+    ? 'Cycle glissant de 30 jours · les coins et les kits restent acquis'
+    : 'Lundi 00h00 · les coins et les kits restent acquis';
+
+  let s = Math.max(0, Math.floor((c - new Date()) / 1000));
+  const p = v => String(v).padStart(2, '0');
+  document.getElementById('rbJ').textContent = Math.floor(s / 86400); s %= 86400;
+  document.getElementById('rbH').textContent = p(Math.floor(s / 3600)); s %= 3600;
+  document.getElementById('rbM').textContent = p(Math.floor(s / 60));
+  document.getElementById('rbS').textContent = p(s % 60);
+}
+
+/* ═══════════════════════════════════════════════════
+   DONNÉES
+   ⚠️ MAQUETTE — chiffres générés, mais cohérents :
+   points = kills + 3×séries + 5×zones + 10×KOTH.
+   En production, tout vient de la table joueur.
+   ═══════════════════════════════════════════════════ */
+const PSEUDOS = ['Lestoo','Kuroshiro_','Bolduc','Nyxaria','ptit_ours','Zeframe','Oni_Bako','Tsuki7','Marmiton','Havrel',
+'Sarkan','MelloWave','Vodkacid','Ryusei__','Pampille','Kaminari','Toffu','GrandLoup','Sylvaner','Nekozz',
+'Barbaque','Yumiko','Crampon','Deltaa','Fuwafuwa','Gaspacho','Hakumei','Ironi','Jujube','Kalash_',
+'Lorenzo','Mochimochi','Nordik','Oyabun','Panama','Quenotte','Rasoir','Shiraki','Tornade','Ubik',
+'Vanille','Wasabi_','Xanthe','Yorozu','Zoltan','Amanite','Bushido','Cendre','Doudoune','Echos_',
+'Faucille','Gouffre','Hibou','Ichimaru','Jonquille','Kerozen','Lucane','Muguet','Nashi','Orage_',
+'Pruneau','Quartz','Rikuo','Sansei'];
+
+const GRADES = {Lestoo:'shogun', Kuroshiro_:'samourai', Nyxaria:'samourai', Zeframe:'ronin',
+                Tsuki7:'ronin', Sarkan:'ronin', Yumiko:'samourai', Deltaa:'ronin'};
+
+/* générateur déterministe : même rendu à chaque chargement */
+function alea(graine){
+  let x = graine * 9301 + 49297;
+  return () => { x = (x * 9301 + 49297) % 233280; return x / 233280; };
+}
+
+function construire(graine, echelle){
+  const r = alea(graine);
+  return PSEUDOS.map((p, i) => {
+    const force = Math.pow(1 - i / (PSEUDOS.length + 12), 2.1) * (0.72 + r() * 0.56);
+    const kills = Math.max(1, Math.round(force * 210 * echelle));
+    const series = Math.round(kills * (0.04 + r() * 0.05));
+    const zones  = Math.round(kills * (0.02 + r() * 0.035));
+    const koth   = Math.round(kills * (0.008 + r() * 0.016));
+    return {p, kills, series, zones, koth, pts: kills + series * 3 + zones * 5 + koth * 10};
+  }).sort((a, b) => b.pts - a.pts).map((j, i) => ({...j, rang: i + 1}));
+}
+
+const DONNEES = {
+  semaine: construire(7, 1),
+  mois:    construire(31, 4.4),
+  avie:    construire(365, 19)
+};
+
+/* palmarès — archives, jamais réinitialisées */
+const PALMARES = [
+  {periode:'Semaine du 17 août',  type:'Hebdomadaire', nom:'Kuroshiro_', pts:441},
+  {periode:'Semaine du 10 août',  type:'Hebdomadaire', nom:'Lestoo',     pts:398},
+  {periode:'Semaine du 3 août',   type:'Hebdomadaire', nom:'Lestoo',     pts:372},
+  {periode:'Cycle de juillet',    type:'Mensuel',      nom:'Nyxaria',    pts:1584},
+  {periode:'Semaine du 27 juillet', type:'Hebdomadaire', nom:'Bolduc',   pts:355}
+];
+
+/* ═══════════════════════════════════════════════════
+   RENDU
+   ═══════════════════════════════════════════════════ */
+let periode  = 'semaine';
+let recherche = '';
+let limite    = 25;
+let ouvert    = null;
+let cible_moi = null;
+
+function liste(){
+  const d = DONNEES[periode];
+  if(!recherche) return d;
+  const q = recherche.toLowerCase();
+  return d.filter(j => j.p.toLowerCase().includes(q));
+}
+
+function badge(nom){
+  const g = GRADES[nom];
+  if(!g) return '';
+  const l = {shogun:'Shogun', samourai:'Samouraï', ronin:'Ronin'}[g];
+  return `<span class="c-grade g-${g}">${l}</span>`;
+}
+
+function dessinerPodium(){
+  const d = DONNEES[periode];
+  const lots = periode === 'mois'
+    ? ['15 000 coins + Shogun 30 j', '10 000 coins + Samouraï 30 j', '7 000 coins + Ronin 30 j']
+    : periode === 'semaine'
+      ? ['5 000 coins + titre Champion 7 j', '3 000 coins', '2 000 coins']
+      : [null, null, null];
+
+  document.getElementById('podium').innerHTML = d.slice(0, 3).map((j, i) => `
+    <article class="marche m${i + 1}">
+      <div class="marche-place">${i + 1}</div>
+      <div class="marche-nom">${j.p}</div>
+      <div class="marche-pts">${j.pts.toLocaleString('fr-FR')} points</div>
+      <div class="marche-lignes">
+        <div class="marche-l"><span>Kills</span><span>${j.kills.toLocaleString('fr-FR')}</span></div>
+        <div class="marche-l"><span>Séries stoppées</span><span>${j.series}</span></div>
+        <div class="marche-l"><span>Zones tenues</span><span>${j.zones}</span></div>
+        <div class="marche-l"><span>KOTH remportés</span><span>${j.koth}</span></div>
+      </div>
+      ${lots[i] ? `<div class="marche-lot">${lots[i]}</div>` : ''}
+    </article>`).join('');
+}
+
+function dessinerLignes(){
+  const l   = liste();
+  const max = DONNEES[periode][0].pts;
+  const vue = l.slice(0, limite);
+
+  document.getElementById('aucun').hidden = l.length > 0;
+  document.getElementById('boutonCharger').hidden = l.length <= limite;
+  document.getElementById('boutonCharger').textContent =
+    `Afficher les ${Math.min(l.length - limite, 75)} suivants`;
+
+  document.getElementById('lignes').innerHTML = vue.map(j => {
+    const part = k => j.pts ? Math.round((k / j.pts) * 100) : 0;
+    return `
+    <div class="ligne ${ouvert === j.p ? 'ouvert' : ''} ${cible_moi === j.p ? 'moi' : ''}" id="l-${j.p}">
+      <button class="ligne-tete" data-joueur="${j.p}" aria-expanded="${ouvert === j.p}">
+        <span class="ligne-jauge" style="width:${(j.pts / max) * 100}%"></span>
+        <span class="c-rang ${j.rang <= 3 ? 'top3' : ''}">${String(j.rang).padStart(2, '0')}</span>
+        <span class="c-nom"><span class="c-pseudo">${j.p}${badge(j.p)}</span></span>
+        <span class="c-num">${j.kills.toLocaleString('fr-FR')}</span>
+        <span class="c-num">${j.series}</span>
+        <span class="c-num">${j.zones}</span>
+        <span class="c-num">${j.koth}</span>
+        <span class="c-pts">${j.pts.toLocaleString('fr-FR')}</span>
+        <span class="c-fleche" aria-hidden="true">›</span>
+      </button>
+      <div class="detail">
+        <div class="detail-grille">
+          <div class="det">
+            <div class="det-lbl">Kills</div>
+            <div class="det-val">${j.kills.toLocaleString('fr-FR')}</div>
+            <div class="det-pts">${j.kills.toLocaleString('fr-FR')} pts · ${part(j.kills)} %</div>
+            <div class="det-barre"><i style="width:${part(j.kills)}%"></i></div>
+          </div>
+          <div class="det">
+            <div class="det-lbl">Séries stoppées</div>
+            <div class="det-val">${j.series}</div>
+            <div class="det-pts">${(j.series * 3).toLocaleString('fr-FR')} pts · ${part(j.series * 3)} %</div>
+            <div class="det-barre"><i style="width:${part(j.series * 3)}%"></i></div>
+          </div>
+          <div class="det">
+            <div class="det-lbl">Zones tenues</div>
+            <div class="det-val">${j.zones}</div>
+            <div class="det-pts">${(j.zones * 5).toLocaleString('fr-FR')} pts · ${part(j.zones * 5)} %</div>
+            <div class="det-barre"><i style="width:${part(j.zones * 5)}%"></i></div>
+          </div>
+          <div class="det">
+            <div class="det-lbl">KOTH remportés</div>
+            <div class="det-val">${j.koth}</div>
+            <div class="det-pts">${(j.koth * 10).toLocaleString('fr-FR')} pts · ${part(j.koth * 10)} %</div>
+            <div class="det-barre"><i style="width:${part(j.koth * 10)}%"></i></div>
+          </div>
+        </div>
+        <p class="detail-note">
+          ${j.rang === 1
+            ? 'Première place. Il faudrait la lui prendre.'
+            : `À ${(DONNEES[periode][j.rang - 2].pts - j.pts).toLocaleString('fr-FR')} points du rang au-dessus.`}
+          ${j.rang > 10 ? ` · ${(DONNEES[periode][9].pts - j.pts).toLocaleString('fr-FR')} points le séparent du top 10.` : ''}
+        </p>
+      </div>
+    </div>`;
+  }).join('');
+
+  document.querySelectorAll('.ligne-tete').forEach(b => {
+    b.addEventListener('click', () => {
+      ouvert = ouvert === b.dataset.joueur ? null : b.dataset.joueur;
+      dessinerLignes();
+    });
+  });
+}
+
+function dessinerMaPlace(){
+  const zone = document.getElementById('maPlace');
+  if(!cible_moi){ zone.innerHTML = ''; return; }
+
+  const d = DONNEES[periode];
+  const j = d.find(x => x.p === cible_moi);
+  if(!j){ zone.innerHTML = ''; return; }
+
+  const top10  = d[9];
+  const manque = j.rang > 10 ? top10.pts - j.pts : 0;
+
+  zone.innerHTML = `
+    <div class="ma-place" style="position:relative">
+      <button class="mp-fermer" onclick="reinitialiser()" aria-label="Fermer">×</button>
+      <div class="mp-rang">${j.rang}<small>sur ${d.length}</small></div>
+      <div>
+        <div class="mp-nom">${j.p}</div>
+        <div class="mp-detail">${j.kills.toLocaleString('fr-FR')} kills · ${j.series} séries stoppées · ${j.zones} zones · ${j.koth} KOTH</div>
+        <div class="mp-ecart">${manque > 0
+          ? `Il te manque ${manque.toLocaleString('fr-FR')} points pour entrer dans le top 10.`
+          : 'Tu es dans le top 10 — les récompenses sont pour toi.'}</div>
+      </div>
+      <div class="mp-pts">${j.pts.toLocaleString('fr-FR')}<small>points</small></div>
+    </div>`;
+}
+
+function dessinerPalmares(){
+  document.getElementById('palmares').innerHTML = PALMARES.length === 0
+    ? `<div class="pal-vide">Aucune période close pour l'instant.<br>Le premier nom sera inscrit ici lundi prochain.</div>`
+    : PALMARES.map(x => `
+      <div class="pal-l">
+        <div class="pal-periode">${x.periode}</div>
+        <div class="pal-nom">${x.nom}<small>${x.type}</small></div>
+        <div class="pal-pts">${x.pts.toLocaleString('fr-FR')} pts</div>
+      </div>`).join('');
+}
+
+function tout(){
+  dessinerPodium();
+  dessinerLignes();
+  dessinerMaPlace();
+  majRebours();
+}
+
+/* onglets */
+document.querySelectorAll('.onglet').forEach(o => {
+  o.addEventListener('click', () => {
+    document.querySelectorAll('.onglet').forEach(x => x.setAttribute('aria-selected', 'false'));
+    o.setAttribute('aria-selected', 'true');
+    periode = o.dataset.p;
+    ouvert  = null;
+    limite  = 25;
+    tout();
+  });
+});
+
+/* recherche : filtre la table et remonte la carte "ta position" */
+let attente;
+document.getElementById('champRecherche').addEventListener('input', e => {
+  recherche = e.target.value.trim();
+  limite = recherche ? 100 : 25;
+  clearTimeout(attente);
+  attente = setTimeout(() => {
+    const trouve = DONNEES[periode].find(j => j.p.toLowerCase() === recherche.toLowerCase());
+    cible_moi = trouve ? trouve.p : null;
+    dessinerLignes();
+    dessinerMaPlace();
+  }, 120);
+});
+
+document.getElementById('boutonCharger').addEventListener('click', () => {
+  limite = 100;
+  dessinerLignes();
+});
+
+function reinitialiser(){
+  recherche = '';
+  cible_moi = null;
+  limite = 25;
+  ouvert = null;
+  document.getElementById('champRecherche').value = '';
+  tout();
+}
+
+tout();
+setInterval(majRebours, 1000);
+</script>
+
+</body>
+</html>

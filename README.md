@@ -366,7 +366,7 @@ déploiement :
 |---|---|
 | Adresse du serveur | Barre de navigation, accueil, kits, classement, boutique, pied de page — partout où l'IP est affichée ou copiable |
 | Lien Discord | Navigation, pied de page, boutique, pages de commande, et le règlement via `{discord}` |
-| URL des trois sites de vote | Section « Voter » de l'accueil |
+| Recrutement ouvert | Formulaire de `/recrutement` |
 
 Avant, ces valeurs étaient en dur dans `src/lib/site.ts` : les changer
 demandait une modification de code et un déploiement.
@@ -415,8 +415,8 @@ qui sera publié.
 
 `src/lib/site.ts` garde ce qui ne se modifie pas sans toucher au code de toute
 façon : le nom du site, l'URL des API tierces (mcstatus.io, mc-heads.net),
-l'image Open Graph, les repères de jeu, et les noms et sigles des sites de vote
-— seules leurs URL sont modifiables.
+l'image Open Graph, les repères de jeu, et `SITE.ouverture` — la date
+d'ouverture du serveur, avec son décalage horaire écrit en toutes lettres.
 
 `SITE.url` vient de `NEXT_PUBLIC_SITE_URL` et sert aux métadonnées Open Graph
 absolues : c'est une variable d'environnement, pas un réglage.
@@ -588,3 +588,96 @@ prix, le libellé et l'identifiant du package.
 `_maquettes/` contient les fichiers HTML statiques d'origine qui ont défini la
 direction artistique. Ils ne sont pas déployés et ne sont plus la source de
 vérité — ils servent de référence visuelle.
+
+---
+
+## À faire après l'ouverture
+
+Dettes assumées pendant la refonte visuelle, à solder une fois le serveur
+lancé et stabilisé. Aucune n'est bloquante ; toutes sont des nettoyages ou des
+fonctionnalités reportées faute de données.
+
+### Supprimer les colonnes de vote
+
+Le serveur n'a pas de système de vote et n'en aura pas : récompenser des clics
+sur des sites tiers contredirait le positionnement « rien ne s'achète ». La
+surface publique et le formulaire d'administration ont été retirés, mais trois
+colonnes subsistent :
+
+1. Retirer `urlServeurPrive`, `urlTopServeurs` et `urlServeursMinecraft` du
+   modèle `Reglages` dans `prisma/schema.prisma`, puis `npm run db:migrate:new`.
+2. Retirer les trois clés de `schemaReglages` dans `src/lib/validations.ts`,
+   ainsi que le validateur `urlFacultative` qui ne servira plus.
+3. Retirer les trois `formData.get(…)` de `enregistrerReglages` dans
+   `src/actions/reglages.ts`.
+
+Dans cet ordre : le code cesse d'écrire les colonnes avant qu'elles ne
+disparaissent. En attendant, elles sont réécrites à la chaîne vide à chaque
+enregistrement des réglages — sans effet, elles valent déjà `''`.
+
+### Rétablir « Comment le jouer / Comment le contrer »
+
+La fiche kit avait ces deux listes en maquette. Elles ont été retirées : la
+seule source disponible était `descriptionLongue`, et l'en extraire par
+convention de titres Markdown se serait cassé silencieusement au premier
+`##Comment le jouer` sans espace.
+
+À rétablir avec **deux champs dédiés** — `commentJouer` et `commentContrer`,
+listes de textes courts sur le modèle de `CaracteristiqueKit` — et leur
+édition dans `FormulaireKit`.
+
+### Rétablir le palmarès et la carte « ta position »
+
+Les deux sections existaient en maquette sur `/classement`, sans source :
+
+- **Palmarès** — aucune table n'archive les champions passés. Le serveur
+  Minecraft vide `hebdo_points` sans rien conserver. Il faut qu'il écrive une
+  ligne d'archive à chaque remise à zéro avant que le site puisse l'afficher.
+- **« Ta position »** — suppose de savoir qui visite. Il n'y a pas
+  d'authentification joueur sur le site.
+
+### Un K/D par période
+
+Les onglets **Semaine** et **Mois** de `/classement` n'affichent que
+Rang · Joueur · Points. L'onglet **À vie** est le seul à porter Kills, Morts,
+K/D et Record de série.
+
+Ce n'est pas une limite de requête, c'est une limite de modèle : dans la table
+`joueur`, `morts` et `record_serie` sont des compteurs **à vie**. Les afficher
+en face de `hebdo_points` donnerait un K/D à vie sur un classement de la
+semaine — incohérent, et impossible à défendre auprès des joueurs.
+
+Pour un vrai K/D par période, il faut des compteurs hebdomadaires et mensuels
+de morts et de séries, **écrits côté Skript**, comme `hebdo_points` et
+`mensuel_points`. Rien ne peut être fait côté site tant qu'ils n'existent pas.
+
+Le K/D lui-même est fiable : `/suicide` ne compte ni kill, ni mort, ni coin,
+ni point — un drapeau dédié le gère en jeu, et c'est indiqué sur le PNJ d'infos.
+
+### Rassembler les messages de validation du recrutement
+
+Le parcours par étapes de `/recrutement` valide chaque écran côté client avant
+de laisser passer à la suite. C'est un **confort** : `soumettreCandidature` et
+son schéma zod revalident tout à l'envoi et restent la seule source de vérité.
+
+Pour qu'un candidat ne lise jamais deux formulations du même problème, les
+messages sont recopiés à l'identique de `src/lib/recrutement.ts` dans
+`src/components/public/FormulaireCandidature.tsx`. Cette duplication est
+assumée mais reste une dette : si les deux divergent, le serveur gagne et le
+candidat verra son message.
+
+À rassembler dans `src/lib/recrutement-partage.ts`, qui est déjà importé par
+les deux côtés et n'embarque ni Prisma ni zod. Des constantes de message et
+deux fonctions pures suffisent ; `recrutement.ts` les consommerait dans ses
+`ctx.addIssue`.
+
+### Retirer `texte-accent`
+
+L'utilitaire du mot en dégradé or → soupe est marqué transitoire dans
+`src/app/globals.css`. Les maquettes validées colorent simplement le mot
+accentué en `text-or`. À supprimer quand plus aucune page ne l'appelle.
+
+### Prisma dans le bundle des pages publiques
+
+Environ 55 ko de client Prisma partent dans le bundle des neuf pages
+publiques. Correctif reporté à après l'ouverture.
