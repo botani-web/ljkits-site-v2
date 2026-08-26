@@ -30,7 +30,7 @@ export default async function PageModifierGrade({
         >
           ← Retour aux grades
         </Link>
-        <h1 className="mt-2 font-titre text-2xl uppercase">Modifier « {grade.nom} »</h1>
+        <h1 className="mt-2 font-titre text-2xl">Modifier « {grade.nom} »</h1>
       </div>
 
       <FormulaireGrade

@@ -15,7 +15,7 @@ export function EtiquetteStatut({ statut }: { statut: StatutCommande }) {
 
   return (
     <span
-      className={`rounded border px-2.5 py-1 font-mono text-[10.5px] font-bold tracking-[1.2px] uppercase ${classes}`}
+      className={`rounded-micro border px-2.5 py-1 font-mono text-[10.5px] font-bold tracking-[1.2px] uppercase ${classes}`}
     >
       {label}
     </span>

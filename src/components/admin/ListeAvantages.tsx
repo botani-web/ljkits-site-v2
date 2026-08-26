@@ -62,13 +62,13 @@ export function ListeAvantages({
               }
               placeholder="Préfixe dans le chat et le TAB"
               aria-label="Avantage"
-              className="min-w-0 flex-1 rounded-lg border border-bord bg-nuit px-3 py-2 text-sm text-creme placeholder:text-gris/60 focus:border-soupe focus:outline-none"
+              className="min-w-0 flex-1 rounded-controle border border-bord bg-nuit px-3 py-2 text-sm text-creme placeholder:text-gris/60 focus:border-soupe focus:outline-none"
             />
             <button
               type="button"
               onClick={() => setLignes(lignes.filter((l) => l.cle !== ligne.cle))}
               aria-label="Retirer cet avantage"
-              className="shrink-0 rounded-lg border border-bord px-3 text-gris transition-colors hover:border-rouge hover:text-rouge"
+              className="shrink-0 rounded-controle border border-bord px-3 text-gris transition-colors hover:border-rouge hover:text-rouge"
             >
               ✕
             </button>
@@ -80,7 +80,7 @@ export function ListeAvantages({
         <button
           type="button"
           onClick={ajouter}
-          className="mt-2.5 rounded-lg border border-bord px-3.5 py-2 text-[13px] font-semibold text-gris transition-colors hover:border-soupe hover:text-soupe"
+          className="mt-2.5 rounded-controle border border-bord px-3.5 py-2 text-[13px] font-semibold text-gris transition-colors hover:border-soupe hover:text-soupe"
         >
           + Ajouter un avantage
         </button>

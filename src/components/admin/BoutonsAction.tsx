@@ -42,7 +42,7 @@ export function BoutonOrdre({
       <BoutonEnvoi
         disabled={desactive}
         aria-label={direction === 'haut' ? 'Monter d’un cran' : 'Descendre d’un cran'}
-        className="flex size-11 items-center justify-center rounded border border-bord text-gris transition-colors hover:border-soupe hover:text-soupe disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:border-bord disabled:hover:text-gris sm:size-7"
+        className="flex size-11 items-center justify-center rounded-micro border border-bord text-gris transition-colors hover:border-soupe hover:text-soupe disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:border-bord disabled:hover:text-gris sm:size-7"
       >
         {direction === 'haut' ? '↑' : '↓'}
       </BoutonEnvoi>
@@ -76,10 +76,10 @@ export function BoutonBascule({
       <BoutonEnvoi
         aria-pressed={actif}
         title={`${label} — ${actif ? 'activé' : 'désactivé'}, cliquer pour basculer`}
-        className={`flex min-h-11 items-center rounded border px-2.5 font-mono text-[10.5px] font-bold tracking-wide uppercase transition-colors sm:min-h-0 sm:py-1 ${
+        className={`flex min-h-11 items-center rounded-micro border px-2.5 font-mono text-[10.5px] font-bold tracking-wide uppercase transition-colors sm:min-h-0 sm:py-1 ${
           actif
             ? couleursActives
-            : 'border-bord text-gris/60 hover:border-[#43305E] hover:text-gris'
+            : 'border-bord text-gris/60 hover:border-soupe hover:text-gris'
         }`}
       >
         {label}
@@ -106,7 +106,7 @@ export function BoutonSupprimer({
       <button
         type="button"
         onClick={() => setConfirmation(true)}
-        className="inline-flex min-h-11 items-center rounded-lg border border-bord px-3 text-[13px] font-semibold text-gris transition-colors hover:border-rouge hover:text-rouge sm:min-h-0 sm:py-1.5"
+        className="inline-flex min-h-11 items-center rounded-controle border border-bord px-3 text-[13px] font-semibold text-gris transition-colors hover:border-rouge hover:text-rouge sm:min-h-0 sm:py-1.5"
       >
         {libelle}
       </button>
@@ -115,13 +115,13 @@ export function BoutonSupprimer({
 
   return (
     <form action={action} className="flex items-center gap-1.5">
-      <BoutonEnvoi className="inline-flex min-h-11 items-center rounded-lg border border-rouge bg-rouge/15 px-3 text-[13px] font-bold text-rouge transition-colors hover:bg-rouge/25 disabled:opacity-60 sm:min-h-0 sm:py-1.5">
+      <BoutonEnvoi className="inline-flex min-h-11 items-center rounded-controle border border-rouge bg-rouge/15 px-3 text-[13px] font-bold text-rouge transition-colors hover:bg-rouge/25 disabled:opacity-60 sm:min-h-0 sm:py-1.5">
         Confirmer
       </BoutonEnvoi>
       <button
         type="button"
         onClick={() => setConfirmation(false)}
-        className="inline-flex min-h-11 items-center rounded-lg border border-bord px-3 text-[13px] text-gris transition-colors hover:text-creme sm:min-h-0 sm:py-1.5"
+        className="inline-flex min-h-11 items-center rounded-controle border border-bord px-3 text-[13px] text-gris transition-colors hover:text-creme sm:min-h-0 sm:py-1.5"
       >
         Annuler
       </button>
@@ -143,8 +143,7 @@ export function BoutonFormulaire({
   variante?: 'principal' | 'neutre' | 'danger'
 }) {
   const styles = {
-    principal:
-      'bg-linear-[135deg] from-soupe to-or text-[#1A1005] hover:shadow-[0_4px_18px_rgba(254,147,1,.35)]',
+    principal: 'bg-soupe text-encre hover:bg-or hover:shadow-[0_8px_26px_-8px_rgba(254,147,1,.7)]',
     neutre: 'border border-bord text-gris hover:border-soupe hover:text-soupe',
     danger: 'border border-bord text-gris hover:border-rouge hover:text-rouge',
   }[variante]
@@ -152,7 +151,7 @@ export function BoutonFormulaire({
   return (
     <form action={action}>
       <BoutonEnvoi
-        className={`rounded-lg px-4 py-2.5 text-sm font-bold transition-all disabled:cursor-not-allowed disabled:opacity-60 ${styles}`}
+        className={`rounded-controle px-4 py-2.5 text-sm font-bold transition-all disabled:cursor-not-allowed disabled:opacity-60 ${styles}`}
       >
         {children}
       </BoutonEnvoi>

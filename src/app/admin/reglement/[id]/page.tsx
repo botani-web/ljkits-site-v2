@@ -30,7 +30,7 @@ export default async function PageModifierSection({
         >
           ← Retour au règlement
         </Link>
-        <h1 className="mt-2 font-titre text-2xl uppercase">Modifier « {section.titre} »</h1>
+        <h1 className="mt-2 font-titre text-2xl">Modifier « {section.titre} »</h1>
         <p className="mt-1 text-sm text-gris">
           {section.publie ? 'Publiée' : 'Brouillon'} · dernière modification le{' '}
           {formaterDate(section.updatedAt)}

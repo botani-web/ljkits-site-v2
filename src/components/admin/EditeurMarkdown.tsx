@@ -72,13 +72,13 @@ export function EditeurMarkdown({
         rows={lignes}
         value={contenu}
         onChange={(evenement) => setContenu(evenement.target.value)}
-        className={`w-full resize-y rounded-lg border border-bord bg-nuit px-3.5 py-2.5 font-mono text-sm leading-relaxed text-creme focus:border-soupe focus:outline-none ${
+        className={`w-full resize-y rounded-controle border border-bord bg-nuit px-3.5 py-2.5 font-mono text-sm leading-relaxed text-creme focus:border-soupe focus:outline-none ${
           onglet === 'apercu' ? 'hidden' : ''
         }`}
       />
 
       {onglet === 'apercu' && (
-        <div className="min-h-40 rounded-lg border border-bord bg-nuit px-4 py-3.5">
+        <div className="min-h-40 rounded-controle border border-bord bg-nuit px-4 py-3.5">
           {contenu.trim() === '' ? (
             <p className="text-sm text-gris">Rien à afficher : le champ est vide.</p>
           ) : (
@@ -101,14 +101,14 @@ export function EditeurMarkdown({
       ) : null}
 
       {/* ---- rappel de la syntaxe, sous la zone de texte ---- */}
-      <details className="mt-3 rounded-lg border border-bord bg-charbon px-4 py-3">
+      <details className="mt-3 rounded-controle border border-bord bg-charbon px-4 py-3">
         <summary className="cursor-pointer text-[13px] font-semibold text-gris select-none">
           Rappel de la syntaxe Markdown
         </summary>
         <dl className="mt-3 grid gap-x-6 gap-y-2 sm:grid-cols-2">
           {AIDE_MARKDOWN.map((ligne) => (
             <div key={ligne.syntaxe} className="flex items-baseline gap-2.5">
-              <dt className="shrink-0 rounded bg-braise px-2 py-0.5 font-mono text-xs text-or">
+              <dt className="shrink-0 rounded-micro bg-braise px-2 py-0.5 font-mono text-xs text-or">
                 {ligne.syntaxe}
               </dt>
               <dd className="text-[13px] text-gris">{ligne.effet}</dd>
@@ -139,8 +139,8 @@ function BoutonOnglet({
       role="tab"
       aria-selected={actif}
       onClick={onClick}
-      className={`inline-flex min-h-11 items-center rounded-md px-3 font-mono text-[12px] font-bold tracking-wide uppercase transition-colors ${
-        actif ? 'bg-soupe text-[#1a0f00]' : 'border border-bord text-gris hover:text-creme'
+      className={`inline-flex min-h-11 items-center rounded-controle px-3 font-mono text-[12px] font-bold tracking-wide uppercase transition-colors ${
+        actif ? 'bg-soupe text-encre' : 'border border-bord text-gris hover:text-creme'
       }`}
     >
       {children}

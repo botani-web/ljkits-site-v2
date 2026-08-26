@@ -31,7 +31,7 @@ export function ChampsVenteEtLivraison({
         erreurs={erreurs?.tebexPackageId}
       />
 
-      <p className="rounded-lg border border-bord bg-nuit px-4 py-3 text-[13px] text-gris">
+      <p className="rounded-controle border border-bord bg-nuit px-4 py-3 text-[13px] text-gris">
         La livraison en jeu est assurée par le{' '}
         <strong className="text-creme">plugin Tebex</strong> installé sur le serveur. Ce qui est
         réellement remis au joueur se configure sur le package, dans ton tableau de bord Tebex —

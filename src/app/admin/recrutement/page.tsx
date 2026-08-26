@@ -14,6 +14,7 @@ import { prisma } from '@/lib/prisma'
 import { lireQuestionsActives } from '@/lib/recrutement'
 import { LIEN_FORMULAIRE } from '@/lib/recrutement-partage'
 import { lireReglages } from '@/lib/reglages'
+import { classesBouton } from '@/components/ui/Bouton'
 
 export const metadata = { title: 'Recrutement' }
 
@@ -73,7 +74,7 @@ export default async function PageRecrutementAdmin({
   return (
     <>
       <div className="mb-6">
-        <h1 className="font-titre text-2xl uppercase">Recrutement staff</h1>
+        <h1 className="font-titre text-2xl">Recrutement staff</h1>
         <p className="mt-1 text-sm text-gris">
           Un formulaire accessible par lien direct uniquement. Il n’apparaît nulle part
           sur le site.
@@ -84,7 +85,7 @@ export default async function PageRecrutementAdmin({
         <InterrupteurRecrutement ouvert={recrutementOuvert} />
 
         {/* Le lien ne se trouve QUE d'ici. */}
-        <div className="flex flex-wrap items-center gap-3 rounded-xl border border-bord bg-charbon px-5 py-4">
+        <div className="flex flex-wrap items-center gap-3 rounded-carte border border-bord bg-charbon px-5 py-4">
           <div className="min-w-[200px] flex-1">
             <p className="font-mono text-[10.5px] tracking-[1.4px] text-gris uppercase">
               Lien à partager
@@ -175,7 +176,7 @@ async function OngletCandidatures({ filtre }: { filtre: Filtre }) {
           <Link
             key={entree.cle}
             href={`/admin/recrutement?onglet=candidatures&filtre=${entree.cle}`}
-            className={`inline-flex min-h-11 items-center rounded-lg border px-3 text-[13px] font-semibold transition-colors sm:min-h-0 sm:py-1.5 ${
+            className={`inline-flex min-h-11 items-center rounded-controle border px-3 text-[13px] font-semibold transition-colors sm:min-h-0 sm:py-1.5 ${
               filtre === entree.cle
                 ? 'border-soupe bg-soupe/10 text-soupe'
                 : 'border-bord text-gris hover:text-creme'
@@ -188,7 +189,7 @@ async function OngletCandidatures({ filtre }: { filtre: Filtre }) {
       </div>
 
       {candidatures.length === 0 ? (
-        <p className="rounded-2xl border border-bord bg-charbon px-6 py-12 text-center text-gris">
+        <p className="rounded-carte border border-bord bg-charbon px-6 py-12 text-center text-gris">
           Aucune candidature ici.
         </p>
       ) : (
@@ -197,7 +198,7 @@ async function OngletCandidatures({ filtre }: { filtre: Filtre }) {
             <Link
               key={candidature.id}
               href={`/admin/recrutement/${candidature.id}`}
-              className="flex flex-wrap items-center gap-4 rounded-xl border border-bord bg-charbon px-4 py-3.5 transition-colors hover:border-soupe/50"
+              className="flex flex-wrap items-center gap-4 rounded-carte border border-bord bg-charbon px-4 py-3.5 transition-colors hover:border-soupe/50"
             >
               <span className="font-mono text-[12.5px] text-gris">
                 #{String(candidature.numero).padStart(6, '0')}
@@ -214,7 +215,7 @@ async function OngletCandidatures({ filtre }: { filtre: Filtre }) {
               </div>
 
               {candidature.supprimeeAt && (
-                <span className="rounded border border-bord px-2 py-0.5 font-mono text-[10.5px] font-bold tracking-wide text-gris uppercase">
+                <span className="rounded-micro border border-bord px-2 py-0.5 font-mono text-[10.5px] font-bold tracking-wide text-gris uppercase">
                   Corbeille
                 </span>
               )}
@@ -224,14 +225,14 @@ async function OngletCandidatures({ filtre }: { filtre: Filtre }) {
               {!candidature.webhookEnvoyeAt && candidature.webhookErreur && (
                 <span
                   title={candidature.webhookErreur}
-                  className="rounded border border-rouge/50 bg-rouge/10 px-2 py-0.5 font-mono text-[10.5px] font-bold tracking-wide text-rouge uppercase"
+                  className="rounded-micro border border-rouge/50 bg-rouge/10 px-2 py-0.5 font-mono text-[10.5px] font-bold tracking-wide text-rouge uppercase"
                 >
                   Discord ✕
                 </span>
               )}
 
               <span
-                className={`rounded border px-2 py-0.5 font-mono text-[10.5px] font-bold tracking-wide uppercase ${
+                className={`rounded-micro border px-2 py-0.5 font-mono text-[10.5px] font-bold tracking-wide uppercase ${
                   COULEUR_STATUT[candidature.statut]
                 }`}
               >
@@ -292,7 +293,7 @@ async function OngletQuestions() {
         </p>
         <Link
           href="/admin/recrutement/questions/nouvelle"
-          className="rounded-lg bg-linear-[135deg] from-soupe to-or px-4 py-2.5 text-sm font-bold text-[#1A1005] transition-shadow hover:shadow-[0_4px_18px_rgba(254,147,1,.35)]"
+          className={classesBouton({ variante: 'plein' })}
         >
           + Nouvelle question
         </Link>
@@ -305,16 +306,16 @@ async function OngletQuestions() {
       {/* L'aperçu rend LE VRAI composant public, pas une maquette : c'est la
           seule façon qu'il ne mente jamais sur ce que le candidat verra. */}
       <section>
-        <h2 className="mb-3 font-titre text-lg text-creme uppercase">
+        <h2 className="mb-3 font-titre text-lg text-creme">
           Aperçu du formulaire
         </h2>
         {actives.length === 0 ? (
-          <p className="rounded-2xl border border-bord bg-charbon px-6 py-12 text-center text-gris">
+          <p className="rounded-carte border border-bord bg-charbon px-6 py-12 text-center text-gris">
             Aucune question active : le formulaire afficherait un message
             d’indisponibilité.
           </p>
         ) : (
-          <div className="rounded-2xl border border-bord bg-nuit p-6">
+          <div className="rounded-carte border border-bord bg-nuit p-6">
             <FormulaireCandidature questions={actives} apercu />
           </div>
         )}

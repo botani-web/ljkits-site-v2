@@ -33,7 +33,7 @@ export default async function PageModifierKit({
         >
           ← Retour aux kits
         </Link>
-        <h1 className="mt-2 font-titre text-2xl uppercase">Modifier « {kit.nom} »</h1>
+        <h1 className="mt-2 font-titre text-2xl">Modifier « {kit.nom} »</h1>
         <p className="mt-1 text-sm text-gris">
           Page publique :{' '}
           <Link

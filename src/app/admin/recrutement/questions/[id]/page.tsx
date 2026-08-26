@@ -36,7 +36,7 @@ export default async function PageQuestion({
         ← Le questionnaire
       </Link>
 
-      <h1 className="mb-6 font-titre text-2xl uppercase">Modifier la question</h1>
+      <h1 className="mb-6 font-titre text-2xl">Modifier la question</h1>
 
       <FormulaireQuestion
         action={modifierQuestion.bind(null, question.id)}

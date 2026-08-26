@@ -18,7 +18,7 @@ export default async function PageNouvelleSection() {
         >
           ← Retour au règlement
         </Link>
-        <h1 className="mt-2 font-titre text-2xl uppercase">Nouvelle section</h1>
+        <h1 className="mt-2 font-titre text-2xl">Nouvelle section</h1>
         <p className="mt-1 text-sm text-gris">
           Elle sera ajoutée en fin de règlement ; les flèches servent ensuite à la placer.
         </p>

@@ -20,14 +20,14 @@ export function AlerteBudget({ budget }: { budget: EtatBudget }) {
   const troppeu = budget.questions > budget.emplacements
 
   return (
-    <section className="rounded-xl border border-bord bg-charbon p-5">
+    <section className="rounded-carte border border-bord bg-charbon p-5">
       <h2 className="font-mono text-[10.5px] tracking-[1.4px] text-gris uppercase">
         Message Discord
       </h2>
 
       {/* --- le repère qui compte : le plancher --------------------------- */}
       {plancher.deborde || troppeu ? (
-        <div className="mt-3 rounded-lg border border-rouge/50 bg-rouge/10 p-4">
+        <div className="mt-3 rounded-controle border border-rouge/50 bg-rouge/10 p-4">
           <p className="text-[14px] font-bold text-rouge">
             Ta configuration dépasse ce que Discord accepte.
           </p>

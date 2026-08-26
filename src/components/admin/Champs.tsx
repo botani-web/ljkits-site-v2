@@ -114,7 +114,7 @@ export function ChampCase({
   return (
     <label
       htmlFor={nom}
-      className="flex cursor-pointer items-start gap-3 rounded-lg border border-bord bg-nuit px-3.5 py-3 transition-colors hover:border-[#43305E]"
+      className="flex cursor-pointer items-start gap-3 rounded-controle border border-bord bg-nuit px-3.5 py-3 transition-colors hover:border-soupe"
     >
       <input
         id={nom}
@@ -138,7 +138,7 @@ export function MessageErreurGlobale({ message }: { message?: string }) {
   return (
     <p
       role="alert"
-      className="rounded-lg border border-rouge/40 bg-rouge/10 px-4 py-3 text-sm text-rouge"
+      className="rounded-controle border border-rouge/40 bg-rouge/10 px-4 py-3 text-sm text-rouge"
     >
       {message}
     </p>

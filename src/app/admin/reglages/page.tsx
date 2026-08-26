@@ -22,7 +22,7 @@ export default async function PageReglages() {
   return (
     <>
       <div className="mb-6">
-        <h1 className="font-titre text-2xl uppercase">Réglages du site</h1>
+        <h1 className="font-titre text-2xl">Réglages du site</h1>
         <p className="mt-1 text-sm text-gris">
           L’adresse du serveur et le lien Discord apparaissent sur presque toutes les pages.
           Les modifier ici les met à jour partout, sans déploiement.
@@ -37,13 +37,13 @@ export default async function PageReglages() {
         }}
       />
 
-      <section className="mt-6 rounded-2xl border border-bord bg-charbon px-6 py-5">
+      <section className="mt-6 rounded-carte border border-bord bg-charbon px-6 py-5">
         <h2 className="mb-2 font-mono text-[10.5px] font-bold tracking-[1.4px] text-gris uppercase">
           Le lien Discord dans le règlement
         </h2>
         <p className="text-[14px] text-gris">
           Dans le règlement et les descriptions de kits, écris{' '}
-          <code className="rounded bg-braise px-2 py-0.5 font-mono text-[13px] text-or">
+          <code className="rounded-micro bg-braise px-2 py-0.5 font-mono text-[13px] text-or">
             {'{discord}'}
           </code>{' '}
           plutôt que de recopier l’adresse : elle sera remplacée par le lien ci-dessus au

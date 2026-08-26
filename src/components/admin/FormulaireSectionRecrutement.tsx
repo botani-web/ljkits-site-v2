@@ -24,7 +24,7 @@ export function FormulaireSectionRecrutement({
       <button
         type="button"
         onClick={() => setOuvert(true)}
-        className="self-start rounded-lg border border-bord px-4 py-2.5 text-sm font-semibold text-gris transition-colors hover:border-soupe hover:text-soupe"
+        className="self-start rounded-controle border border-bord px-4 py-2.5 text-sm font-semibold text-gris transition-colors hover:border-soupe hover:text-soupe"
       >
         + Nouvelle section
       </button>
@@ -34,7 +34,7 @@ export function FormulaireSectionRecrutement({
   return (
     <form
       action={envoyer}
-      className="flex flex-wrap items-end gap-3 rounded-xl border border-bord bg-charbon p-4"
+      className="flex flex-wrap items-end gap-3 rounded-carte border border-bord bg-charbon p-4"
     >
       <div className="min-w-[200px] flex-1">
         <label htmlFor="nom" className="mb-1.5 block text-sm font-semibold text-creme">
@@ -46,7 +46,7 @@ export function FormulaireSectionRecrutement({
           type="text"
           maxLength={60}
           autoFocus
-          className="w-full rounded-lg border border-bord bg-nuit px-3.5 py-2.5 text-[15px] text-creme focus:border-soupe focus:outline-none"
+          className="w-full rounded-controle border border-bord bg-nuit px-3.5 py-2.5 text-[15px] text-creme focus:border-soupe focus:outline-none"
         />
         {etat.champs?.nom && (
           <p className="mt-1.5 text-[13px] text-rouge">{etat.champs.nom[0]}</p>
@@ -70,7 +70,7 @@ export function FormulaireSectionRecrutement({
       <button
         type="button"
         onClick={() => setOuvert(false)}
-        className="inline-flex min-h-11 items-center rounded-lg border border-bord px-3 text-[13px] text-gris transition-colors hover:text-creme"
+        className="inline-flex min-h-11 items-center rounded-controle border border-bord px-3 text-[13px] text-gris transition-colors hover:text-creme"
       >
         Annuler
       </button>

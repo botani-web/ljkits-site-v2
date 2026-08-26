@@ -22,15 +22,15 @@ export function FormulaireReglages({ reglages }: { reglages: ReglagesEnEdition }
       {etat.succes && (
         <p
           role="status"
-          className="rounded-lg border border-vert/40 bg-vert/10 px-4 py-3 text-sm text-vert"
+          className="rounded-controle border border-vert/40 bg-vert/10 px-4 py-3 text-sm text-vert"
         >
           {etat.succes}
         </p>
       )}
 
       {/* ---------------------------- LE SERVEUR --------------------------- */}
-      <section className="flex flex-col gap-4 rounded-2xl border border-bord bg-charbon px-6 py-6">
-        <h2 className="font-titre text-base uppercase">Le serveur</h2>
+      <section className="flex flex-col gap-4 rounded-carte border border-bord bg-charbon px-6 py-6">
+        <h2 className="font-titre text-base">Le serveur</h2>
 
         <ChampTexte
           nom="ip"

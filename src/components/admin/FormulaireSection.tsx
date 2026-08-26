@@ -32,7 +32,7 @@ export function FormulaireSection({
     <form action={envoyer} className="flex flex-col gap-6">
       <MessageErreurGlobale message={etat.erreur} />
 
-      <section className="flex flex-col gap-4 rounded-2xl border border-bord bg-charbon px-6 py-6">
+      <section className="flex flex-col gap-4 rounded-carte border border-bord bg-charbon px-6 py-6">
         <ChampTexte
           nom="titre"
           label="Titre de la section"
@@ -51,7 +51,7 @@ export function FormulaireSection({
         />
       </section>
 
-      <section className="rounded-2xl border border-bord bg-charbon px-6 py-6">
+      <section className="rounded-carte border border-bord bg-charbon px-6 py-6">
         <EditeurMarkdown
           nom="contenu"
           label="Contenu de la section"
@@ -66,7 +66,7 @@ export function FormulaireSection({
         <BoutonSoumettre>{libelleBouton}</BoutonSoumettre>
         <Link
           href="/admin/reglement"
-          className="rounded-lg border border-bord px-4 py-2.5 text-sm font-semibold text-gris transition-colors hover:text-creme"
+          className="rounded-controle border border-bord px-4 py-2.5 text-sm font-semibold text-gris transition-colors hover:text-creme"
         >
           Annuler
         </Link>

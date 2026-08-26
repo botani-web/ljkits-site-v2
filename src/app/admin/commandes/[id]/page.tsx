@@ -37,7 +37,7 @@ export default async function PageCommande({
           ← Retour aux commandes
         </Link>
         <div className="mt-2 flex flex-wrap items-center gap-3">
-          <h1 className="font-titre text-2xl uppercase">
+          <h1 className="font-titre text-2xl">
             {formaterNumeroCommande(commande.numero)}
           </h1>
           <EtiquetteStatut statut={commande.statut} />
@@ -46,7 +46,7 @@ export default async function PageCommande({
 
       {/* -------------------------- ALERTES EN TÊTE -------------------------- */}
       {commande.statut === 'LITIGE' && (
-        <div className="mb-5 rounded-xl border border-oni border-l-[3px] border-l-oni bg-oni/10 px-6 py-4">
+        <div className="mb-5 rounded-carte border border-oni border-l-[3px] border-l-oni bg-oni/10 px-6 py-4">
           <h2 className="mb-1 text-[15.5px] font-bold text-oni">Litige ouvert</h2>
           <p className="text-[14px] text-gris">
             Le client conteste ce paiement auprès de sa banque. Rien n’a été retiré :
@@ -61,7 +61,7 @@ export default async function PageCommande({
       )}
 
       {commande.derniereErreur && (
-        <div className="mb-5 rounded-xl border border-rouge/40 bg-rouge/10 px-6 py-4">
+        <div className="mb-5 rounded-carte border border-rouge/40 bg-rouge/10 px-6 py-4">
           <h2 className="mb-1 text-[15.5px] font-bold text-rouge">Dernière erreur technique</h2>
           <p className="font-mono text-[13px] text-gris">{commande.derniereErreur}</p>
         </div>
@@ -70,7 +70,7 @@ export default async function PageCommande({
       <div className="grid items-start gap-5 lg:grid-cols-[1.4fr_1fr]">
         <div className="flex flex-col gap-5">
           {/* --------------------------- CONTENU --------------------------- */}
-          <section className="rounded-2xl border border-bord bg-charbon px-6 py-6">
+          <section className="rounded-carte border border-bord bg-charbon px-6 py-6">
             <h2 className="mb-4 font-mono text-[10.5px] font-bold tracking-[1.4px] text-gris uppercase">
               Contenu de la commande
             </h2>
@@ -103,7 +103,7 @@ export default async function PageCommande({
           </section>
 
           {/* --------------------------- ACTIONS --------------------------- */}
-          <section className="rounded-2xl border border-bord bg-charbon px-6 py-6">
+          <section className="rounded-carte border border-bord bg-charbon px-6 py-6">
             <h2 className="mb-1.5 font-mono text-[10.5px] font-bold tracking-[1.4px] text-gris uppercase">
               Intervenir à la main
             </h2>
@@ -159,9 +159,9 @@ export default async function PageCommande({
 
         {/* ---------------------------- COLONNE ---------------------------- */}
         <aside className="flex flex-col gap-4">
-          <section className="rounded-2xl border border-bord bg-charbon px-6 py-5.5">
+          <section className="rounded-carte border border-bord bg-charbon px-6 py-5.5">
             <h2 className="mb-4 font-mono text-[10.5px] font-bold tracking-[1.4px] text-gris uppercase">
-              Compte de livraison
+              Pseudo de livraison
             </h2>
             <div className="flex items-center gap-3">
               {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -170,7 +170,7 @@ export default async function PageCommande({
                 alt=""
                 width={52}
                 height={52}
-                className="size-13 rounded-md border border-bord [image-rendering:pixelated]"
+                className="size-13 rounded-controle border border-bord [image-rendering:pixelated]"
               />
               <div className="min-w-0">
                 <div className="truncate font-mono text-[15px] font-bold">
@@ -181,7 +181,7 @@ export default async function PageCommande({
             </div>
           </section>
 
-          <section className="rounded-2xl border border-bord bg-charbon px-6 py-5.5">
+          <section className="rounded-carte border border-bord bg-charbon px-6 py-5.5">
             <h2 className="mb-4 font-mono text-[10.5px] font-bold tracking-[1.4px] text-gris uppercase">
               Suivi
             </h2>
@@ -192,7 +192,7 @@ export default async function PageCommande({
             </dl>
           </section>
 
-          <section className="rounded-2xl border border-bord bg-charbon px-6 py-5.5">
+          <section className="rounded-carte border border-bord bg-charbon px-6 py-5.5">
             <h2 className="mb-4 font-mono text-[10.5px] font-bold tracking-[1.4px] text-gris uppercase">
               Références Tebex
             </h2>
