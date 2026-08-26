@@ -1,6 +1,8 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
+
+import { classesBouton } from '@/components/ui/Bouton'
 import { useRouter } from 'next/navigation'
 
 /**
@@ -247,15 +249,14 @@ export function PaiementTebex({
   if (etat === 'ouvert' || etat === 'abandonne') return null
 
   /** Le bouton principal du panneau, quel que soit l'état. */
-  const CLASSE_ACTION =
-    'mt-2.5 inline-flex min-h-11 items-center justify-center rounded-[7px] bg-soupe px-4 font-mono text-[12.5px] font-bold tracking-wide text-[#1a0f00] transition-colors hover:bg-or'
+  const CLASSE_ACTION = classesBouton({ variante: 'plein', className: 'mt-2.5' })
 
   return (
     <div
       // `externe` est le déroulement normal sur tactile, pas une anomalie :
       // l'annoncer comme une alerte serait mentir au lecteur d'écran.
       role={etat === 'externe' ? 'status' : 'alert'}
-      className="fixed inset-x-0 bottom-0 z-50 border-t border-bord bg-charbon px-6 py-4 text-center"
+      className="fixed inset-x-0 bottom-0 z-50 border-t border-bord bg-charbon px-gouttiere py-4 text-center shadow-[0_-16px_40px_rgba(0,0,0,.6)]"
     >
       {etat === 'interrompu' && (
         <>
@@ -284,7 +285,7 @@ export function PaiementTebex({
           */}
           <a
             href={`/boutique/commande/${commandeId}`}
-            className="mt-2 block text-[13px] text-gris underline-offset-2 transition-colors hover:text-creme"
+            className="mt-2 block font-mono text-[10.5px] tracking-[.08em] text-gris uppercase underline underline-offset-2 transition-colors hover:text-creme"
           >
             Suivre ma commande
           </a>
@@ -305,7 +306,7 @@ export function PaiementTebex({
       <button
         type="button"
         onClick={() => setEtat('abandonne')}
-        className="mt-2 block min-h-11 w-full text-[13px] text-gris transition-colors hover:text-white"
+        className="mt-2 block min-h-11 w-full font-mono text-[10.5px] tracking-[.08em] text-gris uppercase transition-colors hover:text-creme"
       >
         Annuler
       </button>
