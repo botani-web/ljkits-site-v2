@@ -4,6 +4,7 @@ import { useActionState, useId, useState } from 'react'
 import { useFormStatus } from 'react-dom'
 
 import { soumettreCandidature, type EtatCandidature } from '@/actions/candidature'
+import { classesBouton } from '@/components/ui/Bouton'
 import {
   AGE_MAXIMUM,
   AGE_MINIMUM,
@@ -19,7 +20,7 @@ import {
 /* -------------------------------------------------------------------------- */
 
 const CLASSES_CHAMP =
-  'w-full rounded-lg border border-bord bg-nuit px-3.5 py-2.5 text-[15px] text-creme placeholder:text-gris/50 focus:border-soupe focus:outline-none'
+  'w-full rounded-controle border border-bord bg-nuit px-3.5 py-2.5 text-[15px] text-creme placeholder:text-gris/50 focus:border-soupe focus:outline-none'
 
 function Erreurs({ erreurs, id }: { erreurs?: string[]; id: string }) {
   if (!erreurs?.length) return null
@@ -137,7 +138,7 @@ function Question({
           {(['oui', 'non'] as const).map((option) => (
             <label
               key={option}
-              className="flex min-h-11 cursor-pointer items-center gap-2 rounded-lg border border-bord bg-nuit px-4 text-[15px] text-creme transition-colors has-checked:border-soupe has-checked:text-soupe hover:border-gris"
+              className="flex min-h-11 cursor-pointer items-center gap-2 rounded-controle border border-bord bg-nuit px-4 text-[15px] text-creme transition-colors has-checked:border-soupe has-checked:text-soupe hover:border-gris"
             >
               <input
                 type="radio"
@@ -191,7 +192,12 @@ function BoutonEnvoi() {
     <button
       type="submit"
       disabled={pending}
-      className="min-h-12 w-full rounded-lg bg-linear-[135deg] from-soupe to-or px-6 text-[15px] font-bold text-[#1a1005] transition-shadow hover:shadow-[0_4px_18px_rgba(254,147,1,.35)] disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+      className={classesBouton({
+        variante: 'plein',
+        taille: 'grande',
+        className:
+          'w-full disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:bg-soupe disabled:hover:shadow-none sm:w-auto',
+      })}
     >
       {pending ? 'Envoi en cours…' : 'Envoyer ma candidature'}
     </button>
@@ -239,7 +245,7 @@ export function FormulaireCandidature({
     return (
       <div
         role="status"
-        className="rounded-2xl border border-vert/40 bg-charbon px-6 py-10 text-center"
+        className="rounded-carte border border-vert/40 bg-charbon px-6 py-10 text-center"
       >
         <p className="font-titre text-xl text-vert uppercase">Candidature envoyée</p>
         <p className="mx-auto mt-3 max-w-lg text-[15px] text-gris">{etat.succes}</p>
@@ -376,7 +382,7 @@ export function FormulaireCandidature({
       ))}
 
       {/* --- consentement -------------------------------------------------- */}
-      <section className="rounded-xl border border-bord bg-charbon p-5">
+      <section className="rounded-carte border border-bord bg-charbon p-5.5">
         <label htmlFor={idConsentement} className="flex cursor-pointer items-start gap-3">
           <input
             id={idConsentement}
@@ -399,14 +405,14 @@ export function FormulaireCandidature({
         {etat.erreur && (
           <p
             role="alert"
-            className="rounded-lg border border-rouge/40 bg-rouge/10 px-4 py-3 text-[14px] text-rouge"
+            className="rounded-controle border border-rouge/40 bg-rouge/10 px-4 py-3 text-[14px] text-rouge"
           >
             {etat.erreur}
           </p>
         )}
 
         {apercu ? (
-          <p className="rounded-lg border border-bord bg-braise px-4 py-3 text-[13px] text-gris">
+          <p className="rounded-controle border border-bord bg-braise px-4 py-3 text-[13px] text-gris">
             Aperçu — l’envoi est désactivé.
           </p>
         ) : (

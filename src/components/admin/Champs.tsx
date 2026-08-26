@@ -21,7 +21,7 @@ function MessagesErreur({ erreurs }: { erreurs?: string[] }) {
 }
 
 const CLASSES_CHAMP =
-  'w-full rounded-lg border border-bord bg-nuit px-3.5 py-2.5 text-[15px] text-creme placeholder:text-gris/60 focus:border-soupe focus:outline-none'
+  'w-full rounded-controle border border-bord bg-nuit px-3.5 py-2.5 text-[15px] text-creme placeholder:text-gris/60 focus:border-soupe focus:outline-none'
 
 export function ChampTexte({
   nom,
