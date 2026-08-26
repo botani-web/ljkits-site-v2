@@ -2,6 +2,7 @@ import type { StatutCommande } from '@prisma/client'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
+import { ViderPanier } from '@/components/boutique/ViderPanier'
 import { PagePublique } from '@/components/public/PagePublique'
 import { classesBouton, LienBouton } from '@/components/ui/Bouton'
 import { Enveloppe } from '@/components/ui/Enveloppe'
@@ -64,6 +65,14 @@ export default async function PageCommande({
                 souci.
               </p>
             </div>
+
+            {/*
+              Le paiement s'étant déroulé dans un autre onglet, c'est cette
+              page qui apprend la première qu'il a abouti. Elle vide donc le
+              panier — sur le statut réel posé par le webhook, jamais sur une
+              supposition.
+            */}
+            {(commande.statut === 'PAYEE' || commande.statut === 'LIVREE') && <ViderPanier />}
 
             <EtatDeLaCommande statut={commande.statut} discord={discord} />
 
