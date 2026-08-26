@@ -93,11 +93,23 @@ export function Nav() {
             Discord
           </a>
 
+          {/*
+            `max-[860px]:hidden` et non `hidden min-[860px]:inline-flex`.
+
+            classesBouton() pose déjà `inline-flex` dans sa chaîne de base. Deux
+            utilitaires de `display` dans le même attribut, c'est l'ordre de la
+            FEUILLE DE STYLE qui tranche, pas celui de l'attribut — et Tailwind
+            émet `.inline-flex` après `.hidden`. Le bouton restait donc visible
+            à toutes les largeurs.
+
+            Une règle sous media query, elle, est écrite après toutes les règles
+            de base : elle gagne sans dépendre de cet ordre.
+          */}
           <BoutonCopieIp
             aria-label={`Copier l’adresse du serveur, ${ip}`}
             className={classesBouton({
               variante: 'plein',
-              className: 'hidden min-[860px]:inline-flex',
+              className: 'max-[860px]:hidden',
             })}
           >
             Copier l’IP

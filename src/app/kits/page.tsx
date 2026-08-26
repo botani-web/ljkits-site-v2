@@ -195,9 +195,14 @@ export default async function PageKits() {
  * Les quatre sources de coins.
  *
  * Aucune source en base : ce sont des règles d'économie du serveur, pas des
- * données. Les valeurs sont celles déjà en ligne — la maquette annonçait
- * « 5 000 · Le Totem » là où le site dit « 500 · Le KOTH », et je n'ai pas
- * tranché un écart de règle du jeu tout seul.
+ * données.
+ *
+ * Le serveur a DEUX événements, à ne pas confondre :
+ *   KOTH  — rapporte des POINTS de classement (+10), pas des coins. Il est
+ *           donc annoncé sur l'accueil et sur /classement, pas ici.
+ *   Totem — rapporte des COINS : 2 500 répartis au prorata des coups portés,
+ *           plus 500 de prime au meneur. C'est la meilleure source de coins
+ *           du serveur, et c'est celle qui a sa place dans ce tableau.
  */
 const SOURCES_DE_COINS = [
   {
@@ -213,10 +218,10 @@ const SOURCES_DE_COINS = [
       'Un palier de session qui tombe tout seul, en plus des gains de chaque kill.',
   },
   {
-    valeur: '500',
-    titre: 'Le KOTH',
+    valeur: '2 500',
+    titre: 'Le Totem',
     texte:
-      'Tiens la zone assez longtemps sans te faire déloger et la récompense est à toi.',
+      'La cagnotte de l’événement, répartie au prorata des coups portés, plus 500 coins de prime pour le meneur.',
   },
   {
     valeur: '1 000',

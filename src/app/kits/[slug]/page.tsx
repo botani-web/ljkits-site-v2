@@ -482,13 +482,18 @@ export default async function PageKit({ params }: { params: Promise<{ slug: stri
 
 /**
  * Les gains en jeu rappelés dans la voie gratuite.
+ *
  * Mêmes valeurs que la section « la monnaie » de /kits — c'est la même
  * économie, elle ne doit pas être annoncée différemment d'une page à l'autre.
+ *
+ * Le Totem et non le KOTH : le KOTH rapporte des points de classement, pas
+ * des coins. Confondre les deux ferait miroiter une source de coins qui
+ * n'existe pas.
  */
 const GAINS_EN_JEU = [
   { libelle: 'Par kill', valeur: '~20 coins' },
   { libelle: 'Tous les 10 kills', valeur: '+50 coins' },
-  { libelle: 'KOTH remporté', valeur: '500 coins' },
+  { libelle: 'Totem remporté', valeur: 'Jusqu’à 2 500 coins' },
   { libelle: 'Discord lié', valeur: '1 000 coins, une fois' },
 ]
 
