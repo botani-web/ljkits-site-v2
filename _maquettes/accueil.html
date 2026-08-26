@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LJKITS — Serveur Minecraft PvP Soup 1.8 français</title>
+<meta name="description" content="Serveur Minecraft PvP Soup en 1.8 : aucun cooldown d'attaque, aucune armure, 29 kits et un classement hebdomadaire. Zéro pay to win. Ouverture le 29 août.">
+<meta name="theme-color" content="#0E061F">
+
+<link rel="icon" type="image/png" href="logo-icon.png">
+<link rel="apple-touch-icon" href="logo-icon.png">
+
+<meta property="og:type" content="website">
+<meta property="og:locale" content="fr_FR">
+<meta property="og:site_name" content="LJKITS">
+<meta property="og:title" content="LJKITS — Serveur Minecraft PvP Soup 1.8">
+<meta property="og:description" content="Aucun cooldown d'attaque, aucune armure, 29 kits. Ouverture le 29 août à 15h30.">
+<meta property="og:url" content="https://www.ljkits.eu/">
+<meta property="og:image" content="https://www.ljkits.eu/og.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Outfit:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --noir:#0E061F; --charbon:#171029; --braise:#211736; --bord:#2E2245;
+  --gris:#9E93AC; --creme:#F2E8D9; --soupe:#FE9301; --or:#FDC003;
+  --oni:#E92813; --vert:#5BE06B;
+  --mono:'JetBrains Mono',ui-monospace,monospace;
+  --corps:'Outfit',system-ui,sans-serif;
+  --titre:'Bungee',system-ui,sans-serif;
+  --gouttiere:clamp(18px,4vw,44px);
+  --large:1180px;
+}
+
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--noir);color:var(--creme);font-family:var(--corps);font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+a{color:inherit;text-decoration:none}
+img{max-width:100%;display:block}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
+:focus-visible{outline:2px solid var(--or);outline-offset:3px;border-radius:2px}
+
+.enveloppe{max-width:var(--large);margin:0 auto;padding-left:var(--gouttiere);padding-right:var(--gouttiere)}
+.etiquette{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:var(--soupe)}
+.titre-section{font-family:var(--titre);font-size:clamp(24px,3.6vw,38px);line-height:1.06;letter-spacing:-.01em;margin-top:12px}
+.titre-section .or{color:var(--or)}
+section{padding:clamp(54px,6.5vw,84px) 0;position:relative}
+
+.bouton{display:inline-flex;align-items:center;justify-content:center;gap:9px;font-family:var(--mono);font-size:12.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:11px 18px;border-radius:4px;transition:transform .16s,background .16s,border-color .16s,box-shadow .16s}
+.bouton:active{transform:translateY(1px)}
+.bouton-plein{background:var(--soupe);color:#180C02}
+.bouton-plein:hover{background:var(--or);box-shadow:0 8px 26px -8px rgba(254,147,1,.7)}
+.bouton-vide{border:1px solid var(--bord);color:var(--creme)}
+.bouton-vide:hover{border-color:var(--soupe);background:var(--braise)}
+.bouton svg{width:16px;height:16px;fill:currentColor;flex:none}
+
+/* ---------- nav ---------- */
+.nav{position:sticky;top:0;z-index:70;background:rgba(14,6,31,.86);backdrop-filter:blur(14px);border-bottom:1px solid var(--bord)}
+.nav-int{max-width:var(--large);margin:0 auto;padding:12px var(--gouttiere);display:flex;align-items:center;gap:26px}
+.nav-logo img{height:24px;width:auto}
+.nav-liens{display:flex;gap:26px;margin-left:8px}
+.nav-liens a{font-family:var(--mono);font-size:12px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--gris);transition:color .18s}
+.nav-liens a:hover{color:var(--creme)}
+.nav-droite{margin-left:auto;display:flex;align-items:center;gap:10px}
+.nav-burger{display:none;padding:8px;border:1px solid var(--bord);border-radius:4px}
+.nav-burger svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2}
+
+/* ---------- HERO centré ---------- */
+.hero{padding:clamp(56px,8vw,104px) 0 clamp(48px,6vw,76px);position:relative;overflow:hidden;text-align:center}
+.hero::before{
+  content:"";position:absolute;inset:-40% -10% auto -10%;height:760px;
+  background:radial-gradient(46% 46% at 50% 26%,rgba(233,40,19,.17),transparent 68%),
+             radial-gradient(56% 46% at 50% 8%,rgba(254,147,1,.12),transparent 74%);
+  pointer-events:none;
+}
+.hero-int{position:relative;max-width:900px;margin:0 auto}
+
+.hero h1{
+  font-family:var(--titre);
+  font-size:clamp(34px,6.6vw,68px);
+  line-height:1;letter-spacing:-.02em;
+  text-wrap:balance;
+}
+.hero h1 .soup{color:var(--oni)}
+.hero h1 .huit{color:var(--or)}
+
+.hero-sous{
+  color:var(--gris);
+  font-size:clamp(16.5px,2vw,20px);
+  max-width:56ch;margin:22px auto 0;
+  text-wrap:balance;
+}
+.hero-sous b{color:var(--creme);font-weight:600}
+
+.hero-actions{display:flex;flex-wrap:wrap;justify-content:center;gap:11px;margin-top:32px}
+.hero-actions .bouton{padding:15px 24px;font-size:13px}
+
+/* compte à rebours discret, sous les boutons */
+.ouverture{
+  display:inline-flex;align-items:center;gap:14px;flex-wrap:wrap;justify-content:center;
+  margin-top:34px;padding:13px 20px;
+  border:1px solid rgba(253,192,3,.36);border-radius:5px;background:rgba(253,192,3,.06);
+}
+.ouv-lbl{font-family:var(--mono);font-size:10.5px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--or)}
+.ouv-val{font-family:var(--mono);font-size:15px;font-weight:700;color:var(--creme);letter-spacing:.04em}
+.ouv-sep{width:1px;height:16px;background:rgba(253,192,3,.3)}
+
+/* ---------- règles ---------- */
+.regles{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--bord);border-bottom:1px solid var(--bord);background:var(--charbon)}
+.rg{padding:26px var(--gouttiere)}
+.rg + .rg{border-left:1px solid var(--bord)}
+.rg-v{font-family:var(--titre);font-size:clamp(18px,2.4vw,25px);line-height:1.1}
+.rg-v .z{color:var(--oni)}
+.rg-t{font-family:var(--mono);font-size:11px;color:var(--gris);margin-top:9px;line-height:1.5}
+
+/* ---------- trois piliers ---------- */
+.piliers{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:clamp(26px,3.5vw,38px)}
+.pi{border:1px solid var(--bord);border-radius:5px;background:var(--charbon);padding:28px 26px;display:flex;flex-direction:column;transition:border-color .18s,transform .18s}
+.pi:hover{border-color:var(--soupe);transform:translateY(-2px)}
+.pi-n{font-family:var(--titre);font-size:clamp(28px,3.6vw,38px);line-height:1;color:var(--or)}
+.pi h3{font-family:var(--titre);font-size:17px;margin-top:14px;letter-spacing:-.01em}
+.pi p{color:var(--gris);font-size:14.5px;margin-top:11px;flex:1}
+.pi-lien{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--soupe);margin-top:18px}
+
+/* ---------- classement ---------- */
+.cls{background:var(--charbon);border-top:1px solid var(--bord);border-bottom:1px solid var(--bord)}
+.cls-int{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,440px);gap:clamp(28px,4vw,56px);align-items:center}
+.cls p{color:var(--gris);margin-top:14px;max-width:46ch}
+.cls-lien{display:inline-flex;align-items:center;gap:9px;margin-top:22px;font-family:var(--mono);font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--soupe);border-bottom:1px solid rgba(254,147,1,.4);padding-bottom:3px}
+.table{border:1px solid var(--bord);border-radius:5px;overflow:hidden;background:var(--braise)}
+.rang{display:grid;grid-template-columns:36px minmax(0,1fr) auto;gap:14px;align-items:center;padding:13px 18px;border-bottom:1px solid var(--bord);position:relative}
+.rang:last-child{border-bottom:0}
+.rang .jauge{position:absolute;left:0;top:0;bottom:0;background:rgba(254,147,1,.06)}
+.rang-n{font-family:var(--mono);font-size:12.5px;color:var(--gris);position:relative}
+.rang-n.p1{color:var(--or);font-weight:700}
+.rang-p{font-weight:600;font-size:15px;position:relative;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rang-v{font-family:var(--mono);font-size:14px;font-weight:700;color:var(--soupe);position:relative}
+.cls-note{font-family:var(--mono);font-size:10.5px;color:var(--gris);text-align:center;padding:11px;background:var(--noir);border-top:1px solid var(--bord)}
+
+/* ---------- cta ---------- */
+.final{text-align:center;position:relative;overflow:hidden}
+.final::before{content:"";position:absolute;inset:auto -20% -60% -20%;height:420px;background:radial-gradient(50% 60% at 50% 100%,rgba(254,147,1,.17),transparent 72%);pointer-events:none}
+.final h2{font-family:var(--titre);font-size:clamp(26px,5vw,52px);line-height:1;letter-spacing:-.02em;position:relative}
+.final h2 .or{color:var(--or)}
+.final > .enveloppe > p{color:var(--gris);margin-top:18px;position:relative}
+.final-ip{display:inline-flex;align-items:center;gap:14px;border:1px solid var(--bord);border-radius:5px;background:var(--charbon);padding:16px 22px;margin-top:26px;position:relative;font-family:var(--mono);font-size:clamp(15px,2.4vw,21px);font-weight:700;color:var(--or);transition:border-color .18s}
+.final-ip:hover{border-color:var(--soupe)}
+.final-ip svg{width:19px;height:19px;stroke:var(--gris);fill:none;stroke-width:2;flex:none}
+.final-sous{font-family:var(--mono);font-size:11.5px;color:var(--gris);margin-top:16px;position:relative}
+
+/* ---------- pied ---------- */
+footer{border-top:1px solid var(--bord);background:var(--charbon);padding:clamp(40px,5vw,56px) 0 0}
+.pied{display:flex;flex-wrap:wrap;gap:26px 48px;align-items:flex-start}
+.pied-marque img{height:24px;margin-bottom:14px}
+.pied-marque p{color:var(--gris);font-size:14px;max-width:32ch}
+.pied-liens{display:flex;flex-wrap:wrap;gap:8px 26px;margin-left:auto;align-self:center}
+.pied-liens a{font-family:var(--mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--gris);transition:color .18s}
+.pied-liens a:hover{color:var(--creme)}
+.pied-bas{margin-top:36px;border-top:1px solid var(--bord);padding:20px 0 26px;font-family:var(--mono);font-size:10.5px;color:var(--gris);display:flex;flex-wrap:wrap;gap:8px 24px}
+
+/* ---------- toast ---------- */
+.toast{position:fixed;left:50%;bottom:26px;z-index:200;transform:translateX(-50%) translateY(150%);background:var(--soupe);color:#180C02;font-family:var(--mono);font-size:12.5px;font-weight:700;letter-spacing:.06em;padding:13px 22px;border-radius:5px;transition:transform .3s cubic-bezier(.2,.9,.3,1.2);box-shadow:0 16px 40px rgba(0,0,0,.6)}
+.toast.on{transform:translateX(-50%) translateY(0)}
+
+/* ---------- responsive ---------- */
+@media(max-width:1024px){
+  .cls-int{grid-template-columns:1fr}
+  .piliers{grid-template-columns:1fr}
+  .regles{grid-template-columns:1fr 1fr}
+  .rg:nth-child(3){border-left:0}
+  .rg:nth-child(n+3){border-top:1px solid var(--bord)}
+}
+@media(max-width:860px){
+  .nav-liens{display:none}
+  .nav-burger{display:inline-flex}
+  .nav-droite .bouton-vide{display:none}
+  .pied-liens{margin-left:0}
+}
+@media(max-width:560px){
+  .regles{grid-template-columns:1fr}
+  .rg + .rg{border-left:0;border-top:1px solid var(--bord)}
+  .hero-actions .bouton{flex:1 1 100%}
+  .ouverture{width:100%;flex-direction:column;gap:8px}
+  .ouv-sep{display:none}
+}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+
+<!-- ═══════════ NAV ═══════════ -->
+<nav class="nav">
+  <div class="nav-int">
+    <a class="nav-logo" href="#haut" aria-label="LJKITS, accueil"><img src="logo-texte.png" alt="LJKITS" width="88" height="24"></a>
+    <div class="nav-liens">
+      <a href="/kits">Kits</a>
+      <a href="/classement">Classement</a>
+      <a href="/boutique">Boutique</a>
+      <a href="/reglement">Règlement</a>
+    </div>
+    <div class="nav-droite">
+      <a class="bouton bouton-vide" data-discord href="#" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.317 4.37a19.79 19.79 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.058a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128c.126-.094.252-.192.372-.291a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.099.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>
+        Discord
+      </a>
+      <button class="bouton bouton-plein" onclick="copierIP()">Copier l'IP</button>
+      <button class="nav-burger" aria-label="Menu" onclick="document.querySelector('.nav-liens').style.display='flex'">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<!-- ═══════════ HERO ═══════════ -->
+<header class="hero" id="haut">
+  <div class="enveloppe hero-int">
+
+    <h1>Serveur Minecraft<br><span class="soup">PvP Soup</span> en <span class="huit">1.8</span></h1>
+
+    <p class="hero-sous">
+      Aucun cooldown d'attaque, aucune armure, et un bol de soupe pour se soigner.
+      <b>29 kits</b> à débloquer en jouant, un <b>classement remis à zéro chaque
+      lundi</b>, et zéro pay to win.
+    </p>
+
+    <div class="hero-actions">
+      <a class="bouton bouton-plein" data-discord href="#" target="_blank" rel="noopener">Rejoindre le Discord</a>
+      <button class="bouton bouton-vide" onclick="copierIP()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+        <span data-ip>mc.ljkits.eu</span>
+      </button>
+    </div>
+
+    <div class="ouverture" id="ouverture">
+      <span class="ouv-lbl" id="ouvLabel">Ouverture dans</span>
+      <span class="ouv-val" id="ouvValeur">—</span>
+      <span class="ouv-sep" aria-hidden="true"></span>
+      <span class="ouv-lbl" id="ouvDate">Samedi 29 août · 15h30</span>
+    </div>
+
+  </div>
+</header>
+
+<!-- ═══════════ LES RÈGLES ═══════════ -->
+<div class="regles">
+  <div class="rg">
+    <div class="rg-v"><span class="z">0</span> cooldown</div>
+    <div class="rg-t">Tu cliques, ça touche. Le combat 1.8 intégral.</div>
+  </div>
+  <div class="rg">
+    <div class="rg-v"><span class="z">0</span> armure</div>
+    <div class="rg-t">Cinq cœurs, pour tout le monde, sans exception.</div>
+  </div>
+  <div class="rg">
+    <div class="rg-v">Clic droit</div>
+    <div class="rg-t">La soupe soigne. Gérer son stock fait partie du duel.</div>
+  </div>
+  <div class="rg">
+    <div class="rg-v">Knockback 1.8</div>
+    <div class="rg-t">Le recul d'époque, réglé à la main. Le combo repart.</div>
+  </div>
+</div>
+
+<!-- ═══════════ TROIS PILIERS ═══════════ -->
+<section>
+  <div class="enveloppe">
+    <div class="etiquette">Ce qui t'attend</div>
+    <h2 class="titre-section">Trois raisons de <span class="or">rester</span></h2>
+
+    <div class="piliers">
+      <a class="pi" href="/kits">
+        <div class="pi-n">29</div>
+        <h3>Kits</h3>
+        <p>Du Kangaroo au Kitsune. Tous débloquables en jouant, aucun réservé à la boutique.</p>
+        <span class="pi-lien">Voir les kits →</span>
+      </a>
+
+      <a class="pi" href="/classement">
+        <div class="pi-n">+10</div>
+        <h3>Points par KOTH</h3>
+        <p>Chaque kill compte. Le tableau se vide le lundi et les dix premiers repartent avec des coins.</p>
+        <span class="pi-lien">Voir le classement →</span>
+      </a>
+
+      <a class="pi" href="/boutique">
+        <div class="pi-n">0</div>
+        <h3>Pay to win</h3>
+        <p>Rien de ce qui se vend ne se gagne à ta place. Ni dégâts, ni stuff, ni coins.</p>
+        <span class="pi-lien">Voir la boutique →</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ CLASSEMENT ═══════════ -->
+<section class="cls">
+  <div class="enveloppe cls-int">
+    <div>
+      <div class="etiquette">Compétition</div>
+      <h2 class="titre-section">Le tableau se vide<br>chaque <span class="or">lundi</span></h2>
+      <p>
+        Un kill vaut un point, une série stoppée en vaut trois, un KOTH remporté
+        dix. Les dix premiers de la semaine repartent avec des coins, et le premier
+        garde le titre de Champion sept jours.
+      </p>
+      <a class="cls-lien" href="/classement">Classement complet →</a>
+    </div>
+
+    <div class="table">
+      <div class="rang"><span class="jauge" style="width:100%"></span><span class="rang-n p1">01</span><span class="rang-p">Lestoo</span><span class="rang-v">412</span></div>
+      <div class="rang"><span class="jauge" style="width:94%"></span><span class="rang-n">02</span><span class="rang-p">Kuroshiro_</span><span class="rang-v">388</span></div>
+      <div class="rang"><span class="jauge" style="width:83%"></span><span class="rang-n">03</span><span class="rang-p">Bolduc</span><span class="rang-v">341</span></div>
+      <div class="rang"><span class="jauge" style="width:72%"></span><span class="rang-n">04</span><span class="rang-p">Nyxaria</span><span class="rang-v">298</span></div>
+      <div class="rang"><span class="jauge" style="width:66%"></span><span class="rang-n">05</span><span class="rang-p">ptit_ours</span><span class="rang-v">271</span></div>
+      <div class="cls-note">Cherche ton pseudo sur la page classement</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ CTA ═══════════ -->
+<section class="final">
+  <div class="enveloppe">
+    <h2>Le bol est <span class="or">plein</span>.</h2>
+    <p id="ctaTexte">Rendez-vous samedi 29 août à 15h30.</p>
+    <button class="final-ip" onclick="copierIP()">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+      <span data-ip>mc.ljkits.eu</span>
+    </button>
+    <p class="final-sous">Clique pour copier · Minecraft Java 1.8 → 1.21</p>
+  </div>
+</section>
+
+<!-- ═══════════ PIED ═══════════ -->
+<footer>
+  <div class="enveloppe">
+    <div class="pied">
+      <div class="pied-marque">
+        <img src="logo-texte.png" alt="LJKITS" width="88" height="24">
+        <p>Le PvP Soup à l'ancienne. Serveur français, sans pay to win.</p>
+      </div>
+      <div class="pied-liens">
+        <a href="/kits">Kits</a>
+        <a href="/classement">Classement</a>
+        <a href="/boutique">Boutique</a>
+        <a href="/reglement">Règlement</a>
+        <a data-discord href="#" target="_blank" rel="noopener">Discord</a>
+      </div>
+    </div>
+    <div class="pied-bas">
+      <span>© 2026 LJKITS</span>
+      <span>Hommage indépendant, sans lien avec les anciens administrateurs de MJKits.</span>
+      <span>Not an official Minecraft product. Not approved by or associated with Mojang or Microsoft.</span>
+    </div>
+  </div>
+</footer>
+
+<div class="toast" id="toast" role="status" aria-live="polite">Adresse copiée</div>
+
+<script>
+const IP        = 'mc.ljkits.eu';
+const DISCORD   = 'https://discord.gg/ljkits';
+/* Ouverture : samedi 29 août 2026, 15h30 heure de Paris */
+const OUVERTURE = new Date('2026-08-29T15:30:00+02:00');
+
+document.querySelectorAll('[data-ip]').forEach(e => e.textContent = IP);
+document.querySelectorAll('[data-discord]').forEach(e => e.href = DISCORD);
+
+let minuteurToast;
+function copierIP(){ navigator.clipboard?.writeText(IP).then(afficherToast).catch(afficherToast); }
+function afficherToast(){
+  const t = document.getElementById('toast');
+  t.classList.add('on');
+  clearTimeout(minuteurToast);
+  minuteurToast = setTimeout(() => t.classList.remove('on'), 2200);
+}
+
+/* ─────────────────────────────────────────────
+   Avant l'ouverture → compte à rebours.
+   Après → nombre de joueurs en ligne.
+   Bascule automatique, rien à toucher le jour J.
+   ───────────────────────────────────────────── */
+const ouvert = () => Date.now() >= OUVERTURE.getTime();
+
+function majOuverture(){
+  if(ouvert()) return basculerEnDirect();
+
+  let s = Math.floor((OUVERTURE - new Date()) / 1000);
+  const j = Math.floor(s / 86400); s %= 86400;
+  const h = Math.floor(s / 3600);  s %= 3600;
+  const m = Math.floor(s / 60);
+  const p = v => String(v).padStart(2, '0');
+
+  document.getElementById('ouvValeur').textContent =
+    j > 0 ? `${j}j ${p(h)}h ${p(m)}m ${p(s % 60)}s`
+          : `${p(h)}h ${p(m)}m ${p(s % 60)}s`;
+}
+
+let bascule = false;
+function basculerEnDirect(){
+  if(bascule) return;
+  bascule = true;
+  document.getElementById('ouvLabel').textContent = 'Joueurs en ligne';
+  document.getElementById('ouvDate').textContent  = 'Serveur ouvert';
+  document.getElementById('ctaTexte').textContent = 'Copie l\'adresse et sors du spawn.';
+  chargerEtat();
+  setInterval(chargerEtat, 60000);
+}
+
+async function chargerEtat(){
+  const v = document.getElementById('ouvValeur');
+  try{
+    const r = await fetch('https://api.mcstatus.io/v2/status/java/' + IP, {cache:'no-store'});
+    const d = await r.json();
+    v.textContent = d.online ? String(d.players.online) : '0';
+    document.getElementById('ouvDate').textContent = d.online ? 'Serveur en ligne' : 'Serveur hors ligne';
+  }catch(e){
+    v.textContent = '—';
+    document.getElementById('ouvDate').textContent = 'État indisponible';
+  }
+}
+
+majOuverture();
+setInterval(majOuverture, 1000);
+</script>
+
+</body>
+</html>

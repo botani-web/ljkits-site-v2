@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Les kits — LJKITS</title>
+<meta name="description" content="Les 21 kits de LJKITS : capacités, cooldowns, prix en coins. Aucune armure, que du skill.">
+<meta name="theme-color" content="#0E061F">
+
+<link rel="icon" type="image/png" href="logo-icon.png">
+<link rel="apple-touch-icon" href="logo-icon.png">
+
+<meta property="og:type" content="website">
+<meta property="og:locale" content="fr_FR">
+<meta property="og:site_name" content="LJKits">
+<meta property="og:title" content="Les kits — LJKITS">
+<meta property="og:description" content="21 kits, leurs capacités et leurs cooldowns. Tout se débloque en jouant.">
+<meta property="og:image" content="https://ljkits.eu/og.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Outfit:wght@300;400;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --nuit:#0E061F;
+  --charbon:#171029;
+  --braise:#211736;
+  --bord:#2E2245;
+  --gris:#9E93AC;
+  --soupe:#FE9301;
+  --or:#FDC003;
+  --oni:#E92813;
+  --vert:#5BE06B;
+  --violet:#B478FF;
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+
+body{
+  background:var(--nuit);
+  color:#fff;
+  font-family:'Outfit',system-ui,sans-serif;
+  font-weight:300;
+  line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+a{color:inherit;text-decoration:none}
+button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
+:focus-visible{outline:2px solid var(--or);outline-offset:3px;border-radius:4px}
+
+.wrap{max-width:1180px;margin:0 auto;padding:0 24px}
+
+/* ---------- NAV ---------- */
+
+.nav{
+  position:sticky;top:0;z-index:60;
+  background:rgba(14,6,31,.88);
+  backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--bord);
+}
+.nav-in{
+  max-width:1180px;margin:0 auto;padding:14px 24px;
+  display:flex;align-items:center;justify-content:space-between;gap:20px;
+}
+.nav-logo img{height:22px;width:auto;display:block}
+.nav-links{display:flex;align-items:center;gap:26px;font-size:14px;font-weight:400}
+.nav-links a{color:var(--gris);transition:color .16s}
+.nav-links a:hover{color:#fff}
+.nav-links a.actif{color:var(--or)}
+.nav-cta{
+  font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;
+  background:var(--soupe);color:#1a0f00;padding:9px 16px;border-radius:7px;
+  transition:background .16s,transform .16s;
+}
+.nav-cta:hover{background:var(--or);transform:translateY(-1px)}
+@media(max-width:800px){.nav-links{display:none}}
+
+/* ---------- HERO ---------- */
+
+.hero{position:relative;padding:66px 0 34px;overflow:hidden}
+.hero::before{
+  content:"";position:absolute;left:-20%;right:-20%;top:0;height:400px;
+  background:
+    radial-gradient(ellipse 30% 40% at 50% 6%, rgba(233,40,19,.15), transparent 70%),
+    radial-gradient(ellipse 60% 70% at 50% 0%, rgba(254,147,1,.08), transparent 65%);
+  pointer-events:none;
+}
+.hero-in{position:relative;text-align:center}
+.eyebrow{
+  font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:3px;
+  text-transform:uppercase;font-weight:700;color:var(--oni);
+  text-shadow:0 0 18px rgba(233,40,19,.35);margin-bottom:14px;
+}
+h1{
+  font-family:'Bungee',cursive;font-weight:400;text-transform:uppercase;
+  font-size:clamp(30px,5vw,54px);line-height:1.05;
+}
+h1 .accent{
+  background:linear-gradient(180deg,var(--or) 18%,var(--soupe) 82%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 0 26px rgba(254,147,1,.4));
+}
+.hero p.sous{max-width:560px;margin:16px auto 0;color:var(--gris);font-size:17px}
+
+/* ---------- REGLES ---------- */
+
+.regles{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:1px;
+  background:var(--bord);border:1px solid var(--bord);border-radius:12px;
+  overflow:hidden;margin:38px auto 0;max-width:860px;
+}
+@media(max-width:760px){.regles{grid-template-columns:repeat(2,1fr)}}
+.regle{background:var(--charbon);padding:18px 16px;text-align:center}
+.regle-val{font-family:'Bungee',cursive;font-size:24px;color:var(--or);line-height:1.1}
+.regle-lab{
+  font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:1.2px;
+  text-transform:uppercase;color:var(--gris);margin-top:6px;
+}
+
+/* ---------- FILTRES ---------- */
+
+.filtres{
+  display:flex;gap:8px;flex-wrap:wrap;align-items:center;
+  margin:46px 0 26px;padding-bottom:16px;border-bottom:1px solid var(--bord);
+}
+.filtre{
+  font-family:'JetBrains Mono',monospace;font-size:12.5px;font-weight:700;
+  letter-spacing:.5px;text-transform:uppercase;
+  color:var(--gris);padding:8px 15px;border:1px solid var(--bord);border-radius:7px;
+  transition:color .16s,border-color .16s,background .16s;
+}
+.filtre:hover{color:#fff;border-color:#3d2f5c}
+.filtre.on{color:#1a0f00;background:var(--soupe);border-color:var(--soupe)}
+.compteur{
+  margin-left:auto;font-family:'JetBrains Mono',monospace;
+  font-size:12.5px;color:var(--gris);
+}
+
+/* ---------- GRILLE ---------- */
+
+.kits{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;padding-bottom:20px}
+@media(max-width:980px){.kits{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:640px){.kits{grid-template-columns:1fr}}
+
+.kit{
+  background:var(--charbon);border:1px solid var(--bord);border-radius:12px;
+  padding:20px;display:flex;flex-direction:column;
+  transition:transform .18s,border-color .18s;
+}
+.kit:hover{transform:translateY(-3px);border-color:#3d2f5c}
+.kit.exclu{
+  border-color:#3a2a55;
+  background:linear-gradient(168deg,#1d1233 0%,var(--charbon) 60%);
+}
+.kit.gratuit-tag{border-color:#28442c}
+
+.kit-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.kit-nom{font-family:'Bungee',cursive;font-weight:400;font-size:19px;text-transform:uppercase;line-height:1.15}
+.kit.exclu .kit-nom{color:var(--violet)}
+.kit-kanji{font-family:'JetBrains Mono',monospace;font-size:15px;color:var(--bord);flex-shrink:0}
+.kit-role{
+  font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:1.4px;
+  text-transform:uppercase;color:var(--oni);margin-top:5px;
+}
+.kit.exclu .kit-role{color:var(--violet)}
+
+.kit p{color:var(--gris);font-size:14px;margin:12px 0 14px;flex-grow:1}
+
+.fiche{
+  background:var(--nuit);border:1px solid var(--bord);border-radius:8px;
+  padding:11px 13px;margin-bottom:14px;
+  display:flex;flex-direction:column;gap:6px;
+}
+.fiche-l{display:flex;justify-content:space-between;gap:10px;font-size:12.5px}
+.fiche-k{
+  font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:1px;
+  text-transform:uppercase;color:var(--gris);flex-shrink:0;
+}
+.fiche-v{font-family:'JetBrains Mono',monospace;font-size:12px;color:#d8d2e2;text-align:right}
+
+.kit-pied{display:flex;align-items:center;justify-content:space-between;gap:10px;padding-top:12px;border-top:1px solid var(--bord)}
+.prix{font-family:'Bungee',cursive;font-size:17px;color:var(--or)}
+.prix small{font-family:'Outfit',sans-serif;font-size:11px;font-weight:400;color:var(--gris);margin-left:3px}
+.prix.libre{color:var(--vert)}
+.badge{
+  font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;
+  letter-spacing:1.2px;text-transform:uppercase;
+  padding:4px 9px;border-radius:4px;
+}
+.badge-euro{background:rgba(180,120,255,.13);color:var(--violet);border:1px solid #3a2a55}
+.badge-start{background:rgba(91,224,107,.11);color:var(--vert);border:1px solid #28442c}
+
+/* ---------- BAS DE PAGE ---------- */
+
+.note-exclu{
+  margin:26px 0 0;border:1px solid #3a2a55;border-left:3px solid var(--violet);
+  background:linear-gradient(100deg,rgba(180,120,255,.06),transparent 60%);
+  border-radius:10px;padding:20px 24px;
+  display:flex;gap:16px;align-items:flex-start;
+}
+.note-exclu-ico{font-family:'Bungee',cursive;font-size:19px;color:var(--violet);line-height:1;padding-top:3px}
+.note-exclu h2{font-size:15.5px;font-weight:700;margin-bottom:5px}
+.note-exclu p{color:var(--gris);font-size:14.5px}
+.note-exclu strong{color:#fff;font-weight:600}
+.note-exclu a{color:var(--violet);text-decoration:underline;text-underline-offset:2px}
+
+.gagner{padding:60px 0 0}
+.gagner h2{font-family:'Bungee',cursive;font-weight:400;text-transform:uppercase;font-size:clamp(20px,2.6vw,27px);margin-bottom:6px}
+.gagner .intro{color:var(--gris);font-size:15.5px;margin-bottom:24px;max-width:640px}
+.sources{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+@media(max-width:900px){.sources{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:520px){.sources{grid-template-columns:1fr}}
+.source{background:var(--braise);border:1px solid var(--bord);border-radius:10px;padding:18px 20px}
+.source-val{font-family:'Bungee',cursive;font-size:22px;color:var(--soupe)}
+.source h3{font-size:14.5px;font-weight:700;margin:4px 0 5px}
+.source p{color:var(--gris);font-size:13.5px}
+
+.cta{
+  margin:46px 0 70px;text-align:center;
+  border:1px dashed var(--soupe);border-radius:12px;
+  background:linear-gradient(100deg,rgba(254,147,1,.07),transparent 55%);
+  padding:34px 26px;
+}
+.cta h2{font-family:'Bungee',cursive;font-weight:400;text-transform:uppercase;font-size:clamp(19px,2.4vw,25px)}
+.cta p{color:var(--gris);margin:8px auto 20px;max-width:480px;font-size:15px}
+.cta-ip{
+  display:inline-block;font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:700;
+  background:var(--soupe);color:#1a0f00;padding:12px 26px;border-radius:8px;
+  transition:background .16s,transform .16s;
+}
+.cta-ip:hover{background:var(--or);transform:translateY(-1px)}
+
+footer{border-top:1px solid var(--bord);padding:32px 0 40px}
+.foot-in{display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap}
+.foot-in img{height:20px;width:auto}
+.foot-links{display:flex;gap:22px;font-size:14px}
+.foot-links a{color:var(--gris);transition:color .16s}
+.foot-links a:hover{color:#fff}
+.foot-legal{color:var(--bord);font-size:12px;margin-top:16px;font-family:'JetBrains Mono',monospace}
+
+@media(prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-in">
+    <a class="nav-logo" href="/" aria-label="LJKITS — accueil">
+      <img src="logo-texte.png" alt="LJKits" width="81" height="22">
+    </a>
+    <div class="nav-links">
+      <a href="/">Accueil</a>
+      <a href="/kits" class="actif">Kits</a>
+      <a href="/boutique">Boutique</a>
+      <a href="https://discord.gg/9KYbUznDr7">Discord</a>
+    </div>
+    <a class="nav-cta" href="/#jouer">mc.ljkits.eu</a>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap hero-in">
+    <p class="eyebrow">21 kits · 0 armure</p>
+    <h1>Choisis ta <span class="accent">lame</span></h1>
+    <p class="sous">Pas de stuff, pas de niveaux : juste une épée en pierre, un inventaire de soupes et une capacité qui change tout.</p>
+
+    <div class="regles">
+      <div class="regle">
+        <div class="regle-val">3,5 ❤</div>
+        <div class="regle-lab">Une soupe</div>
+      </div>
+      <div class="regle">
+        <div class="regle-val">2 ❤</div>
+        <div class="regle-lab">Épée en pierre</div>
+      </div>
+      <div class="regle">
+        <div class="regle-val">0</div>
+        <div class="regle-lab">Cooldown d'attaque</div>
+      </div>
+      <div class="regle">
+        <div class="regle-val">1.8</div>
+        <div class="regle-lab">Knockback d'époque</div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <div class="filtres">
+    <button class="filtre on" data-f="tous" type="button">Tous</button>
+    <button class="filtre" data-f="gratuit" type="button">En coins</button>
+    <button class="filtre" data-f="exclu" type="button">Exclusifs</button>
+    <span class="compteur" id="compteur">21 kits</span>
+  </div>
+
+  <div class="kits" id="grille">
+
+    <!-- ---------- KITS CLASSIQUES ---------- -->
+
+    <article class="kit" data-type="gratuit">
+      <div class="kit-head">
+        <div><div class="kit-nom">PvP</div><div class="kit-role">Fondamental</div></div>
+      </div>
+      <p>L'épée, les soupes, rien d'autre. Celui qui gagne avec le PvP gagne avec n'importe quoi.</p>
+      <div class="fiche">
+        <div class="fiche-l"><span class="fiche-k">Capacité</span><span class="fiche-v">Aucune</span></div>
+        <div class="fiche-l"><span class="fiche-k">Inventaire</span><span class="fiche-v">Épée + soupes</span></div>
+      </div>
+      <div class="kit-pied">
+        <span class="prix libre">Gratuit</span>
+        <span class="badge badge-start">Kit de départ</span>
+      </div>
+    </article>
+
+    <article class="kit" data-type="gratuit">
+      <div class="kit-head">
+        <div><div class="kit-nom">Archer</div><div class="kit-role">Distance</div></div>
+      </div>
+      <p>Un arc et un carquois plein. Tu harcèles, tu finis, tu ne tiens pas la mêlée.</p>
+      <div class="fiche">
+        <div class="fiche-l"><span class="fiche-k">Item</span><span class="fiche-v">Arc + 64 flèches</span></div>
+        <div class="fiche-l"><span class="fiche-k">Dégâts</span><span class="fiche-v">2,7 ❤ pleine charge</span></div>
+      </div>
+      <div class="kit-pied"><span class="prix">300<small> coins</small></span></div>
+    </article>
+
+    <article class="kit" data-type="gratuit">
+      <div class="kit-head">
+        <div><div class="kit-nom">Fisherman</div><div class="kit-role">Accroche</div></div>
+      </div>
+      <p>La canne ramène ta cible vers toi. Le kit qui empêche les autres de décrocher du combat.</p>
+      <div class="fiche">
+        <div class="fiche-l"><span class="fiche-k">Item</span><span class="fiche-v">Canne à pêche</span></div>
+        <div class="fiche-l"><span class="fiche-k">Cooldown</span><span class="fiche-v">3 s</span></div>
+      </div>
+      <div class="kit-pied"><span class="prix">400<small> coins</small></span></div>
+    </article>
+
+    <article class="kit" data-type="gratuit">
+      <div class="kit-head">
+        <div><div class="kit-nom">Magma</div><div class="kit-role">Riposte</div></div>
+      </div>
+      <p>Qui te frappe s'enflamme. Purement défensif : tu ne déclenches rien, tu punis.</p>
+      <div class="fiche">
+        <div class="fiche-l"><span class="fiche-k">Effet</span><span class="fiche-v">Feu 2 s sur l'agresseur</span></div>
+        <div class="fiche-l"><span class="fiche-k">Cooldown</span><span class="fiche-v">4 s</span></div>
+      </div>
+      <div class="kit-pied"><span class="prix">500<small> coins</small></span></div>
+    </article>
+
+    <article class="kit" data-type="gratuit">
+      <div class="kit-head">
+        <div><div class="kit-nom">Viper</div><div class="kit-role">Poison</div></div>
+      </div>
+      <p>Chaque coup empoisonne. Les dégâts s'accumulent pendant que ta cible boit ses soupes.</p>
+      <div class="fiche">
+        <div class="fiche-l"><span class="fiche-k">Effet</span><span class="fiche-v">Poison I · 4 s</span></div>
+        <div class="fiche-l"><span class="fiche-k">Portée</span><span class="fiche-v">Mêlée uniquement</span></div>
+      </div>
+      <div class="kit-pied"><span class="prix">500<small> coins</small></span></div>
+    </article>
+
+    <article class="kit" data-type="gratuit">
+      <div class="kit-head">
+        <div><div class="kit-nom">Kangaroo</div><div class="kit-role">Mobilité</div></div>
+      </div>
+      <p>Un bond en avant qui traverse les trous et les groupes. Pour engager comme pour fuir.</p>
+      <div class="fiche">
+        <div class="fiche-l"><span class="fiche-k">Item</span><span class="fiche-v">Fusée</span></div>
+        <div class="fiche-l"><span class="fiche-k">Cooldown</span><span class="fiche-v">5 s</span></div>
+      </div>
+      <div class="kit-pied"><span class="prix">800<small> coins</small></span></div>
+    </article>
+
+    <article class="kit" data-type="gratuit">
+      <div class="kit-head">
+        <div><div class="kit-nom">Anchor</div><div class="kit-role">Zone</div></div>
+      </div>
+      <p>Une aura permanente qui ralentit tout le monde autour. Personne ne s'échappe d'un Anchor collé.</p>
+      <div class="fiche">
+        <div class="fiche-l"><span class="fiche-k">Effet</span><span class="fiche-v">Lenteur I</span></div>
+        <div class="fiche-l"><span class="fiche-k">Rayon</span><span class="fiche-v">5 blocs</span></div>
+      </div>
+      <div class="kit-pied"><span class="prix">1 000<small> coins</small></span></div>
+    </article>
+
+    <article class="kit" data-type="gratuit">
+      <div class="kit-head">
+        <div><div class="kit-nom">Stomper</div><div class="kit-role">Impact</div></div>
+      </div>
+      <p>Tu ne prends plus de dégâts de chute : tu les redistribues en atterrissant. La map est verticale, sers-t'en.</p>
+      <div class="fiche">
+        <div class="fiche-l"><span class="fiche-k">Chute</span><span class="fiche-v">Annulée</span></div>
+        <div class="fiche-l"><span class="fiche-k">Impact</span><span class="fiche-v">4 ❤ max · rayon 4</span></div>
+      </div>
+      <div class="kit-pied"><span class="prix">1 200<small> coins</small></span></div>
+    </article>
+
+    <article class="kit" data-type="gratuit">
+      <div class="kit-head">
+        <div><div class="kit-nom">Vampire</div><div class="kit-role">Soin</div></div>
+      </div>
+      <p>Chaque coup porté te rend un peu de vie. Sur un combat long, l'écart devient énorme.</p>
+      <div class="fiche">
+        <div class="fiche-l"><span class="fiche-k">Vol de vie</span><span class="fiche-v">+0,5 ❤ par coup</span></div>
+        <div class="fiche-l"><span class="fiche-k">Portée</span><span class="fiche-v">Mêlée uniquement</span></div>
+      </div>
+      <div class="kit-pied"><span class="prix">1 200<small> coins</small></span></div>
+    </article>
+
+    <article class="kit" data-type="gratuit">
+      <div class="kit-head">
+        <div><div class="kit-nom">Switcher</div><div class="kit-role">Disruption</div></div>
+      </div>
+      <p>Une boule de neige et vous échangez de place. Le kit troll par excellence — et le meilleur ami du vide.</p>
+      <div class="fiche">
+        <div class="fiche-l"><span class="fiche-k">Item</span><span class="fiche-v">16 boules de neige</span></div>
+        <div class="fiche-l"><span class="fiche-k">Effet</span><span class="fiche-v">Échange de position</span></div>
+      </div>
+      <div class="kit-pied"><span class="prix">1 500<small> coins</small></span></div>
+    </article>
+
+    <article class="kit" data-type="gratuit">
+      <div class="kit-head">
+        <div><div class="kit-nom">Berserker</div><div class="kit-role">Dernier souffle</div></div>
+      </div>
+      <p>Sous 35 % de vie, tu frappes plus fort. Rester bas devient un choix tactique.</p>
+      <div class="fiche">
+        <div class="fiche-l"><span class="fiche-k">Effet</span><span class="fiche-v">Force I</span></div>
+        <div class="fiche-l"><span class="fiche-k">Seuil</span><span class="fiche-v">Sous 3,5 ❤</span></div>
+      </div>
+      <div class="kit-pied"><span class="prix">1 500<small> coins</small></span></div>
+    </article>
+
+    <article class="kit" data-type="gratuit">
+      <div class="kit-head">
+        <div><div class="kit-nom">Thor</div><div class="kit-role">Burst</div></div>
+      </div>
+      <p>La foudre tombe où tu vises. Dégâts de zone, et tout le monde voit d'où ça vient.</p>
+      <div class="fiche">
+        <div class="fiche-l"><span class="fiche-k">Item</span><span class="fiche-v">Hache en fer</span></div>
+        <div class="fiche-l"><span class="fiche-k">Portée</span><span class="fiche-v">25 blocs · rayon 4</span></div>
+        <div class="fiche-l"><span class="fiche-k">Cooldown</span><span class="fiche-v">8 s</span></div>
+      </div>
+      <div class="kit-pied"><span class="prix">2 000<small> coins</small></span></div>
+    </article>
+
+    <article class="kit" data-type="gratuit">
+      <div class="kit-head">
+        <div><div class="kit-nom">Gladiator</div><div class="kit-role">Duel</div></div>
+      </div>
+      <p>Tu enfermes ta cible avec toi dans une cage. Plus de gank, plus de fuite : un vrai 1v1.</p>
+      <div class="fiche">
+        <div class="fiche-l"><span class="fiche-k">Item</span><span class="fiche-v">Bâton de blaze</span></div>
+        <div class="fiche-l"><span class="fiche-k">Durée</span><span class="fiche-v">30 s en cage</span></div>
+        <div class="fiche-l"><span class="fiche-k">Cooldown</span><span class="fiche-v">45 s</span></div>
+      </div>
+      <div class="kit-pied"><span class="prix">2 500<small> coins</small></span></div>
+    </article>
+
+    <article class="kit" data-type="gratuit">
+      <div class="kit-head">
+        <div><div class="kit-nom">Ninja</div><div class="kit-role">Chasse</div></div>
+      </div>
+      <p>Speed II en permanence, et un sneak te téléporte sur le dernier joueur frappé. Personne ne décroche.</p>
+      <div class="fiche">
+        <div class="fiche-l"><span class="fiche-k">Passif</span><span class="fiche-v">Vitesse II</span></div>
+        <div class="fiche-l"><span class="fiche-k">Marque</span><span class="fiche-v">Valable 15 s</span></div>
+        <div class="fiche-l"><span class="fiche-k">Cooldown</span><span class="fiche-v">10 s</span></div>
+      </div>
+      <div class="kit-pied"><span class="prix">2 500<small> coins</small></span></div>
+    </article>
+
+    <article class="kit" data-type="gratuit">
+      <div class="kit-head">
+        <div><div class="kit-nom">Phantom</div><div class="kit-role">Furtif</div></div>
+      </div>
+      <p>Invisible tant que tu ne touches à rien. Frapper te révèle : c'est un kit d'approche, pas de combat.</p>
+      <div class="fiche">
+        <div class="fiche-l"><span class="fiche-k">Passif</span><span class="fiche-v">Invisibilité</span></div>
+        <div class="fiche-l"><span class="fiche-k">Révélé</span><span class="fiche-v">8 s si tu frappes</span></div>
+        <div class="fiche-l"><span class="fiche-k">Révélé</span><span class="fiche-v">5 s si tu es touché</span></div>
+      </div>
+      <div class="kit-pied"><span class="prix">3 500<small> coins</small></span></div>
+    </article>
+
+    <!-- ---------- KITS EXCLUSIFS ---------- -->
+
+    <article class="kit exclu" data-type="exclu">
+      <div class="kit-head">
+        <div><div class="kit-nom">Yumi</div><div class="kit-role">Contrôle</div></div>
+        <div class="kit-kanji">弓</div>
+      </div>
+      <p>Des flèches qui font à peine mal mais ralentissent net. Tu ne tues pas : tu livres tes cibles aux autres.</p>
+      <div class="fiche">
+        <div class="fiche-l"><span class="fiche-k">Item</span><span class="fiche-v">Arc + 64 flèches</span></div>
+        <div class="fiche-l"><span class="fiche-k">Dégâts</span><span class="fiche-v">Très réduits</span></div>
+        <div class="fiche-l"><span class="fiche-k">Effet</span><span class="fiche-v">Lenteur I · 3 s</span></div>
+      </div>
+      <div class="kit-pied">
+        <span class="prix">12 000<small> coins</small></span>
+        <span class="badge badge-euro">ou 4 €</span>
+      </div>
+    </article>
+
+    <article class="kit exclu" data-type="exclu">
+      <div class="kit-head">
+        <div><div class="kit-nom">Kitsune</div><div class="kit-role">Tromperie</div></div>
+        <div class="kit-kanji">狐</div>
+      </div>
+      <p>Tu laisses un leurre à ton image et tu décroches. Aucun dégât — juste le doute, au bon moment.</p>
+      <div class="fiche">
+        <div class="fiche-l"><span class="fiche-k">Effet</span><span class="fiche-v">Leurre à ton skin</span></div>
+        <div class="fiche-l"><span class="fiche-k">Durée</span><span class="fiche-v">5 s puis fumée</span></div>
+      </div>
+      <div class="kit-pied">
+        <span class="prix">15 000<small> coins</small></span>
+        <span class="badge badge-euro">ou 4 €</span>
+      </div>
+    </article>
+
+    <article class="kit exclu" data-type="exclu">
+      <div class="kit-head">
+        <div><div class="kit-nom">Tanuki</div><div class="kit-role">Embuscade</div></div>
+        <div class="kit-kanji">狸</div>
+      </div>
+      <p>Tu te déguises en bloc de la map, à condition de ne plus bouger d'un pixel. Pour piéger ou disparaître.</p>
+      <div class="fiche">
+        <div class="fiche-l"><span class="fiche-k">Effet</span><span class="fiche-v">Déguisement en bloc</span></div>
+        <div class="fiche-l"><span class="fiche-k">Durée</span><span class="fiche-v">4 s · immobile</span></div>
+      </div>
+      <div class="kit-pied">
+        <span class="prix">15 000<small> coins</small></span>
+        <span class="badge badge-euro">ou 4 €</span>
+      </div>
+    </article>
+
+    <article class="kit exclu" data-type="exclu">
+      <div class="kit-head">
+        <div><div class="kit-nom">Kenshi</div><div class="kit-role">Duelliste</div></div>
+        <div class="kit-kanji">剣士</div>
+      </div>
+      <p>Tes trois premiers coups sur une cible frappent plus fort. Après, la lame s'émousse : il faut décrocher pour la ré-aiguiser.</p>
+      <div class="fiche">
+        <div class="fiche-l"><span class="fiche-k">Bonus</span><span class="fiche-v">+15 % de dégâts</span></div>
+        <div class="fiche-l"><span class="fiche-k">Portée</span><span class="fiche-v">3 coups par cible</span></div>
+        <div class="fiche-l"><span class="fiche-k">Recharge</span><span class="fiche-v">10 s sans la toucher</span></div>
+      </div>
+      <div class="kit-pied">
+        <span class="prix">18 000<small> coins</small></span>
+        <span class="badge badge-euro">ou 4 €</span>
+      </div>
+    </article>
+
+    <article class="kit exclu" data-type="exclu">
+      <div class="kit-head">
+        <div><div class="kit-nom">Onryo</div><div class="kit-role">Rancune</div></div>
+        <div class="kit-kanji">怨霊</div>
+      </div>
+      <p>À ta mort, ton fantôme s'accroche à ton tueur et le ralentit. Ça ne te sauve pas — ça se paie.</p>
+      <div class="fiche">
+        <div class="fiche-l"><span class="fiche-k">Déclencheur</span><span class="fiche-v">Ta mort</span></div>
+        <div class="fiche-l"><span class="fiche-k">Effet</span><span class="fiche-v">Lenteur sur le tueur</span></div>
+        <div class="fiche-l"><span class="fiche-k">Durée</span><span class="fiche-v">5 s</span></div>
+      </div>
+      <div class="kit-pied">
+        <span class="prix">18 000<small> coins</small></span>
+        <span class="badge badge-euro">ou 4 €</span>
+      </div>
+    </article>
+
+    <article class="kit exclu" data-type="exclu">
+      <div class="kit-head">
+        <div><div class="kit-nom">Sakura</div><div class="kit-role">Soutien</div></div>
+        <div class="kit-kanji">桜</div>
+      </div>
+      <p>Tu soignes les alliés autour de toi, en continu. Inutile en solo, décisif quand ta team tient une zone.</p>
+      <div class="fiche">
+        <div class="fiche-l"><span class="fiche-k">Effet</span><span class="fiche-v">+1 ❤ aux alliés</span></div>
+        <div class="fiche-l"><span class="fiche-k">Rayon</span><span class="fiche-v">6 blocs</span></div>
+        <div class="fiche-l"><span class="fiche-k">Fréquence</span><span class="fiche-v">Toutes les 8 s</span></div>
+      </div>
+      <div class="kit-pied">
+        <span class="prix">20 000<small> coins</small></span>
+        <span class="badge badge-euro">ou 4 €</span>
+      </div>
+    </article>
+
+  </div>
+
+  <div class="note-exclu">
+    <div class="note-exclu-ico">✦</div>
+    <div>
+      <h2>Les kits exclusifs ne frappent pas plus fort</h2>
+      <p>Ils sont créés de toutes pièces pour LJKITS et jouent autrement, c'est tout. Chacun s'obtient <strong>en coins comme les autres</strong> — l'option à 4 € sur la <a href="/boutique">boutique</a> ne fait que raccourcir le grind, et fait tourner le serveur.</p>
+    </div>
+  </div>
+
+  <section class="gagner">
+    <h2>Comment on gagne des coins</h2>
+    <p class="intro">Aucun kit ne se paie obligatoirement. Voici tout ce qui remplit ta bourse en jouant.</p>
+
+    <div class="sources">
+      <div class="source">
+        <div class="source-val">~20</div>
+        <h3>Par kill</h3>
+        <p>Base de 10, plus les bonus de série, de premier sang et les primes sur les joueurs en série.</p>
+      </div>
+      <div class="source">
+        <div class="source-val">+50</div>
+        <h3>Tous les 10 kills</h3>
+        <p>Un palier de session qui tombe automatiquement, en plus des gains de chaque kill.</p>
+      </div>
+      <div class="source">
+        <div class="source-val">500</div>
+        <h3>Le KOTH</h3>
+        <p>Tiens la zone assez longtemps sans te faire déloger et la récompense est à toi.</p>
+      </div>
+      <div class="source">
+        <div class="source-val">1 000</div>
+        <h3>Lier son Discord</h3>
+        <p>Une seule fois : <code>/discord</code> en jeu, le code dans le salon de vérification.</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="cta">
+    <h2>Le premier kit est gratuit</h2>
+    <p>Connecte-toi, prends le PvP, et vise le suivant. Une quinzaine de minutes suffisent pour le débloquer.</p>
+    <a class="cta-ip" href="/#jouer">mc.ljkits.eu</a>
+  </div>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-in">
+      <img src="logo-texte.png" alt="LJKits" width="73" height="20">
+      <div class="foot-links">
+        <a href="/">Accueil</a>
+        <a href="/kits">Kits</a>
+        <a href="/boutique">Boutique</a>
+        <a href="https://discord.gg/9KYbUznDr7">Discord</a>
+      </div>
+    </div>
+    <p class="foot-legal">LJKITS · hommage indépendant, sans lien avec les anciens administrateurs de MJKits. Non affilié à Mojang Studios.</p>
+  </div>
+</footer>
+
+<script>
+const cartes = Array.from(document.querySelectorAll('#grille .kit'));
+const compteur = document.getElementById('compteur');
+
+document.querySelectorAll('.filtre').forEach(b => {
+  b.addEventListener('click', () => {
+    document.querySelectorAll('.filtre').forEach(x => x.classList.remove('on'));
+    b.classList.add('on');
+
+    const f = b.dataset.f;
+    let n = 0;
+    cartes.forEach(c => {
+      const ok = (f === 'tous') || (c.dataset.type === f);
+      c.style.display = ok ? '' : 'none';
+      if (ok) n++;
+    });
+    compteur.textContent = n + (n > 1 ? ' kits' : ' kit');
+  });
+});
+</script>
+
+</body>
+</html>
