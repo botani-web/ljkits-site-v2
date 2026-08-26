@@ -109,13 +109,19 @@ export function Boutique({
   const [etat, envoyer] = useActionState<EtatCommande, FormData>(creerCommande, ETAT_VIDE)
 
   /**
-   * Le panier Tebex est prêt : on referme le récapitulatif pour laisser la
-   * place à la modale de paiement. Deux <dialog> superposés se disputeraient
-   * le focus.
+   * La commande est créée : on referme le récapitulatif ET le tiroir du panier
+   * pour laisser la place à l'écran de paiement.
+   *
+   * Le tiroir surtout. Un <dialog> ouvert par showModal() vit dans le TOP
+   * LAYER du navigateur : il recouvre tout le document, z-index compris. Tant
+   * qu'il restait ouvert, l'écran de paiement était masqué derrière lui et il
+   * fallait fermer le panier à la main pour le trouver.
    */
   const paiement = etat.paiement
   useEffect(() => {
-    if (paiement) setModaleOuverte(false)
+    if (!paiement) return
+    setModaleOuverte(false)
+    setPanierOuvert(false)
   }, [paiement])
 
   function basculerArticle(article: ArticlePanier) {
