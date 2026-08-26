@@ -217,6 +217,31 @@ export function TableauClassement({
           className="pt-[clamp(30px,4vw,44px)] pb-section"
         >
           <Enveloppe>
+            {/*
+              Sans cette note, l'absence de kills et de K/D sur la semaine et
+              le mois passe pour un oubli.
+
+              La vraie raison est que `morts` et `record_serie` sont des
+              compteurs À VIE dans la table joueur : les afficher en face de
+              points hebdomadaires donnerait un K/D à vie sur un classement de
+              la semaine. Incohérent, et indéfendable.
+            */}
+            {!avecDetails && resultats.length > 0 && (
+              <p className="mb-4.5 font-mono text-[11px] leading-relaxed text-gris">
+                Kills, morts, K/D et record de série sont des compteurs à vie : ils
+                n’auraient aucun sens en face des points d’une seule période. Le détail
+                complet est dans l’onglet{' '}
+                <button
+                  type="button"
+                  onClick={() => changerDePeriode('vie')}
+                  className="border-b border-soupe/40 text-soupe transition-colors hover:border-soupe hover:text-or"
+                >
+                  À vie
+                </button>
+                .
+              </p>
+            )}
+
             {resultats.length === 0 ? (
               <EtatVide
                 message={

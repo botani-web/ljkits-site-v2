@@ -636,16 +636,23 @@ Les deux sections existaient en maquette sur `/classement`, sans source :
 - **« Ta position »** — suppose de savoir qui visite. Il n'y a pas
   d'authentification joueur sur le site.
 
-### Colonnes manquantes du classement
+### Un K/D par période
 
-La maquette affichait Kills, Séries, Zones et KOTH par joueur, avec un tiroir
-dépliant. La table `joueur` ne porte que `kills`, `morts`, `points`, `coins`,
-`record_serie`, `hebdo_points` et `mensuel_points` : ni compteur de zones, ni
-compteur de KOTH, ni décomposition par période. Les colonnes affichées se
-limitent donc à ce qui existe.
+Les onglets **Semaine** et **Mois** de `/classement` n'affichent que
+Rang · Joueur · Points. L'onglet **À vie** est le seul à porter Kills, Morts,
+K/D et Record de série.
 
-Le K/D est volontairement **absent** : `/suicide` fausse le compteur de morts,
-ce qui est déjà signalé en jeu sur le PNJ Infos mais indéfendable sur le site.
+Ce n'est pas une limite de requête, c'est une limite de modèle : dans la table
+`joueur`, `morts` et `record_serie` sont des compteurs **à vie**. Les afficher
+en face de `hebdo_points` donnerait un K/D à vie sur un classement de la
+semaine — incohérent, et impossible à défendre auprès des joueurs.
+
+Pour un vrai K/D par période, il faut des compteurs hebdomadaires et mensuels
+de morts et de séries, **écrits côté Skript**, comme `hebdo_points` et
+`mensuel_points`. Rien ne peut être fait côté site tant qu'ils n'existent pas.
+
+Le K/D lui-même est fiable : `/suicide` ne compte ni kill, ni mort, ni coin,
+ni point — un drapeau dédié le gère en jeu, et c'est indiqué sur le PNJ d'infos.
 
 ### Retirer `texte-accent`
 
