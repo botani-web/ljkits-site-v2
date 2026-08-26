@@ -26,16 +26,6 @@ export const SITE = {
   url: process.env.NEXT_PUBLIC_SITE_URL ?? 'https://ljkits.eu',
 
   /**
-   * Sites de vote. Tant que l'URL vaut '#', le serveur n'y est pas encore
-   * inscrit : le bouton reste affiché mais inerte.
-   */
-  sitesDeVote: [
-    { cle: 'serveurPrive', sigle: 'SP', nom: 'Serveur-Privé.net', url: '#' },
-    { cle: 'topServeurs', sigle: 'TS', nom: 'Top-Serveurs.net', url: '#' },
-    { cle: 'serveursMinecraft', sigle: 'SM', nom: 'Serveurs-Minecraft.org', url: '#' },
-  ],
-
-  /**
    * Ouverture du serveur : samedi 29 août 2026, 15h30, heure de Paris.
    *
    * Le décalage `+02:00` est écrit en toutes lettres exprès. Sans lui, la date

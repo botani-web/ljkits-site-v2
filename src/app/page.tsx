@@ -17,7 +17,7 @@ export default async function Accueil() {
   // Le nombre de kits est lu en base plutôt qu'écrit en dur : la maquette
   // annonçait « 15 kits » à un endroit et « 21 » à un autre.
   const nombreKits = await prisma.kit.count({ where: { visible: true } })
-  const { ip, discord, sitesDeVote } = await lireReglages()
+  const { ip, discord } = await lireReglages()
 
   return (
     <PagePublique>
@@ -104,12 +104,6 @@ export default async function Accueil() {
 
           {/* --- colonne de tuiles --- */}
           <div className="flex flex-col gap-5">
-            {/*
-              La tuile « Voter » a laissé la place à la boutique. Le vote reste
-              atteignable par la section /#vote plus bas et par le pied de page ;
-              la boutique, elle, n'avait aucun point d'entrée depuis le hero.
-              Même taille, même dégradé, même poids visuel qu'avant.
-            */}
             <Tuile
               href="/boutique"
               titre="Boutique"
@@ -257,97 +251,6 @@ export default async function Accueil() {
         </div>
       </section>
 
-      {/* -------------------------------- VOTE ------------------------------- */}
-      <section id="vote" className="mx-auto max-w-contenu px-6 py-24">
-        <div className="grid items-center gap-14 lg:grid-cols-[1fr_1.3fr]">
-          <div>
-            <div className="mb-3.5 text-xs font-bold tracking-[3px] text-oni uppercase [text-shadow:0_0_18px_rgba(233,40,19,.35)]">
-              Soutenir le serveur
-            </div>
-            <h2 className="font-titre text-[clamp(26px,4vw,42px)] leading-[1.1] uppercase">
-              Vote &amp; gagne des coins
-            </h2>
-            <p className="my-5 text-gris">
-              Chaque vote fait monter LJKITS dans les classements et fait venir de nouveaux
-              adversaires. En échange, tu reçois des{' '}
-              <b className="text-creme">coins directement en jeu</b> — connecté ou non.
-            </p>
-            <div className="flex items-center gap-3.5 rounded-2xl border border-bord bg-charbon px-5 py-4.5">
-              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" className="size-8.5 shrink-0">
-                <circle cx="12" cy="12" r="9" fill="#FDC003" />
-                <circle cx="12" cy="12" r="6.5" fill="#FE9301" />
-                <path
-                  d="M12 8.5v7M9.5 11h5"
-                  stroke="#1A1005"
-                  strokeWidth="1.8"
-                  strokeLinecap="round"
-                />
-              </svg>
-              <span className="text-[15px] text-gris">
-                <b className="text-or">+250 coins</b> par vote, cumulables sur les 3 sites,
-                toutes les 2 heures.
-              </span>
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-4">
-            {sitesDeVote.map((site) => {
-              // Tant que l'URL vaut '#', le serveur n'est pas encore inscrit :
-              // le bouton reste affiché mais devient inerte.
-              const inscrit = site.url !== '#'
-
-              return (
-                <div
-                  key={site.cle}
-                  // `flex-wrap` : à 360 px, « ServeursMinecraft.org » et le
-                  // bouton ne tiennent pas sur une ligne. Le bouton passe
-                  // dessous plutôt que de pousser la page hors de l'écran.
-                  className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-bord bg-charbon px-5 py-5 transition-colors hover:border-[#43305E] sm:flex-nowrap sm:gap-4.5 sm:px-6"
-                >
-                  <div className="flex min-w-0 items-center gap-4">
-                    <div
-                      aria-hidden="true"
-                      className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-braise font-titre text-base text-soupe"
-                    >
-                      {site.sigle}
-                    </div>
-                    {/* min-w-0 + truncate : sans les deux, le nom du site
-                        impose sa largeur au conteneur et rien ne rétrécit. */}
-                    <div className="min-w-0">
-                      <div className="truncate text-[16.5px] font-bold">{site.nom}</div>
-                      <div className="font-mono text-[13.5px] text-gris">
-                        {inscrit ? 'Disponible' : 'Bientôt'}
-                      </div>
-                    </div>
-                  </div>
-
-                  {inscrit ? (
-                    <a
-                      href={site.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="rounded-[10px] bg-linear-[135deg] from-soupe to-or px-6 py-2.5 text-[14.5px] font-bold whitespace-nowrap text-[#1A1005] transition-all hover:-translate-y-px hover:shadow-[0_5px_20px_rgba(254,147,1,.4)]"
-                    >
-                      Voter
-                    </a>
-                  ) : (
-                    <span className="rounded-[10px] bg-braise px-6 py-2.5 text-[14.5px] font-bold whitespace-nowrap text-gris">
-                      Bientôt
-                    </span>
-                  )}
-                </div>
-              )
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/*
-        La section « Les meilleurs votants » a été retirée : ses données étaient
-        inventées, aucun système de vote n'étant encore branché. À remettre le
-        jour où les votes remontent pour de vrai — le composant est récupérable
-        dans l'historique git (commit a4d829f, ClassementVotes.tsx).
-      */}
     </PagePublique>
   )
 }

@@ -24,8 +24,6 @@ const LIENS = [
   { href: '/kits', label: 'Kits' },
   { href: '/classement', label: 'Classement' },
   { href: '/boutique', label: 'Boutique' },
-  // « Voter » a été retiré de la barre pour ne pas la surcharger : la section
-  // reste atteignable par le pied de page.
   { href: '/reglement', label: 'Règlement' },
 ]
 

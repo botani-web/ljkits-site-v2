@@ -16,9 +16,6 @@ export default async function PageReglages() {
   const reglages = enBase ?? {
     ip: REGLAGES_PAR_DEFAUT.ip,
     discord: REGLAGES_PAR_DEFAUT.discord,
-    urlServeurPrive: '',
-    urlTopServeurs: '',
-    urlServeursMinecraft: '',
     updatedAt: null,
   }
 
@@ -37,9 +34,6 @@ export default async function PageReglages() {
         reglages={{
           ip: reglages.ip,
           discord: reglages.discord,
-          urlServeurPrive: reglages.urlServeurPrive,
-          urlTopServeurs: reglages.urlTopServeurs,
-          urlServeursMinecraft: reglages.urlServeursMinecraft,
         }}
       />
 
