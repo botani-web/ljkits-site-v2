@@ -101,7 +101,13 @@ export function ModaleRecapitulatif({
           </p>
         </SectionPanneau>
 
-        <SectionPanneau>
+        {/*
+          La liste défile au-delà d'une certaine hauteur. Le panier accepte dix
+          articles : sans ce plafond, la modale dépassait la hauteur d'écran des
+          portables et le bouton de paiement devenait inatteignable — le même
+          défaut que celui du tiroir, sous une autre forme.
+        */}
+        <SectionPanneau className="max-h-[38dvh] overflow-y-auto">
           <LignesLore
             separateur={false}
             lignes={articles.map((article) => ({
@@ -109,8 +115,12 @@ export function ModaleRecapitulatif({
               valeur: formaterEuros(article.prixCentimes),
             }))}
           />
+        </SectionPanneau>
 
-          <div className="mt-3 flex items-baseline justify-between gap-3 border-t border-bord pt-3">
+        {/* Le total vit HORS de la zone défilante : c'est le chiffre qu'on
+            vérifie avant de payer, il ne doit jamais partir vers le haut. */}
+        <SectionPanneau>
+          <div className="flex items-baseline justify-between gap-3">
             <span className="font-mono text-[11px] tracking-[.1em] text-gris uppercase">
               Total
             </span>

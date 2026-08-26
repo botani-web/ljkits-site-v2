@@ -218,20 +218,21 @@ export function Boutique({
       />
 
       {/*
-        Le paiement s'affiche par-dessus la boutique, sans quitter ljkits.eu.
-        La clé force un remontage à chaque nouveau panier Tebex : sans elle, un
-        second paiement réutiliserait l'ident du premier.
+        Le paiement s'ouvre dans un onglet séparé, sur la page hébergée par
+        Tebex. Ce bandeau ne fait que porter le lien et celui du suivi de
+        commande.
+
+        La clé force un remontage à chaque nouveau panier : sans elle, un
+        second paiement afficherait l'URL du premier.
+
+        Le panier n'est PAS vidé ici : c'est la page de commande qui s'en
+        charge, une fois le paiement réellement confirmé par le webhook.
       */}
       {paiement && (
         <PaiementTebex
           key={paiement.identPanier}
-          identPanier={paiement.identPanier}
           commandeId={paiement.commandeId}
           urlCheckout={paiement.urlCheckout}
-          onPaye={() => {
-            setPanier([])
-            ecrirePanierStocke([])
-          }}
         />
       )}
 

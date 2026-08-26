@@ -70,7 +70,19 @@ export function Panier({
       onClick={(evenement) => {
         if (evenement.target === dialogue.current) onFermer()
       }}
-      className="fixed inset-0 m-0 max-h-none w-full max-w-none justify-end bg-transparent p-0 text-creme backdrop:bg-nuit/80 backdrop:backdrop-blur-sm open:flex"
+      /*
+        `h-dvh` n'est pas décoratif. La feuille de style du navigateur donne
+        `height: fit-content` à tout <dialog>, et cette hauteur l'emporte sur
+        le couple top:0 / bottom:0 de `inset-0`. Sans elle, le tiroir grandit
+        avec son contenu : à dix articles il dépassait l'écran, le `h-full`
+        intérieur suivait, le `flex-1` recevait une place infinie, et le pied
+        — total et bouton de paiement — se retrouvait sous la ligne de
+        flottaison, hors d'atteinte.
+
+        `dvh` et non `vh` : sur mobile, la barre d'adresse rétrécit le viewport
+        visible, et 100vh pousserait encore le bouton hors de l'écran.
+      */
+      className="fixed inset-0 m-0 h-dvh max-h-none w-full max-w-none justify-end bg-transparent p-0 text-creme backdrop:bg-nuit/80 backdrop:backdrop-blur-sm open:flex"
     >
       <div className="flex h-full w-full max-w-[420px] flex-col border-l border-bord bg-charbon shadow-[0_0_80px_rgba(0,0,0,.8)]">
         <div className="flex items-center gap-3 border-b border-bord bg-braise px-5 py-4">
