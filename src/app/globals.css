@@ -210,6 +210,33 @@
   }
 }
 
+/*
+  Le halo de la fiche kit.
+
+  Il existe séparément des deux précédents pour une seule raison : il ne pose
+  PAS `overflow: hidden`. Le panneau latéral de la fiche est en
+  `position: sticky`, et tout ancêtre dont l'`overflow` n'est pas `visible`
+  devient sa boîte de défilement de référence — le panneau cesserait alors de
+  suivre le lecteur et resterait figé dans l'en-tête.
+
+  Le débordement latéral du dégradé est donc rattrapé autrement : `z-index:-1`
+  le place derrière le contenu, et l'`overflow-x: hidden` du body coupe ce qui
+  dépasse à droite. C'est la solution de la maquette.
+*/
+@utility halo-fiche {
+  position: relative;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: -14% -22% auto -22%;
+    height: 520px;
+    background: radial-gradient(48% 46% at 24% 30%, rgb(254 147 1 / 0.14), transparent 70%);
+    pointer-events: none;
+    z-index: -1;
+  }
+}
+
 /* Le halo orange qui remonte du bas, sous les blocs d'appel de fin de page. */
 @utility halo-final {
   position: relative;

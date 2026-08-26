@@ -75,16 +75,19 @@ export function Nav() {
         </div>
 
         <div className="ml-auto flex items-center gap-2.5">
-          {/* Masqué sous 860px : à 360px, logo + Discord + Copier l'IP + burger
-              dépassent la largeur utile. Le Discord reste dans le panneau. */}
+          {/*
+            Sous 860px, la barre ne garde que le logo, le Discord et le burger :
+            les quatre ensemble ne tiennent pas dans les 324px utiles d'un
+            écran de 360. C'est « Copier l'IP » qui cède la place, parce que
+            c'est l'action la moins urgente des deux tant qu'on n'a pas encore
+            décidé de jouer — et parce qu'elle reste à un doigt dans le panneau,
+            où l'adresse est en plus affichée en toutes lettres.
+          */}
           <a
             href={discord}
             target="_blank"
             rel="noopener noreferrer"
-            className={classesBouton({
-              variante: 'vide',
-              className: 'hidden min-[860px]:inline-flex',
-            })}
+            className={classesBouton({ variante: 'vide' })}
           >
             <IconeDiscord className="size-4 shrink-0 fill-current" />
             Discord
@@ -92,7 +95,10 @@ export function Nav() {
 
           <BoutonCopieIp
             aria-label={`Copier l’adresse du serveur, ${ip}`}
-            className={classesBouton({ variante: 'plein' })}
+            className={classesBouton({
+              variante: 'plein',
+              className: 'hidden min-[860px]:inline-flex',
+            })}
           >
             Copier l’IP
           </BoutonCopieIp>
