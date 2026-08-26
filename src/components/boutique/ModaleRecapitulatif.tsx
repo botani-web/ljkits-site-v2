@@ -57,12 +57,12 @@ export function ModaleRecapitulatif({
         Récapitulatif
       </h2>
       <p className="mb-3.5 text-[14.5px] text-gris">
-        Vérifie le pseudo : c’est sur ce compte que tout sera livré.
+        Vérifie le pseudo : c’est lui qui recevra la livraison en jeu.
       </p>
 
       <div className="mb-4.5 rounded-[9px] border border-bord bg-braise p-3.5 text-sm">
         <div className="flex justify-between gap-3 py-1">
-          <span>Compte</span>
+          <span>Pseudo de livraison</span>
           <span className="font-mono font-bold">{pseudo}</span>
         </div>
 

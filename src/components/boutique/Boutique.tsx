@@ -4,6 +4,7 @@ import { useActionState, useEffect, useMemo, useState } from 'react'
 
 import { creerCommande, type EtatCommande } from '@/actions/commandes'
 import { ETAT_VIDE } from '@/actions/etat'
+import { BarreBoutique } from '@/components/boutique/BarreBoutique'
 import { CarteGrade, CartePack } from '@/components/boutique/Cartes'
 import { GrilleKitsBoutique } from '@/components/boutique/GrilleKitsBoutique'
 import { ModaleRecapitulatif } from '@/components/boutique/ModaleRecapitulatif'
@@ -54,6 +55,7 @@ export function Boutique({
   const [panier, setPanier] = useState<ArticlePanier[]>([])
   const [pseudo, setPseudo] = useState<string | null>(null)
   const [modaleOuverte, setModaleOuverte] = useState(false)
+  const [panierOuvert, setPanierOuvert] = useState(false)
 
   /**
    * localStorage n'existe pas au rendu serveur : on part d'un panier vide et
@@ -122,6 +124,13 @@ export function Boutique({
 
   return (
     <>
+      <BarreBoutique
+        pseudo={pseudo}
+        nombreArticles={articles.length}
+        total={total}
+        onOuvrirPanier={() => setPanierOuvert(true)}
+      />
+
       {/* ═══════════════════════════ LES GRADES ═══════════════════════════ */}
       <Section
         fond="charbon"
@@ -189,24 +198,24 @@ export function Boutique({
       </Section>
 
       {/* ═══════════════════════════ LE PANIER ═══════════════════════════ */}
-      <Section id="panier">
-        <Panier
-          articles={articles}
-          total={total}
-          pseudo={pseudo}
-          pretAPayer={pretAPayer}
-          onRetirer={(article) => setPanier((actuel) => retirer(actuel, article))}
-          onValiderPseudo={(nouveau) => {
-            setPseudo(nouveau)
-            ecrirePseudoStocke(nouveau)
-          }}
-          onChangerPseudo={() => {
-            setPseudo(null)
-            ecrirePseudoStocke(null)
-          }}
-          onPayer={() => setModaleOuverte(true)}
-        />
-      </Section>
+      <Panier
+        ouvert={panierOuvert}
+        onFermer={() => setPanierOuvert(false)}
+        articles={articles}
+        total={total}
+        pseudo={pseudo}
+        pretAPayer={pretAPayer}
+        onRetirer={(article) => setPanier((actuel) => retirer(actuel, article))}
+        onValiderPseudo={(nouveau) => {
+          setPseudo(nouveau)
+          ecrirePseudoStocke(nouveau)
+        }}
+        onChangerPseudo={() => {
+          setPseudo(null)
+          ecrirePseudoStocke(null)
+        }}
+        onPayer={() => setModaleOuverte(true)}
+      />
 
       {/*
         Le paiement s'affiche par-dessus la boutique, sans quitter ljkits.eu.
