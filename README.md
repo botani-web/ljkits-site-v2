@@ -654,6 +654,23 @@ de morts et de séries, **écrits côté Skript**, comme `hebdo_points` et
 Le K/D lui-même est fiable : `/suicide` ne compte ni kill, ni mort, ni coin,
 ni point — un drapeau dédié le gère en jeu, et c'est indiqué sur le PNJ d'infos.
 
+### Rassembler les messages de validation du recrutement
+
+Le parcours par étapes de `/recrutement` valide chaque écran côté client avant
+de laisser passer à la suite. C'est un **confort** : `soumettreCandidature` et
+son schéma zod revalident tout à l'envoi et restent la seule source de vérité.
+
+Pour qu'un candidat ne lise jamais deux formulations du même problème, les
+messages sont recopiés à l'identique de `src/lib/recrutement.ts` dans
+`src/components/public/FormulaireCandidature.tsx`. Cette duplication est
+assumée mais reste une dette : si les deux divergent, le serveur gagne et le
+candidat verra son message.
+
+À rassembler dans `src/lib/recrutement-partage.ts`, qui est déjà importé par
+les deux côtés et n'embarque ni Prisma ni zod. Des constantes de message et
+deux fonctions pures suffisent ; `recrutement.ts` les consommerait dans ses
+`ctx.addIssue`.
+
 ### Retirer `texte-accent`
 
 L'utilitaire du mot en dégradé or → soupe est marqué transitoire dans
