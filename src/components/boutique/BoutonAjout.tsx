@@ -1,20 +1,24 @@
 'use client'
 
+import { classesBouton } from '@/components/ui/Bouton'
+
 /**
  * Le bouton d'ajout au panier, commun aux grades, aux kits et aux packs.
  *
- * C'est une bascule, comme dans la maquette : recliquer retire l'article.
- * On ne vend rien en plusieurs exemplaires — un grade acheté deux fois n'a
- * aucun sens.
+ * C'est une bascule : recliquer retire l'article. On ne vend rien en plusieurs
+ * exemplaires — un grade acheté deux fois n'a aucun sens.
  *
- * `min-h-11` partout : 44 px est le plancher d'une zone tactile confortable,
- * et ce bouton est le geste principal de la page sur mobile.
+ * Il passe par `classesBouton` comme tous les autres boutons du site ; seul
+ * l'état « dans le panier » sort de ses trois variantes, parce qu'il n'est ni
+ * une action principale ni une action secondaire mais une confirmation.
  */
 export function BoutonAjout({
   dansLePanier,
   indisponible = false,
   libelleIndisponible = 'Bientôt disponible',
   libelle = 'Ajouter au panier',
+  /** `or` pour l'article mis en avant : grade phare, pack. */
+  variante = 'plein',
   pleineLargeur = true,
   onClick,
 }: {
@@ -22,18 +26,19 @@ export function BoutonAjout({
   indisponible?: boolean
   libelleIndisponible?: string
   libelle?: string
+  variante?: 'plein' | 'or'
   pleineLargeur?: boolean
   onClick: () => void
 }) {
-  const base = `flex min-h-11 items-center justify-center rounded-[7px] px-4 py-2.5 text-center font-mono text-[12.5px] font-bold tracking-wide transition-all ${
-    pleineLargeur ? 'mt-auto w-full' : 'inline-flex'
-  }`
-
   if (indisponible) {
     return (
       <span
         aria-disabled="true"
-        className={`${base} cursor-default border border-bord text-gris opacity-50`}
+        className={classesBouton({
+          variante: 'vide',
+          pleineLargeur,
+          className: 'cursor-default text-gris opacity-50',
+        })}
       >
         {libelleIndisponible}
       </span>
@@ -45,9 +50,13 @@ export function BoutonAjout({
       <button
         type="button"
         onClick={onClick}
-        className={`${base} border border-vert bg-braise text-vert`}
+        className={classesBouton({
+          variante: 'vide',
+          pleineLargeur,
+          className: 'border-vert bg-braise text-vert hover:border-vert hover:bg-braise',
+        })}
       >
-        ✓ Dans le panier
+        <span aria-hidden="true">✓</span> Dans le panier
       </button>
     )
   }
@@ -56,7 +65,7 @@ export function BoutonAjout({
     <button
       type="button"
       onClick={onClick}
-      className={`${base} bg-soupe text-[#1a0f00] hover:-translate-y-px hover:bg-or`}
+      className={classesBouton({ variante, pleineLargeur })}
     >
       {libelle}
     </button>

@@ -4,6 +4,8 @@ import Link from 'next/link'
 
 import { BoutonAjout } from '@/components/boutique/BoutonAjout'
 import type { GradeBoutique, KitBoutique, PackBoutique } from '@/components/boutique/types'
+import { Badge, Ruban } from '@/components/ui/Badge'
+import { KanjiFiligrane } from '@/components/ui/Carte'
 import { formaterCoins, formaterEuros } from '@/lib/format'
 
 /**
@@ -37,6 +39,14 @@ function etatDeVente({
 /* Grade                                                                      */
 /* -------------------------------------------------------------------------- */
 
+/**
+ * Une carte de grade : tête cloisonnée (symbole, nom, argument, prix), corps
+ * (héritage + avantages), pied (bouton).
+ *
+ * Le grade porteur d'une étiquette en base est mis en avant : bordure or,
+ * ombre portée, dégradé dans la tête, et son bouton passe en or. C'est le
+ * seul écart de traitement entre les trois cartes.
+ */
 export function CarteGrade({
   grade,
   dansLePanier,
@@ -46,75 +56,92 @@ export function CarteGrade({
   dansLePanier: boolean
   onBasculer: () => void
 }) {
-  // L'étiquette (« Le plus pris ») met aussi la carte en avant : bordure
-  // orange et fond dégradé, comme .grade--phare dans la maquette.
   const misEnAvant = grade.etiquette !== null
   const vente = etatDeVente(grade)
 
   return (
     <article
-      className={`relative flex flex-col rounded-xl border px-5.5 pt-6 pb-5.5 transition-all hover:-translate-y-[3px] hover:border-[#3d2f5c] ${
+      className={`relative flex flex-col overflow-hidden rounded-bloc border bg-braise transition-[transform,border-color,box-shadow] duration-200 hover:-translate-y-[3px] ${
         misEnAvant
-          ? 'border-soupe bg-linear-[165deg] from-[#2a1330] to-charbon'
-          : 'border-bord bg-charbon'
+          ? 'border-or/50 shadow-[0_26px_60px_-34px_rgba(253,192,3,.5)] hover:border-or'
+          : 'border-bord hover:border-creme'
       }`}
     >
-      {grade.etiquette && (
-        <span className="absolute -top-2.5 left-5.5 rounded bg-soupe px-2.5 py-1 font-mono text-[10.5px] font-bold tracking-[1.5px] text-[#1a0f00] uppercase">
-          {grade.etiquette}
-        </span>
-      )}
+      {grade.etiquette && <Ruban>{grade.etiquette}</Ruban>}
 
-      <h3 className="font-titre text-[21px] text-or uppercase">{grade.nom}</h3>
+      <div
+        className={`border-b border-bord px-6.5 pt-7 pb-6 ${
+          misEnAvant ? 'bg-linear-165 from-or/11 to-transparent' : ''
+        }`}
+      >
+        {grade.kanji && (
+          <p
+            className={`font-mono text-[19px] tracking-[.12em] ${
+              misEnAvant ? 'text-or' : 'text-creme'
+            }`}
+          >
+            {grade.kanji}
+          </p>
+        )}
 
-      {(grade.kanji || grade.sousTitre) && (
-        <div className="mt-0.5 font-mono text-[11.5px] tracking-[2px] text-gris">
-          {[grade.kanji, grade.sousTitre].filter(Boolean).join(' · ')}
-        </div>
-      )}
+        <h3
+          className={`mt-3 font-titre text-[23px] tracking-[-.01em] ${
+            misEnAvant ? 'text-or' : ''
+          }`}
+        >
+          {grade.nom}
+        </h3>
 
-      <div className="mt-4 font-titre text-[32px]">
-        {formaterEuros(grade.prixEurosCentimes)}
-        <span className="ml-1 font-corps text-[13.5px] font-normal text-gris"> / à vie</span>
+        {grade.sousTitre && (
+          <p className="mt-2 min-h-[42px] text-sm text-gris">{grade.sousTitre}</p>
+        )}
+
+        <p
+          className={`mt-4 font-mono text-4xl leading-none font-bold ${
+            misEnAvant ? 'text-or' : 'text-creme'
+          }`}
+        >
+          {formaterEuros(grade.prixEurosCentimes)}
+        </p>
+
+        <p className="mt-2.5 font-mono text-[10.5px] tracking-[.06em] text-vert">
+          Permanent · livré en 90 s
+        </p>
       </div>
 
-      <ul className="my-4 mb-5 flex flex-col gap-2">
-        {grade.heriteDe && <AvantageHerite nom={grade.heriteDe} />}
-        {grade.avantages.map((avantage) => (
-          <Avantage key={avantage}>{avantage}</Avantage>
-        ))}
-      </ul>
+      <div className="flex-1 px-6.5 py-5.5">
+        {grade.heriteDe && (
+          <p className="mb-4 rounded-controle border border-bord bg-nuit px-3.5 py-2.5 font-mono text-[10.5px] tracking-[.06em] text-gris">
+            <b className="font-bold text-soupe">Tout le {grade.heriteDe}</b>, plus :
+          </p>
+        )}
 
-      <BoutonAjout
-        dansLePanier={dansLePanier}
-        indisponible={vente.indisponible}
-        libelleIndisponible={vente.libelle}
-        onClick={onBasculer}
-      />
+        <ul>
+          {grade.avantages.map((avantage) => (
+            <li
+              key={avantage}
+              className="flex gap-2.75 border-t border-bord py-2.25 text-[14.5px] text-gris first:border-t-0 first:pt-0"
+            >
+              <span aria-hidden="true" className="shrink-0 font-mono font-bold text-vert">
+                +
+              </span>
+              {avantage}
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <div className="px-6.5 pb-6.5">
+        <BoutonAjout
+          dansLePanier={dansLePanier}
+          indisponible={vente.indisponible}
+          libelleIndisponible={vente.libelle}
+          libelle={`Prendre le ${grade.nom} — ${formaterEuros(grade.prixEurosCentimes)}`}
+          variante={misEnAvant ? 'or' : 'plein'}
+          onClick={onBasculer}
+        />
+      </div>
     </article>
-  )
-}
-
-function Avantage({ children }: { children: React.ReactNode }) {
-  return (
-    <li className="relative pl-[21px] text-sm text-[#d8d2e2]">
-      <span aria-hidden="true" className="absolute top-0 left-0 text-[11px] text-soupe">
-        ✦
-      </span>
-      {children}
-    </li>
-  )
-}
-
-/** La ligne « Tout le grade X », déduite du grade précédent dans l'ordre. */
-function AvantageHerite({ nom }: { nom: string }) {
-  return (
-    <li className="relative pl-[21px] text-sm text-gris">
-      <span aria-hidden="true" className="absolute top-0 left-0 text-[11px] text-bord">
-        ↳
-      </span>
-      Tout le grade {nom}
-    </li>
   )
 }
 
@@ -123,36 +150,15 @@ function AvantageHerite({ nom }: { nom: string }) {
 /* -------------------------------------------------------------------------- */
 
 /**
- * Le monogramme affiché à défaut de kanji.
- *
- * Seuls les kits exclusifs ont un idéogramme ; les 21 classiques n'ont aucun
- * visuel en base. Plutôt que d'attendre 21 illustrations, on dérive une
- * pastille des initiales du nom : « Anti-Stomper » → « AS », « Archer » → « AR ».
- * C'est stable, ça ne demande aucun asset, et ça suffit à donner un point
- * d'accroche à l'œil dans une grille de vingt-sept cartes.
- *
- * Deux lettres et non une : « Archer » et « Anchor » donneraient tous les deux
- * « A ». L'unicité n'est pas garantie pour autant (« Fireman » et
- * « Fisherman » donnent « FI ») et ce n'est pas grave — la pastille est
- * décorative, le nom est juste à côté, elle ne sert qu'à accrocher l'œil.
- */
-function monogramme(nom: string): string {
-  const mots = nom.split(/[^\p{L}\p{N}]+/u).filter(Boolean)
-  if (mots.length === 0) return '?'
-  if (mots.length === 1) return mots[0].slice(0, 2).toUpperCase()
-  return (mots[0][0] + mots[1][0]).toUpperCase()
-}
-
-/**
  * Une carte de kit de la boutique.
  *
  * Compacte : elle doit tenir vingt-neuf fois dans une grille sans que la page
- * devienne un rouleau. D'où la description sur deux lignes maximum et la
- * fiche technique renvoyée à la page /kits/[slug].
+ * devienne un rouleau. D'où la description sur deux lignes maximum et la fiche
+ * technique renvoyée à /kits/[slug].
  *
  * ⚠ La carte n'est PAS un <Link> englobant, contrairement à celle de /kits :
  * elle contient un bouton, et un <button> dans un <a> est du HTML invalide
- * (et injouable au clavier). Le lien porte donc sur le seul en-tête.
+ * (et injouable au clavier). Le lien porte donc sur le seul nom.
  */
 export function CarteKitBoutique({
   kit,
@@ -168,82 +174,58 @@ export function CarteKitBoutique({
 
   return (
     <article
-      className={`flex flex-col rounded-xl border p-4 transition-colors hover:border-[#3d2f5c] ${
-        exclusif
-          ? 'border-[#3a2a55] bg-linear-[168deg] from-[#1d1233] to-charbon'
-          : 'border-bord bg-charbon'
+      className={`relative flex flex-col overflow-hidden rounded-carte border bg-charbon p-4.5 transition-[border-color,transform,background] duration-[.18s] hover:-translate-y-0.5 hover:bg-braise ${
+        exclusif ? 'border-oni/35 hover:border-oni' : 'border-bord hover:border-soupe'
       }`}
     >
-      {/* --- en-tête cliquable : pastille + nom + rôle --- */}
-      <Link
-        href={`/kits/${kit.slug}`}
-        className="group flex items-center gap-3"
-        aria-label={`Voir la fiche du kit ${kit.nom}`}
-      >
-        <span
-          aria-hidden="true"
-          className={`flex size-11 shrink-0 items-center justify-center rounded-[10px] border font-mono text-[15px] font-bold ${
-            exclusif
-              ? 'border-violet/35 bg-violet/12 text-violet'
-              : 'border-bord bg-braise text-soupe'
-          }`}
-        >
-          {kit.kanji ?? monogramme(kit.nom)}
-        </span>
+      {exclusif && kit.kanji && <KanjiFiligrane taille={70}>{kit.kanji}</KanjiFiligrane>}
 
-        <span className="min-w-0 flex-1">
-          <span
-            className={`block truncate font-titre text-[16px] uppercase transition-colors ${
-              exclusif ? 'text-violet' : 'text-creme'
-            } group-hover:text-or`}
+      <div className="relative flex flex-wrap items-baseline gap-2.25">
+        <h3 className={`font-titre text-[16.5px] tracking-[-.01em] ${exclusif ? 'text-oni' : ''}`}>
+          <Link
+            href={`/kits/${kit.slug}`}
+            className="transition-colors hover:text-or"
+            aria-label={`Voir la fiche du kit ${kit.nom}`}
           >
             {kit.nom}
-          </span>
-          <span
-            className={`block truncate font-mono text-[10px] tracking-[1.3px] uppercase ${
-              exclusif ? 'text-violet/75' : 'text-oni'
-            }`}
-          >
-            {kit.role}
-          </span>
-        </span>
-      </Link>
+          </Link>
+        </h3>
+        <Badge className="text-[9px] tracking-[.16em]">{kit.role}</Badge>
+      </div>
 
       {/* Deux lignes maximum : au-delà, les cartes de la grille se
-          désalignent et la page double de hauteur. La suite est sur la fiche. */}
-      <p className="mt-3 mb-3.5 line-clamp-2 grow text-[13.5px] leading-[1.45] text-gris">
+          désalignent. La suite est sur la fiche. Masquée sous 560px, où la
+          grille passe à deux colonnes très étroites. */}
+      <p className="relative mt-2.5 line-clamp-2 flex-1 text-[13.5px] leading-[1.45] text-gris max-[560px]:hidden">
         {kit.descriptionCourte}
       </p>
 
       {/*
-        Le prix en coins à côté du prix en euros : c'est la preuve visible de
-        la promesse « tout s'obtient aussi en jouant ». Il n'est donc pas plus
-        petit ni plus pâle que le prix en euros — les deux se lisent d'un coup.
+        Le prix en coins sous le prix en euros : c'est la preuve visible de la
+        promesse « tout s'obtient aussi en jouant ». Il n'est donc ni plus
+        petit ni plus pâle au point de disparaître.
       */}
-      <div className="mb-3 flex flex-wrap items-baseline gap-x-2 gap-y-1 border-t border-bord pt-3">
-        <span className="font-titre text-[17px] text-soupe">
+      <div className="relative mt-3.5 border-t border-bord pt-3">
+        <p className="font-mono text-xl leading-none font-bold text-or">
           {formaterEuros(kit.prixEurosCentimes)}
-        </span>
-        {/* text-gris et non text-bord : #2E2245 est la couleur des bordures,
-            elle passe à peine 1,5:1 sur le charbon. Le « ou » articule les deux
-            prix, il doit se lire. */}
-        <span className="text-[12px] text-gris">ou</span>
-        {kit.prixCoins === 0 ? (
-          <span className="font-titre text-[15px] text-vert">Gratuit en jeu</span>
-        ) : (
-          <span className="font-mono text-[13px] font-bold text-or">
-            {formaterCoins(kit.prixCoins)}
-            <span className="ml-1 font-corps text-[11.5px] font-normal text-gris">coins</span>
-          </span>
-        )}
+        </p>
+        <p className="mt-1.5 font-mono text-[9.5px] tracking-[.06em] text-gris">
+          {kit.prixCoins === 0 ? (
+            <span className="text-vert">Gratuit en jeu</span>
+          ) : (
+            `ou ${formaterCoins(kit.prixCoins)} coins en jouant`
+          )}
+        </p>
       </div>
 
-      <BoutonAjout
-        dansLePanier={dansLePanier}
-        indisponible={vente.indisponible}
-        libelleIndisponible={vente.libelle}
-        onClick={onBasculer}
-      />
+      <div className="relative mt-3.5">
+        <BoutonAjout
+          dansLePanier={dansLePanier}
+          indisponible={vente.indisponible}
+          libelleIndisponible={vente.libelle}
+          onClick={onBasculer}
+        />
+      </div>
     </article>
   )
 }
@@ -252,43 +234,78 @@ export function CarteKitBoutique({
 /* Pack                                                                       */
 /* -------------------------------------------------------------------------- */
 
+/**
+ * Le pack, en bloc large hachuré de rouge : c'est l'offre groupée, elle ne
+ * ressemble à aucune carte de la grille exprès.
+ */
 export function CartePack({
   pack,
+  kitsInclus,
   dansLePanier,
   onBasculer,
 }: {
   pack: PackBoutique
+  /** Noms des kits du pack, affichés en pied de description. */
+  kitsInclus: string[]
   dansLePanier: boolean
   onBasculer: () => void
 }) {
   const vente = etatDeVente(pack)
 
+  const economie =
+    pack.prixBarreCentimes !== null && pack.prixBarreCentimes > pack.prixEurosCentimes
+      ? pack.prixBarreCentimes - pack.prixEurosCentimes
+      : null
+
   return (
-    <article className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-dashed border-soupe bg-linear-[100deg] from-soupe/7 to-transparent px-5 py-5 sm:px-6">
-      <div className="min-w-[200px] flex-1">
-        <h3 className="font-titre text-[19px] uppercase">{pack.nom}</h3>
-        <p className="mt-1 text-sm text-gris">{pack.description}</p>
+    <article
+      className="hachures grid items-center gap-7 rounded-bloc border border-oni/45 p-7 shadow-[0_26px_60px_-38px_rgba(233,40,19,.6)] lg:grid-cols-[minmax(0,1fr)_auto]"
+      style={{ ['--teinte-hachures' as string]: 'rgb(233 40 19 / .06)' }}
+    >
+      <div>
+        <p className="font-mono text-[10px] tracking-[.18em] text-oni uppercase">
+          La meilleure affaire du serveur
+        </p>
+        <h3 className="mt-2.5 font-titre text-[clamp(19px,2.6vw,25px)] tracking-[-.01em]">
+          {pack.nom}
+        </h3>
+        <p className="mt-2.5 max-w-[56ch] text-[14.5px] text-gris">{pack.description}</p>
+
+        {kitsInclus.length > 0 && (
+          <p className="mt-3 font-mono text-[11px] tracking-[.04em] text-gris">
+            {kitsInclus.join(' · ')}
+          </p>
+        )}
       </div>
 
-      <div className="flex items-baseline gap-3">
-        {pack.prixBarreCentimes !== null && (
-          <span className="text-[15px] text-gris line-through">
-            {formaterEuros(pack.prixBarreCentimes)}
+      <div className="lg:text-right">
+        {economie !== null && (
+          <span className="inline-block rounded-micro bg-vert px-2.5 py-1 font-mono text-[10px] font-bold tracking-[.12em] text-encre-verte uppercase">
+            Économise {formaterEuros(economie)}
           </span>
         )}
-        <span className="font-titre text-[30px] text-or">
-          {formaterEuros(pack.prixEurosCentimes)}
-        </span>
-      </div>
 
-      <BoutonAjout
-        dansLePanier={dansLePanier}
-        indisponible={vente.indisponible}
-        libelleIndisponible={vente.libelle}
-        libelle="Ajouter le pack"
-        pleineLargeur={false}
-        onClick={onBasculer}
-      />
+        <p className="mt-2.5 font-mono text-[40px] leading-none font-bold text-or">
+          {formaterEuros(pack.prixEurosCentimes)}
+        </p>
+
+        {pack.prixBarreCentimes !== null && (
+          <p className="mt-1.5 font-mono text-[13px] text-gris line-through">
+            {formaterEuros(pack.prixBarreCentimes)} à l’unité
+          </p>
+        )}
+
+        <div className="mt-4">
+          <BoutonAjout
+            dansLePanier={dansLePanier}
+            indisponible={vente.indisponible}
+            libelleIndisponible={vente.libelle}
+            libelle="Prendre le pack"
+            variante="or"
+            onClick={onBasculer}
+          />
+        </div>
+      </div>
     </article>
   )
 }
