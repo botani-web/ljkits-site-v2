@@ -149,7 +149,7 @@ export default async function Accueil() {
 
           <Pilier
             href="/classement"
-            chiffre="+10"
+            chiffre="+5"
             titre="Points par KOTH"
             lien="Voir le classement"
           >
@@ -175,9 +175,10 @@ export default async function Accueil() {
                 chaque <span className="text-or">lundi</span>
               </h2>
               <p className="mt-3.5 max-w-[46ch] text-gris">
-                Un kill vaut un point, une série stoppée en vaut trois, un KOTH remporté dix.
-                Les dix premiers de la semaine repartent avec des coins, et le premier garde
-                le titre de Champion sept jours.
+                Un kill vaut un point, un KOTH ou un totem remporté en vaut cinq — et le
+                double sur les classements de la semaine et du mois. Les dix premiers de la
+                semaine repartent avec des coins, et le premier garde le titre de Champion
+                sept jours.
               </p>
               <LienFleche href="/classement" className="mt-4">
                 Classement complet

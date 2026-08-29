@@ -192,36 +192,41 @@ export default async function PageKits() {
 /* -------------------------------------------------------------------------- */
 
 /**
- * Les quatre sources de coins.
+ * Les sources de coins.
  *
  * Aucune source en base : ce sont des règles d'économie du serveur, pas des
  * données.
  *
- * Le serveur a DEUX événements, à ne pas confondre :
- *   KOTH  — rapporte des POINTS de classement (+10), pas des coins. Il est
- *           donc annoncé sur l'accueil et sur /classement, pas ici.
- *   Totem — rapporte des COINS : 2 500 répartis au prorata des coups portés,
- *           plus 500 de prime au meneur. C'est la meilleure source de coins
- *           du serveur, et c'est celle qui a sa place dans ce tableau.
+ * ⚠ Le serveur a DEUX événements, et tous deux rapportent des coins ET des
+ * points de classement. Ne pas répéter l'ancienne confusion, qui réservait le
+ * KOTH aux points et le totem aux coins :
+ *   KOTH  — 500 coins au vainqueur, et +5 points (+10 en Semaine et Mois).
+ *   Totem — une part d'une cagnotte de 2 500 coins, et +5 points
+ *           (+10 en Semaine et Mois).
+ * Le barème de points est détaillé sur /classement.
  */
 const SOURCES_DE_COINS = [
   {
     valeur: '~20',
     titre: 'Par kill',
     texte:
-      'Une base de 10, plus les bonus de série, le premier sang doublé et les primes sur les joueurs en série.',
+      'Le gain dépend de la série de ta cible : plus elle enchaînait, plus elle vaut cher.',
   },
   {
     valeur: '+50',
     titre: 'Tous les 10 kills',
+    texte: 'Un palier de session qui tombe tout seul, en plus des gains de chaque kill.',
+  },
+  {
+    valeur: '500',
+    titre: 'Le KOTH',
     texte:
-      'Un palier de session qui tombe tout seul, en plus des gains de chaque kill.',
+      'Tiens la zone assez longtemps sans te faire déloger et la récompense est à toi.',
   },
   {
     valeur: '2 500',
     titre: 'Le Totem',
-    texte:
-      'La cagnotte de l’événement, répartie au prorata des coups portés, plus 500 coins de prime pour le meneur.',
+    texte: 'La cagnotte de l’événement, répartie entre les joueurs qui l’ont fait tomber.',
   },
   {
     valeur: '1 000',

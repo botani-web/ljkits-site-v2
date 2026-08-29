@@ -486,14 +486,15 @@ export default async function PageKit({ params }: { params: Promise<{ slug: stri
  * Mêmes valeurs que la section « la monnaie » de /kits — c'est la même
  * économie, elle ne doit pas être annoncée différemment d'une page à l'autre.
  *
- * Le Totem et non le KOTH : le KOTH rapporte des points de classement, pas
- * des coins. Confondre les deux ferait miroiter une source de coins qui
- * n'existe pas.
+ * Les DEUX événements rapportent des coins : le KOTH 500 au vainqueur, le
+ * totem une part de 2 500. Ils rapportent aussi des points de classement,
+ * détaillés sur /classement.
  */
 const GAINS_EN_JEU = [
   { libelle: 'Par kill', valeur: '~20 coins' },
   { libelle: 'Tous les 10 kills', valeur: '+50 coins' },
-  { libelle: 'Totem remporté', valeur: 'Jusqu’à 2 500 coins' },
+  { libelle: 'KOTH remporté', valeur: '500 coins' },
+  { libelle: 'Totem remporté', valeur: 'Une part de 2 500' },
   { libelle: 'Discord lié', valeur: '1 000 coins, une fois' },
 ]
 
