@@ -81,7 +81,7 @@ export default async function PageClassement() {
             Comment on marque <span className="text-or">des points</span>
           </>
         }
-        chapeau="Quatre actions rapportent, et une seule est à la portée de tout le monde en permanence. Les trois autres valent cher parce qu’elles demandent d’aller chercher les autres joueurs là où ils sont."
+        chapeau="Le kill est à la portée de tout le monde en permanence ; les deux événements demandent d’aller chercher les autres joueurs là où ils sont. Attention : le classement général et les classements Semaine et Mois ne comptent pas à la même échelle — un événement rapporte deux fois plus sur les seconds. Le classement à vie, lui, ne compte que les kills, jamais de points."
       >
         <div className="grid gap-3 min-[560px]:grid-cols-2 lg:grid-cols-4">
           {BAREME.map((entree) => (
@@ -195,36 +195,47 @@ export default async function PageClassement() {
  * Le barème de points.
  *
  * Aucune source en base : ce sont les règles du serveur Minecraft, pas des
- * données du site. Le KOTH est ici parce qu'il rapporte des POINTS ; le Totem,
- * qui rapporte des COINS, est présenté sur /kits.
+ * données du site. Les valeurs viennent du code du serveur.
+ *
+ * ⚠ TROIS COMPTEURS, DEUX ÉCHELLES. Le serveur tient un total « points »
+ * (classement général) et deux totaux « hebdo » et « mensuel » (Semaine et
+ * Mois). Un kill vaut 1 dans les trois. Un KOTH ou un totem, lui, vaut 5 en
+ * points mais 10 en Semaine et Mois. Écrire que ces classements « comptent des
+ * points » sans préciser l'échelle est donc faux, et c'est l'erreur que ce
+ * barème existe pour éviter — d'où le rappel dans chaque note.
+ *
+ * Le classement à vie ne compte que les kills : aucun point n'y entre.
+ *
+ * Le KOTH et le totem rapportent AUSSI des coins ; c'est /kits qui les
+ * présente sous cet angle.
  */
 const BAREME = [
   {
     points: '+1',
     titre: 'Un kill',
     texte: 'La base. Chaque joueur tué vaut un point, quel que soit son niveau ou son kit.',
-    note: 'Le suicide ne compte pas.',
-  },
-  {
-    points: '+3',
-    titre: 'Série stoppée',
-    texte:
-      'Tuer un joueur en pleine série rapporte trois fois plus. Plus sa série est longue, plus il vaut cher en coins.',
-    note: 'Cumulé avec le point de kill.',
+    note: 'Autant en Semaine et en Mois.',
   },
   {
     points: '+5',
-    titre: 'Zone tenue',
-    texte:
-      'Rester seul dans une zone de contrôle assez longtemps pour la valider. Un plafond journalier empêche d’en vivre.',
-    note: '500 coins maximum par 24 h.',
-  },
-  {
-    points: '+10',
     titre: 'KOTH remporté',
     texte:
-      'L’action la plus rentable du serveur, et la plus disputée : tout le monde converge au même endroit.',
-    note: 'Lancement auto dès 6 joueurs.',
+      'L’action la plus disputée du serveur : tout le monde converge au même endroit, et une seule personne repart avec la zone.',
+    note: '+10 en Semaine et en Mois.',
+  },
+  {
+    points: '+5',
+    titre: 'Totem remporté',
+    texte:
+      'L’autre événement du serveur. Il se gagne à plusieurs, mais un seul vainqueur est désigné à la fin.',
+    note: '+10 en Semaine et en Mois.',
+  },
+  {
+    points: '0',
+    titre: 'Série brisée',
+    texte:
+      'Tuer un joueur en pleine série ne rapporte aucun point de plus que le kill lui-même.',
+    note: 'Ça paie en coins, pas au classement.',
   },
 ]
 
