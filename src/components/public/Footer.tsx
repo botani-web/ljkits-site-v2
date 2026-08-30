@@ -32,7 +32,7 @@ export async function Footer() {
                 <Image
                   src="/logo-texte.png"
                   alt="LJKITS"
-                  width={88}
+                  width={71}
                   height={24}
                   className="mb-4"
                 />

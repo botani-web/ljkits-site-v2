@@ -39,7 +39,7 @@ export default async function PageConnexion() {
           className="mb-8 flex min-h-11 items-center justify-center"
           aria-label="Retour à l’accueil"
         >
-          <Image src="/logo-texte.png" alt="LJKITS" width={110} height={30} priority />
+          <Image src="/logo-texte.png" alt="LJKITS" width={88} height={30} priority />
         </Link>
 
         <Panneau ombre titre="Administration">
