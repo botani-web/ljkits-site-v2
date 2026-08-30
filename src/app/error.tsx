@@ -39,7 +39,7 @@ export default function ErreurDeRoute({
             className="mb-9 inline-flex min-h-11 items-center"
             aria-label="Retour à l’accueil"
           >
-            <Image src="/logo-texte.png" alt="LJKITS" width={88} height={24} />
+            <Image src="/logo-texte.png" alt="LJKITS" width={71} height={24} />
           </Link>
 
           <p className="font-mono text-[11px] font-bold tracking-[.22em] text-oni uppercase">

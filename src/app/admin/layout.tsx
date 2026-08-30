@@ -37,7 +37,7 @@ export default async function LayoutAdmin({ children }: { children: React.ReactN
             {/* min-h-11 : le logo ne fait que 20 px de haut, le lien qui le
                 porte doit rester une cible tactile de 44 px. */}
             <Link href="/" aria-label="Voir le site" className="flex min-h-11 items-center">
-              <Image src="/logo-texte.png" alt="LJKITS" width={73} height={20} />
+              <Image src="/logo-texte.png" alt="LJKITS" width={59} height={20} />
             </Link>
             <Badge>Admin</Badge>
           </div>

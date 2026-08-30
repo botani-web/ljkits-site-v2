@@ -49,7 +49,7 @@ export function Nav() {
     <nav className="sticky top-0 z-70 border-b border-bord bg-nuit/86 backdrop-blur-[14px]">
       <div className="mx-auto flex max-w-contenu items-center gap-6.5 px-gouttiere py-3">
         <Link href="/" aria-label="LJKITS — retour à l’accueil" className="flex items-center">
-          <Image src="/logo-texte.png" alt="LJKITS" width={88} height={24} priority />
+          <Image src="/logo-texte.png" alt="LJKITS" width={71} height={24} priority />
         </Link>
 
         {/* --- liens, à partir de 860px : en dessous ils vivent dans le panneau --- */}
