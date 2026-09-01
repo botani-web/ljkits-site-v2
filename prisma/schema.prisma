@@ -802,3 +802,102 @@ model TentativeRecrutement {
   @@index([empreinte, createdAt])
   @@index([createdAt])
 }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   LE CLASSEMENT ELO
+
+   Quatre tables CRÉÉES À LA MAIN dans la console Neon et ÉCRITES par le
+   plugin LJElo. Le site n'en fait que des lectures.
+
+   POURQUOI ELLES SONT DÉCLARÉES ICI ALORS QUE PRISMA NE LES A PAS CRÉÉES.
+   Prisma ne connaît que ce que ce fichier décrit. Une table absente du
+   schéma est, pour lui, une table à supprimer : le premier `db push` les
+   aurait effacées avec toute la saison en cours — exactement ce qui était
+   arrivé à la table `joueur`. Les déclarer, c'est les protéger.
+
+   Les `@@map`, `@map` et noms d'index reprennent EXACTEMENT le SQL du
+   plugin (LJElo/sql/schema-elo.sql). Le moindre écart ferait proposer à
+   Prisma un renommage, donc une migration destructrice.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/// Une saison de classement. Le plugin en ouvre une par mois.
+model EloSaison {
+  id     Int       @id @default(autoincrement())
+  nom    String
+  debut  DateTime  @db.Timestamptz(6)
+  /// Nulle tant que la saison est en cours.
+  fin    DateTime? @db.Timestamptz(6)
+  statut String    @default("en_cours")
+
+  @@map("elo_saison")
+}
+
+/// L'état d'un joueur pour une saison donnée. Clé composée : un même joueur
+/// a une ligne par saison, et les saisons passées restent consultables.
+model EloJoueur {
+  uuid   String
+  saison Int
+  pseudo String
+
+  elo    Int
+  eloMax Int @map("elo_max")
+
+  combats     Int @default(0)
+  kills       Int @default(0)
+  morts       Int @default(0)
+  serie       Int @default(0)
+  recordSerie Int @default(0) @map("record_serie")
+
+  derniereMaj DateTime @default(now()) @map("derniere_maj") @db.Timestamptz(6)
+
+  @@id([uuid, saison])
+  // Index du classement : sans lui, chaque affichage du top ferait un
+  // parcours complet de table. Le `map:` reprend son nom côté base.
+  @@index([saison, elo(sort: Desc)], map: "idx_joueur_classement")
+  @@map("elo_joueur")
+}
+
+/// Un combat. Une ligne par kill, avec les deux kits et l'Elo avant/après :
+/// c'est ce qui alimente l'historique et les fiches joueur.
+model EloMatch {
+  id      BigInt   @id @default(autoincrement())
+  saison  Int
+  instant DateTime @default(now()) @db.Timestamptz(6)
+
+  tueur         String
+  tueurPseudo   String @map("tueur_pseudo")
+  victime       String
+  victimePseudo String @map("victime_pseudo")
+
+  kitTueur   String? @map("kit_tueur")
+  kitVictime String? @map("kit_victime")
+
+  eloTueurAvant   Int @map("elo_tueur_avant")
+  eloTueurApres   Int @map("elo_tueur_apres")
+  eloVictimeAvant Int @map("elo_victime_avant")
+  eloVictimeApres Int @map("elo_victime_apres")
+
+  gain  Int
+  perte Int
+
+  /// Points de vie restants au tueur. Nul si la mesure a échoué.
+  pvRestants  Float? @map("pv_restants")
+  /// Coefficient anti-farm appliqué au combat : 1 = plein, 0 = neutralisé.
+  facteurFarm Float  @default(1) @map("facteur_farm")
+
+  @@index([saison, instant(sort: Desc)], map: "idx_match_saison_instant")
+  @@index([tueur, instant(sort: Desc)], map: "idx_match_tueur")
+  @@index([victime, instant(sort: Desc)], map: "idx_match_victime")
+  @@map("elo_match")
+}
+
+/// La liaison Discord. C'est elle qui rend un joueur CLASSABLE : le plugin
+/// comme le site excluent du classement les comptes non liés.
+model EloLiaison {
+  uuid          String   @id
+  discordId     String   @map("discord_id")
+  pseudoDiscord String?  @map("pseudo_discord")
+  lieeLe        DateTime @default(now()) @map("liee_le") @db.Timestamptz(6)
+
+  @@map("elo_liaison")
+}

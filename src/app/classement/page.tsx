@@ -1,98 +1,118 @@
 import type { Metadata } from 'next'
 
-import { TableauClassement } from '@/components/classement/TableauClassement'
-import { BoutonIpGeant } from '@/components/public/CopieIp'
+import { TableauElo } from '@/components/classement/TableauElo'
 import { PagePublique } from '@/components/public/PagePublique'
-import { CadreTable } from '@/components/ui/CadreTable'
+import { CadreTable, EnteteTable } from '@/components/ui/CadreTable'
 import { Enveloppe } from '@/components/ui/Enveloppe'
-import { BlocFinal, Section } from '@/components/ui/Section'
-import { lireClassements, lireDatesDeReset, lireDerniereMiseAJour } from '@/lib/classement'
+import { EtatVide } from '@/components/ui/EtatVide'
+import { Section } from '@/components/ui/Section'
+import {
+  COMBATS_MINIMUM,
+  PALIERS,
+  formaterKit,
+  lireChiffresSaison,
+  lireClassementElo,
+  lireDerniersCombats,
+  lireSaisonCourante,
+} from '@/lib/elo'
 import { formaterDateHeure } from '@/lib/format'
 import { IMAGE_OG } from '@/lib/site'
 
 /**
- * Le classement des joueurs.
+ * Le classement Elo de la saison.
  *
  * Rendu statique avec une revalidation courte : les chiffres viennent du
  * serveur Minecraft et bougent en continu, mais une page régénérée toutes les
  * minutes suffit — inutile de frapper la base à chaque visite.
  *
- * ⚠ LECTURE SEULE : la table `joueur` et `config_classement` appartiennent au
- * serveur Minecraft. Cette page ne fait que des lectures.
+ * ⚠ LECTURE SEULE : les tables `elo_*` appartiennent au plugin LJElo. Cette
+ * page ne fait que des lectures.
  */
 export const revalidate = 60
 
+/** Le montant annoncé. Il doit rester en accord avec LJElo/config.yml. */
+const CASHPRIZE = '150€'
+
 export const metadata: Metadata = {
-  title: 'Classement',
+  title: 'Classement Elo',
   description:
-    'Le classement des joueurs de LJKITS : points de la semaine, du mois, et kills à vie. Podium, ratio K/D et records de série.',
+    'Le classement Elo de LJKITS : paliers, combats, ratio K/D. Saison mensuelle avec cashprize à la clé.',
   alternates: { canonical: '/classement' },
   openGraph: {
     type: 'website',
-    title: 'Classement — LJKITS',
-    description:
-      'Qui domine l’arène cette semaine ? Points hebdomadaires, mensuels et kills à vie.',
+    title: 'Classement Elo — LJKITS',
+    description: 'Qui domine la saison ? Elo, paliers et éligibilité au cashprize.',
     url: '/classement',
     images: IMAGE_OG,
   },
   twitter: {
     card: 'summary',
-    title: 'Classement — LJKITS',
-    description: 'Points de la semaine, du mois, et kills à vie.',
+    title: 'Classement Elo — LJKITS',
+    description: 'Elo, paliers et cashprize mensuel.',
     images: IMAGE_OG,
   },
 }
 
 export default async function PageClassement() {
-  const [classements, dates, derniereMaj] = await Promise.all([
-    lireClassements(),
-    lireDatesDeReset(),
-    lireDerniereMiseAJour(),
+  const saison = await lireSaisonCourante()
+
+  // Aucune saison ouverte : le serveur n'a jamais démarré le plugin. On le dit
+  // au lieu d'afficher un tableau vide qui laisserait croire à une panne.
+  if (!saison) {
+    return (
+      <PagePublique>
+        <Enveloppe className="py-[clamp(60px,8vw,120px)]">
+          <EtatVide message="Le classement Elo n’a pas encore démarré. Reviens à l’ouverture de la première saison." />
+        </Enveloppe>
+      </PagePublique>
+    )
+  }
+
+  const [lignes, chiffres, combats] = await Promise.all([
+    lireClassementElo(saison.id),
+    lireChiffresSaison(saison.id),
+    lireDerniersCombats(saison.id, 10),
   ])
 
   return (
     <PagePublique>
-      {/*
-        En-tête, compte à rebours, onglets, podium et tableau : un seul
-        composant client, parce qu'ils partagent tous la période choisie.
-      */}
-      <TableauClassement
-        classements={classements}
-        finSemaine={dates.semaine}
-        finMois={dates.mois}
-      />
+      <TableauElo lignes={lignes} saison={saison.nom} cashprize={CASHPRIZE} />
 
-      {derniereMaj && (
+      {chiffres.derniereMaj && (
         <Enveloppe className="-mt-8 pb-8">
           <p className="font-mono text-[11px] text-gris">
             Classement à jour au{' '}
-            <time dateTime={derniereMaj.toISOString()}>{formaterDateHeure(derniereMaj)}</time>
+            <time dateTime={chiffres.derniereMaj.toISOString()}>
+              {formaterDateHeure(chiffres.derniereMaj)}
+            </time>{' '}
+            · {chiffres.combats} combat{chiffres.combats > 1 ? 's' : ''} cette saison
           </p>
         </Enveloppe>
       )}
 
-      {/* ══════════════════════════ LE BARÈME ══════════════════════════ */}
+      {/* ══════════════════════════ LES PALIERS ══════════════════════════ */}
       <Section
         fond="charbon"
-        id="bareme"
-        etiquette="Le barème"
+        id="paliers"
+        etiquette="Les paliers"
         titre={
           <>
-            Comment on marque <span className="text-or">des points</span>
+            Huit rangs, de Fer à <span className="text-or">Légende</span>
           </>
         }
-        chapeau="Le kill est à la portée de tout le monde en permanence ; les deux événements demandent d’aller chercher les autres joueurs là où ils sont. Attention : le classement général et les classements Semaine et Mois ne comptent pas à la même échelle — un événement rapporte deux fois plus sur les seconds. Le classement à vie, lui, ne compte que les kills, jamais de points."
+        chapeau="Les bornes sont resserrées autour de 1000, le point de départ : la grande majorité des joueurs vit entre 800 et 1500, et des paliers larges rendraient la progression invisible. Ton palier change en direct, à chaque combat."
       >
         <div className="grid gap-3 min-[560px]:grid-cols-2 lg:grid-cols-4">
-          {BAREME.map((entree) => (
-            <div key={entree.titre} className="rounded-carte border border-bord bg-braise p-5.5">
-              <p className="font-titre text-[clamp(26px,3.4vw,36px)] leading-none text-or">
-                {entree.points}
+          {PALIERS.map((palier) => (
+            <div key={palier.nom} className="rounded-carte border border-bord bg-braise p-5.5">
+              <p
+                className="font-titre text-[clamp(22px,2.8vw,28px)] leading-none"
+                style={{ color: palier.couleur }}
+              >
+                {palier.nom}
               </p>
-              <h3 className="mt-3.5 font-titre text-[15px]">{entree.titre}</h3>
-              <p className="mt-2.25 text-sm text-gris">{entree.texte}</p>
-              <p className="mt-3 border-t border-bord pt-2.5 font-mono text-[11px] text-gris">
-                {entree.note}
+              <p className="mt-3 font-mono text-[13px] text-creme">
+                {palier.minimum === 0 ? 'moins de 850' : `${palier.minimum} Elo et plus`}
               </p>
             </div>
           ))}
@@ -101,225 +121,89 @@ export default async function PageClassement() {
         <div className="hachures mt-3.5 flex flex-wrap items-start gap-5 rounded-carte border border-oni/40 p-6">
           <h3 className="shrink-0 font-titre text-base text-oni">Anti-farm</h3>
           <p className="flex-1 basis-[380px] text-[14.5px] text-gris">
-            Retuer la même personne en moins de{' '}
-            <b className="font-semibold text-creme">60 secondes</b> ne rapporte ni point, ni
-            kill, ni série — seulement 2 coins. S’arranger avec un ami pour monter au
-            classement ne fonctionne pas, et n’a jamais fonctionné.
+            Retuer la même personne rapporte de moins en moins :{' '}
+            <b className="font-semibold text-creme">moitié au 2ᵉ kill</b>, un quart au 3ᵉ, puis
+            plus rien pendant deux heures. Le coefficient s’applique aussi{' '}
+            <b className="font-semibold text-creme">à la perte</b> — se faire tuer en boucle par
+            un ami ne vide pas ton Elo, mais ne remplit pas le sien non plus.
           </p>
         </div>
       </Section>
 
-      {/* ═══════════════════════ LES RÉCOMPENSES ═══════════════════════ */}
+      {/* ═══════════════════════ LES DERNIERS COMBATS ═══════════════════════ */}
       <Section
-        etiquette="Ce que ça rapporte"
+        etiquette="En direct"
         titre={
           <>
-            Les récompenses, jusqu’à la <span className="text-or">dixième place</span>
+            Les derniers <span className="text-or">combats</span>
           </>
         }
-        chapeau="Deux classements distincts sont récompensés. Tu peux gagner sur les deux la même semaine, les lots se cumulent. Le classement à vie, lui, ne rapporte rien d’autre que d’y figurer."
+        chapeau="Chaque duel de la saison est enregistré : les deux kits, l’Elo échangé et les points de vie qui restaient au vainqueur."
       >
-        <div className="grid gap-3.5 lg:grid-cols-2">
-          {LOTS.map((bloc) => (
-            <CadreTable key={bloc.titre}>
-              <div className="border-b border-bord bg-braise px-5.5 py-4.5">
-                <h3 className="font-titre text-[17px]">{bloc.titre}</h3>
-                <p className="mt-1.5 font-mono text-[11px] tracking-[.06em] text-gris">
-                  {bloc.quand}
-                </p>
-              </div>
+        {combats.length === 0 ? (
+          <EtatVide message="Aucun combat classé pour le moment." />
+        ) : (
+          <CadreTable fond="braise">
+            <div className="max-lg:hidden">
+              <EnteteTable
+                colonnes="minmax(0,1fr) 150px 150px 92px 110px"
+                libelles={['Vainqueur', 'Kit', 'Vaincu', 'Elo', 'Quand']}
+                alignerADroite={[3, 4]}
+              />
+            </div>
 
-              <ol>
-                {bloc.places.map((place) => (
-                  <li
-                    key={place.rang}
-                    className="grid grid-cols-[52px_1fr_auto] items-center gap-3.5 border-b border-bord px-5.5 py-3.25 last:border-b-0"
-                  >
-                    <span
-                      className={`font-mono text-[12.5px] font-bold ${TONS_DE_PLACE[place.ton]}`}
-                    >
-                      {place.rang}
+            <ol>
+              {combats.map((combat) => (
+                <li
+                  key={combat.id}
+                  className="grid items-center gap-3 border-b border-bord px-4.5 py-[13px] last:border-b-0 max-lg:grid-cols-[minmax(0,1fr)_92px] lg:grid-cols-[minmax(0,1fr)_150px_150px_92px_110px]"
+                >
+                  <span className="min-w-0">
+                    <span className="block truncate text-[15px] font-semibold text-creme">
+                      {combat.tueurPseudo}
                     </span>
-                    <span className="font-mono text-[12.5px] font-bold text-creme">
-                      {place.lot}
+                    <span className="mt-0.5 block truncate font-mono text-[11px] text-gris lg:hidden">
+                      bat {combat.victimePseudo} · {formaterKit(combat.kitTueur)}
                     </span>
-                    <span className="text-right font-mono text-[11px] text-vert">
-                      {place.bonus}
+                  </span>
+
+                  <span className="max-lg:hidden font-mono text-[12px] text-gris">
+                    {formaterKit(combat.kitTueur)}
+                  </span>
+
+                  <span className="max-lg:hidden min-w-0">
+                    <span className="block truncate font-mono text-[12px] text-gris">
+                      {combat.victimePseudo}
                     </span>
-                  </li>
-                ))}
-              </ol>
-            </CadreTable>
-          ))}
-        </div>
+                    <span className="block truncate font-mono text-[11px] text-gris/60">
+                      {formaterKit(combat.kitVictime)}
+                    </span>
+                  </span>
+
+                  <span className="text-right font-mono text-[13px]">
+                    <span className="font-bold text-vert">+{combat.gain}</span>
+                    <span className="text-gris"> / </span>
+                    <span className="text-oni">−{combat.perte}</span>
+                  </span>
+
+                  <span className="max-lg:hidden text-right font-mono text-[11px] text-gris">
+                    {combat.pvRestants !== null
+                      ? `${combat.pvRestants} PV restants`
+                      : formaterDateHeure(combat.instant)}
+                  </span>
+                </li>
+              ))}
+            </ol>
+          </CadreTable>
+        )}
+
+        <p className="mt-3.5 font-mono text-[11px] text-gris">
+          {chiffres.joueurs} joueur{chiffres.joueurs > 1 ? 's' : ''} a
+          {chiffres.joueurs > 1 ? 'yant' : 'yant'} combattu cette saison ·{' '}
+          {COMBATS_MINIMUM} combats minimum pour le cashprize · la liaison Discord est
+          obligatoire pour apparaître ici.
+        </p>
       </Section>
-
-      {/* ══════════════════════ CE QUE LE RESET CHANGE ══════════════════════ */}
-      <Section
-        fond="charbon"
-        etiquette="Sans mauvaise surprise"
-        titre={
-          <>
-            Ce que le reset <span className="text-oni">ne touche pas</span>
-          </>
-        }
-        chapeau="Le reset est partiel. Seuls les compteurs de la période repartent à zéro — rien de ce que tu as gagné en jouant n’est repris."
-      >
-        <div className="grid gap-3.5 lg:grid-cols-2">
-          <ListeReset titre="Tu gardes" ton="garde" entrees={CONSERVE} />
-          <ListeReset titre="Tu repars à zéro" ton="perd" entrees={REMIS_A_ZERO} />
-        </div>
-      </Section>
-
-      {/* ═════════════════════════════ APPEL ═════════════════════════════ */}
-      <BlocFinal
-        etiquette="Il reste de la place"
-        titre={
-          <>
-            Un kill, et tu es <span className="text-or">dans le tableau</span>.
-          </>
-        }
-        chapeau="Les compteurs tournent en continu. Connecte-toi, choisis ton kit, et va chercher le haut du tableau."
-      >
-        <BoutonIpGeant />
-      </BlocFinal>
     </PagePublique>
-  )
-}
-
-/* -------------------------------------------------------------------------- */
-/* Contenu et composants locaux                                               */
-/* -------------------------------------------------------------------------- */
-
-/**
- * Le barème de points.
- *
- * Aucune source en base : ce sont les règles du serveur Minecraft, pas des
- * données du site. Les valeurs viennent du code du serveur.
- *
- * ⚠ TROIS COMPTEURS, DEUX ÉCHELLES. Le serveur tient un total « points »
- * (classement général) et deux totaux « hebdo » et « mensuel » (Semaine et
- * Mois). Un kill vaut 1 dans les trois. Un KOTH ou un totem, lui, vaut 5 en
- * points mais 10 en Semaine et Mois. Écrire que ces classements « comptent des
- * points » sans préciser l'échelle est donc faux, et c'est l'erreur que ce
- * barème existe pour éviter — d'où le rappel dans chaque note.
- *
- * Le classement à vie ne compte que les kills : aucun point n'y entre.
- *
- * Le KOTH et le totem rapportent AUSSI des coins ; c'est /kits qui les
- * présente sous cet angle.
- */
-const BAREME = [
-  {
-    points: '+1',
-    titre: 'Un kill',
-    texte: 'La base. Chaque joueur tué vaut un point, quel que soit son niveau ou son kit.',
-    note: 'Autant en Semaine et en Mois.',
-  },
-  {
-    points: '+5',
-    titre: 'KOTH remporté',
-    texte:
-      'L’action la plus disputée du serveur : tout le monde converge au même endroit, et une seule personne repart avec la zone.',
-    note: '+10 en Semaine et en Mois.',
-  },
-  {
-    points: '+5',
-    titre: 'Totem remporté',
-    texte:
-      'L’autre événement du serveur. Il se gagne à plusieurs, mais un seul vainqueur est désigné à la fin.',
-    note: '+10 en Semaine et en Mois.',
-  },
-  {
-    points: '0',
-    titre: 'Série brisée',
-    texte:
-      'Tuer un joueur en pleine série ne rapporte aucun point de plus que le kill lui-même.',
-    note: 'Ça paie en coins, pas au classement.',
-  },
-]
-
-const TONS_DE_PLACE = {
-  or: 'text-or',
-  argent: 'text-argent',
-  bronze: 'text-bronze',
-  neutre: 'text-gris',
-} as const
-
-const LOTS = [
-  {
-    titre: 'Classement hebdomadaire',
-    quand: 'Reset chaque lundi à 00h00',
-    places: [
-      { rang: '1er', lot: '5 000 coins', bonus: 'Titre Champion · 7 jours', ton: 'or' as const },
-      { rang: '2e', lot: '3 000 coins', bonus: '', ton: 'argent' as const },
-      { rang: '3e', lot: '2 000 coins', bonus: '', ton: 'bronze' as const },
-      { rang: '4e — 10e', lot: '1 000 coins', bonus: '', ton: 'neutre' as const },
-    ],
-  },
-  {
-    titre: 'Classement mensuel',
-    quand: 'Cycle glissant de 30 jours',
-    places: [
-      { rang: '1er', lot: '15 000 coins', bonus: 'Shogun · 30 jours', ton: 'or' as const },
-      { rang: '2e', lot: '10 000 coins', bonus: 'Samouraï · 30 jours', ton: 'argent' as const },
-      { rang: '3e', lot: '7 000 coins', bonus: 'Ronin · 30 jours', ton: 'bronze' as const },
-      { rang: '4e — 10e', lot: '3 000 coins', bonus: '', ton: 'neutre' as const },
-    ],
-  },
-]
-
-const CONSERVE = [
-  'Tous tes coins, jusqu’au dernier',
-  'Tous les kits que tu as débloqués',
-  'Ton grade et tout ce qui a été acheté',
-  'Ton compteur de kills à vie',
-  'La disposition de tes kits dans l’inventaire',
-]
-
-const REMIS_A_ZERO = [
-  'Tes points de la période concernée',
-  'Ta place dans le classement de la période',
-  'Le titre Champion, s’il n’est pas reconduit',
-]
-
-function ListeReset({
-  titre,
-  ton,
-  entrees,
-}: {
-  titre: string
-  ton: 'garde' | 'perd'
-  entrees: string[]
-}) {
-  const garde = ton === 'garde'
-
-  return (
-    <div
-      className={`rounded-carte border bg-braise p-6.5 ${
-        garde ? 'border-vert/30' : 'border-oni/30'
-      }`}
-    >
-      <h3 className={`font-titre text-base ${garde ? 'text-vert' : 'text-oni'}`}>{titre}</h3>
-
-      <ul className="mt-3.5">
-        {entrees.map((entree) => (
-          <li
-            key={entree}
-            className="flex gap-3 border-t border-bord py-2 text-[15px] text-gris first:border-t-0 first:pt-0"
-          >
-            {/* Le signe est décoratif : le titre du bloc dit déjà s'il s'agit
-                de ce qu'on garde ou de ce qu'on perd. */}
-            <span
-              aria-hidden="true"
-              className={`shrink-0 font-mono font-bold ${garde ? 'text-vert' : 'text-oni'}`}
-            >
-              {garde ? '✓' : '✗'}
-            </span>
-            {entree}
-          </li>
-        ))}
-      </ul>
-    </div>
   )
 }

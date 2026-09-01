@@ -10,7 +10,7 @@ import { Enveloppe } from '@/components/ui/Enveloppe'
 import { CaseCloisonnee, GrilleCloisonnee } from '@/components/ui/GrilleCloisonnee'
 import { BlocFinal, Section } from '@/components/ui/Section'
 import { Etiquette } from '@/components/ui/TeteSection'
-import { lireClassements } from '@/lib/classement'
+import { lireClassementElo, lireSaisonCourante, palierDe } from '@/lib/elo'
 import { formaterOuverture, formaterOuvertureEnPhrase } from '@/lib/format'
 import { prisma } from '@/lib/prisma'
 import { lireReglages } from '@/lib/reglages'
@@ -25,29 +25,36 @@ export const revalidate = 3600 // une heure
 const TAILLE_APERCU = 5
 
 export default async function Accueil() {
-  const [nombreKits, classements, reglages] = await Promise.all([
+  const [nombreKits, saison, reglages] = await Promise.all([
     // Le nombre de kits est lu en base plutôt qu'écrit en dur : la maquette
     // annonçait « 29 kits » à un endroit et « 15 » à un autre.
     prisma.kit.count({ where: { visible: true } }),
-    lireClassements(),
+    lireSaisonCourante(),
     lireReglages(),
   ])
+
+  // Hors saison ouverte, l'aperçu disparaît au lieu d'afficher un cadre vide.
+  const classementElo = saison ? await lireClassementElo(saison.id) : []
 
   const { discord } = reglages
 
   /*
-    L'aperçu reprend le classement HEBDOMADAIRE : c'est celui dont parle le
-    texte à côté (« le tableau se vide chaque lundi »).
+    L'aperçu reprend le TOP ELO de la saison en cours.
 
-    `lireClassements()` écarte déjà les joueurs à zéro point. Avant l'ouverture,
-    et après chaque remise à zéro du lundi, la liste est donc vide — et la
-    section entière disparaît plutôt que d'afficher un cadre creux.
+    Tant que personne n'est classé — avant l'ouverture, ou juste après une
+    remise à zéro mensuelle — la liste est vide et la section entière
+    disparaît, plutôt que d'afficher un cadre creux.
+
+    La jauge se mesure sur l'écart au plancher (800) et non sur l'Elo brut :
+    sinon la barre du cinquième serait déjà presque pleine et ne dirait plus
+    rien de l'écart réel.
 
     Note : cet aperçu peut avoir jusqu'à une heure de retard sur /classement,
     qui revalide toutes les 60 secondes. C'est une vitrine, pas le tableau.
   */
-  const apercuClassement = classements.semaine.slice(0, TAILLE_APERCU)
-  const meilleurScore = apercuClassement[0]?.valeur ?? 0
+  const apercuClassement = classementElo.slice(0, TAILLE_APERCU)
+  const PLANCHER_ELO = 800
+  const meilleurScore = Math.max(1, (apercuClassement[0]?.elo ?? PLANCHER_ELO) - PLANCHER_ELO)
 
   const ouverture = new Date(SITE.ouverture)
   /*
@@ -149,12 +156,12 @@ export default async function Accueil() {
 
           <Pilier
             href="/classement"
-            chiffre="+5"
-            titre="Points par KOTH"
+            chiffre="1000"
+            titre="Elo de départ"
             lien="Voir le classement"
           >
-            Chaque kill compte. Le tableau se vide le lundi et les dix premiers repartent
-            avec des coins.
+            Tout le monde part au même point. La saison dure un mois et se termine par un
+            cashprize.
           </Pilier>
 
           <Pilier href="/boutique" chiffre="0" titre="Pay to win" lien="Voir la boutique">
@@ -170,15 +177,15 @@ export default async function Accueil() {
             <div>
               <Etiquette>Compétition</Etiquette>
               <h2 className="text-h2 mt-3 font-titre">
-                Le tableau se vide
+                Un classement
                 <br />
-                chaque <span className="text-or">lundi</span>
+                qui se <span className="text-or">mérite</span>
               </h2>
               <p className="mt-3.5 max-w-[46ch] text-gris">
-                Un kill vaut un point, un KOTH ou un totem remporté en vaut cinq — et le
-                double sur les classements de la semaine et du mois. Les dix premiers de la
-                semaine repartent avec des coins, et le premier garde le titre de Champion
-                sept jours.
+                Tout le monde démarre à 1000 Elo. Tu en gagnes en battant plus fort que
+                toi, tu en perds en tombant contre plus faible — et un compte Discord lié
+                est obligatoire pour figurer au tableau. La saison dure un mois, puis tout
+                repart à zéro avec un cashprize à la clé.
               </p>
               <LienFleche href="/classement" className="mt-4">
                 Classement complet
@@ -193,11 +200,13 @@ export default async function Accueil() {
                     className="relative grid grid-cols-[36px_minmax(0,1fr)_auto] items-center gap-3.5 border-b border-bord px-4.5 py-3.25 last:border-b-0"
                   >
                     {/*
-                      La jauge dit la valeur relative au meilleur score.
-                      `meilleurScore` ne peut pas être nul ici : la liste est
-                      non vide et lireClassements() écarte les zéros.
+                      La jauge dit l'écart au meilleur, mesuré depuis le
+                      plancher de 800 : c'est là que commence vraiment
+                      l'échelle.
                     */}
-                    <JaugeDeFond pourcentage={(ligne.valeur / meilleurScore) * 100} />
+                    <JaugeDeFond
+                      pourcentage={((ligne.elo - PLANCHER_ELO) / meilleurScore) * 100}
+                    />
 
                     <span
                       className={`relative font-mono text-[12.5px] ${
@@ -207,12 +216,20 @@ export default async function Accueil() {
                       {String(ligne.rang).padStart(2, '0')}
                     </span>
 
-                    <span className="relative truncate text-[15px] font-semibold">
-                      {ligne.pseudo}
+                    <span className="relative min-w-0 truncate">
+                      <span className="block truncate text-[15px] font-semibold">
+                        {ligne.pseudo}
+                      </span>
+                      <span
+                        className="block font-mono text-[10.5px]"
+                        style={{ color: palierDe(ligne.elo).couleur }}
+                      >
+                        {palierDe(ligne.elo).nom}
+                      </span>
                     </span>
 
                     <span className="relative font-mono text-sm font-bold text-soupe">
-                      {ligne.valeur}
+                      {ligne.elo}
                     </span>
                   </li>
                 ))}
