@@ -1,5 +1,7 @@
 'use client'
 
+import Image from 'next/image'
+import Link from 'next/link'
 import { useMemo, useState } from 'react'
 
 import { BarreOutils, Recherche } from '@/components/ui/BarreOutils'
@@ -180,9 +182,10 @@ export function TableauElo({
                       const palier = palierDe(ligne.elo)
 
                       return (
-                        <article
+                        <Link
                           key={ligne.uuid}
-                          className={`relative overflow-hidden rounded-carte border p-6 ${marche.bordure} ${marche.fond}`}
+                          href={`/joueur/${encodeURIComponent(ligne.pseudo)}`}
+                          className={`relative block overflow-hidden rounded-carte border p-6 transition-transform hover:-translate-y-0.5 ${marche.bordure} ${marche.fond}`}
                         >
                           <span
                             aria-hidden
@@ -195,9 +198,19 @@ export function TableauElo({
                             <p className="font-mono text-[11px] tracking-[.12em] uppercase" style={{ color: palier.couleur }}>
                               {palier.nom}
                             </p>
-                            <h2 className={`mt-2 truncate font-titre text-[22px] ${marche.nom}`}>
-                              {ligne.pseudo}
-                            </h2>
+                            <div className="mt-2 flex items-center gap-2.5">
+                              <Image
+                                src={`https://mc-heads.net/avatar/${ligne.uuid}/32`}
+                                alt=""
+                                width={32}
+                                height={32}
+                                unoptimized
+                                className="shrink-0 rounded-[3px]"
+                              />
+                              <h2 className={`truncate font-titre text-[22px] ${marche.nom}`}>
+                                {ligne.pseudo}
+                              </h2>
+                            </div>
                             <p className="mt-3 font-titre text-[clamp(30px,4vw,40px)] leading-none text-creme">
                               {ligne.elo}
                               <span className="ml-1.5 font-mono text-[12px] font-normal text-gris">
@@ -229,7 +242,7 @@ export function TableauElo({
                               </p>
                             )}
                           </div>
-                        </article>
+                        </Link>
                       )
                     })}
                   </div>
@@ -268,8 +281,20 @@ export function TableauElo({
                               {ligne.rang}
                             </span>
 
-                            <span className="relative min-w-0">
-                              <span className="block truncate text-[15.5px] font-semibold">
+                            <Link
+                              href={`/joueur/${encodeURIComponent(ligne.pseudo)}`}
+                              className="relative flex min-w-0 items-center gap-2.5"
+                            >
+                              <Image
+                                src={`https://mc-heads.net/avatar/${ligne.uuid}/24`}
+                                alt=""
+                                width={24}
+                                height={24}
+                                unoptimized
+                                className="shrink-0 rounded-[3px] max-lg:hidden"
+                              />
+                              <span className="min-w-0">
+                              <span className="block truncate text-[15.5px] font-semibold transition-colors hover:text-or">
                                 {ligne.pseudo}
                               </span>
                               {/*
@@ -282,7 +307,8 @@ export function TableauElo({
                                 <span style={{ color: palier.couleur }}>{palier.nom}</span> ·{' '}
                                 {ligne.combats} combats
                               </span>
-                            </span>
+                              </span>
+                            </Link>
 
                             <span
                               className="relative max-lg:hidden font-mono text-[12px]"

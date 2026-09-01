@@ -192,3 +192,267 @@ export function formaterKit(kit: string | null): string {
   if (!kit) return 'Aucun'
   return kit.charAt(0).toUpperCase() + kit.slice(1)
 }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   LA FICHE D'UN JOUEUR
+   ══════════════════════════════════════════════════════════════════════════ */
+
+export type FicheJoueur = {
+  uuid: string
+  pseudo: string
+  rang: number
+  elo: number
+  eloMax: number
+  combats: number
+  kills: number
+  morts: number
+  serie: number
+  recordSerie: number
+  eligible: boolean
+  lie: boolean
+  derniereMaj: Date
+}
+
+/**
+ * La fiche d'un joueur, cherchée par pseudo.
+ *
+ * La recherche est INSENSIBLE À LA CASSE : une URL partagée dans un chat
+ * arrive rarement avec la casse exacte du pseudo, et renvoyer un 404 sur
+ * « /joueur/lestoo » quand le joueur s'appelle « Lestoo » serait absurde.
+ *
+ * Le rang est calculé par la base plutôt qu'en JavaScript : compter les
+ * joueurs mieux classés coûte une requête indexée, là où remonter tout le
+ * classement pour y chercher une position ramènerait cent lignes pour en
+ * utiliser une.
+ */
+export async function lireFicheJoueur(
+  pseudo: string,
+  saison: number,
+): Promise<FicheJoueur | null> {
+  const lignes = await prisma.$queryRaw<
+    Array<{
+      uuid: string
+      pseudo: string
+      elo: number
+      elo_max: number
+      combats: number
+      kills: number
+      morts: number
+      serie: number
+      record_serie: number
+      derniere_maj: Date
+      lie: boolean
+      rang: bigint
+    }>
+  >`
+    SELECT j.uuid, j.pseudo, j.elo, j.elo_max, j.combats, j.kills, j.morts,
+           j.serie, j.record_serie, j.derniere_maj,
+           (l.uuid IS NOT NULL) AS lie,
+           (SELECT count(*) + 1
+              FROM elo_joueur mieux
+              JOIN elo_liaison ml ON ml.uuid = mieux.uuid
+             WHERE mieux.saison = j.saison AND mieux.elo > j.elo) AS rang
+      FROM elo_joueur j
+      LEFT JOIN elo_liaison l ON l.uuid = j.uuid
+     WHERE j.saison = ${saison} AND lower(j.pseudo) = lower(${pseudo})
+     LIMIT 1
+  `
+
+  const ligne = lignes[0]
+  if (!ligne) return null
+
+  return {
+    uuid: ligne.uuid,
+    pseudo: ligne.pseudo,
+    // Un joueur non lié n'a pas de rang : il ne figure pas au classement.
+    rang: ligne.lie ? Number(ligne.rang) : 0,
+    elo: ligne.elo,
+    eloMax: ligne.elo_max,
+    combats: ligne.combats,
+    kills: ligne.kills,
+    morts: ligne.morts,
+    serie: ligne.serie,
+    recordSerie: ligne.record_serie,
+    eligible: ligne.combats >= COMBATS_MINIMUM,
+    lie: ligne.lie,
+    derniereMaj: ligne.derniere_maj,
+  }
+}
+
+export type CombatJoueur = {
+  id: string
+  instant: Date
+  victoire: boolean
+  adversaire: string
+  monKit: string | null
+  sonKit: string | null
+  /** Positif sur une victoire, négatif sur une défaite. */
+  delta: number
+  eloApres: number
+  pvRestants: number | null
+}
+
+/**
+ * Les derniers combats d'un joueur, victoires et défaites mêlées.
+ *
+ * Un UNION plutôt que deux requêtes : le joueur est tantôt dans la colonne
+ * `tueur`, tantôt dans `victime`, et il faut les vingt derniers de l'ensemble
+ * — pas les vingt derniers de chaque côté qu'il faudrait ensuite refusionner
+ * et retrier en mémoire.
+ */
+export async function lireCombatsJoueur(
+  uuid: string,
+  saison: number,
+  limite = 20,
+): Promise<CombatJoueur[]> {
+  const lignes = await prisma.$queryRaw<
+    Array<{
+      id: bigint
+      instant: Date
+      victoire: boolean
+      adversaire: string
+      mon_kit: string | null
+      son_kit: string | null
+      delta: number
+      elo_apres: number
+      pv_restants: number | null
+    }>
+  >`
+    SELECT id, instant, true AS victoire, victime_pseudo AS adversaire,
+           kit_tueur AS mon_kit, kit_victime AS son_kit,
+           gain AS delta, elo_tueur_apres AS elo_apres, pv_restants
+      FROM elo_match
+     WHERE saison = ${saison} AND tueur = ${uuid}
+    UNION ALL
+    SELECT id, instant, false AS victoire, tueur_pseudo AS adversaire,
+           kit_victime AS mon_kit, kit_tueur AS son_kit,
+           -perte AS delta, elo_victime_apres AS elo_apres, NULL AS pv_restants
+      FROM elo_match
+     WHERE saison = ${saison} AND victime = ${uuid}
+     ORDER BY instant DESC
+     LIMIT ${limite}
+  `
+
+  return lignes.map((ligne) => ({
+    id: ligne.id.toString(),
+    instant: ligne.instant,
+    victoire: ligne.victoire,
+    adversaire: ligne.adversaire,
+    monKit: ligne.mon_kit,
+    sonKit: ligne.son_kit,
+    delta: ligne.delta,
+    eloApres: ligne.elo_apres,
+    pvRestants: ligne.pv_restants,
+  }))
+}
+
+export type StatKit = {
+  kit: string
+  victoires: number
+  defaites: number
+  total: number
+  /** Pourcentage de victoires, arrondi à l'entier. */
+  taux: number
+}
+
+/**
+ * Les kits du joueur, du plus joué au moins joué.
+ *
+ * C'est la statistique qui rend une fiche utile plutôt que décorative : elle
+ * dit avec quoi le joueur gagne, et avec quoi il perd.
+ */
+export async function lireStatsParKit(uuid: string, saison: number): Promise<StatKit[]> {
+  const lignes = await prisma.$queryRaw<
+    Array<{ kit: string; victoires: bigint; defaites: bigint }>
+  >`
+    SELECT kit,
+           sum(CASE WHEN victoire THEN 1 ELSE 0 END) AS victoires,
+           sum(CASE WHEN victoire THEN 0 ELSE 1 END) AS defaites
+      FROM (
+        SELECT kit_tueur AS kit, true AS victoire
+          FROM elo_match
+         WHERE saison = ${saison} AND tueur = ${uuid} AND kit_tueur IS NOT NULL
+        UNION ALL
+        SELECT kit_victime AS kit, false AS victoire
+          FROM elo_match
+         WHERE saison = ${saison} AND victime = ${uuid} AND kit_victime IS NOT NULL
+      ) tout
+     GROUP BY kit
+     ORDER BY count(*) DESC
+     LIMIT 8
+  `
+
+  return lignes.map((ligne) => {
+    const victoires = Number(ligne.victoires)
+    const defaites = Number(ligne.defaites)
+    const total = victoires + defaites
+    return {
+      kit: ligne.kit,
+      victoires,
+      defaites,
+      total,
+      taux: total > 0 ? Math.round((victoires / total) * 100) : 0,
+    }
+  })
+}
+
+export type Adversaire = {
+  pseudo: string
+  victoires: number
+  defaites: number
+}
+
+/** Les adversaires les plus fréquents, avec le face-à-face. */
+export async function lireAdversaires(uuid: string, saison: number): Promise<Adversaire[]> {
+  const lignes = await prisma.$queryRaw<
+    Array<{ pseudo: string; victoires: bigint; defaites: bigint }>
+  >`
+    SELECT pseudo,
+           sum(CASE WHEN victoire THEN 1 ELSE 0 END) AS victoires,
+           sum(CASE WHEN victoire THEN 0 ELSE 1 END) AS defaites
+      FROM (
+        SELECT victime_pseudo AS pseudo, true AS victoire
+          FROM elo_match WHERE saison = ${saison} AND tueur = ${uuid}
+        UNION ALL
+        SELECT tueur_pseudo AS pseudo, false AS victoire
+          FROM elo_match WHERE saison = ${saison} AND victime = ${uuid}
+      ) tout
+     GROUP BY pseudo
+     ORDER BY count(*) DESC
+     LIMIT 5
+  `
+
+  return lignes.map((ligne) => ({
+    pseudo: ligne.pseudo,
+    victoires: Number(ligne.victoires),
+    defaites: Number(ligne.defaites),
+  }))
+}
+
+/**
+ * La courbe d'Elo, reconstruite depuis les combats.
+ *
+ * Aucune table n'archive l'Elo dans le temps : chaque combat garde l'Elo
+ * D'APRÈS, ce qui suffit à retracer la progression sans stocker une seconde
+ * fois la même information. On remonte donc les combats du plus ancien au
+ * plus récent et on lit la valeur qu'ils portent.
+ */
+export async function lireCourbeElo(
+  uuid: string,
+  saison: number,
+  points = 40,
+): Promise<number[]> {
+  const lignes = await prisma.$queryRaw<Array<{ elo_apres: number }>>`
+    SELECT elo_apres FROM (
+      SELECT instant, elo_tueur_apres AS elo_apres
+        FROM elo_match WHERE saison = ${saison} AND tueur = ${uuid}
+      UNION ALL
+      SELECT instant, elo_victime_apres AS elo_apres
+        FROM elo_match WHERE saison = ${saison} AND victime = ${uuid}
+      ORDER BY instant DESC
+      LIMIT ${points}
+    ) derniers
+    ORDER BY instant ASC
+  `
+  return lignes.map((ligne) => ligne.elo_apres)
+}

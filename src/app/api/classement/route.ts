@@ -33,7 +33,7 @@ import {
  * le CDN continue de servir la version périmée pendant qu'il en régénère
  * une, plutôt que de laisser passer tout le monde vers la base d'un coup.
  */
-export const revalidate = 15
+export const revalidate = 8
 
 export async function GET() {
   const saison = await lireSaisonCourante()
@@ -68,6 +68,6 @@ export async function GET() {
 
 function enTetesCache(): HeadersInit {
   return {
-    'Cache-Control': 'public, s-maxage=15, stale-while-revalidate=45',
+    'Cache-Control': 'public, s-maxage=8, stale-while-revalidate=45',
   }
 }
