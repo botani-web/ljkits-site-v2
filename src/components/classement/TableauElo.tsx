@@ -7,7 +7,8 @@ import { CadreTable, EnteteTable, JaugeDeFond } from '@/components/ui/CadreTable
 import { Enveloppe } from '@/components/ui/Enveloppe'
 import { EtatVide } from '@/components/ui/EtatVide'
 import { Etiquette } from '@/components/ui/TeteSection'
-import { COMBATS_MINIMUM, palierDe, resteAvantSuivant, type LigneElo } from '@/lib/elo'
+import { useClassementDirect } from '@/hooks/useClassementDirect'
+import { COMBATS_MINIMUM, palierDe, resteAvantSuivant, type CombatRecent, type LigneElo } from '@/lib/elo'
 import { formaterRatio } from '@/lib/format'
 
 /**
@@ -20,6 +21,12 @@ import { formaterRatio } from '@/lib/format'
  * Il n'y a PLUS D'ONGLETS, contrairement à l'ancien classement. L'Elo est une
  * mesure unique : semaine, mois et « à vie » n'avaient de sens que pour des
  * compteurs de points cumulés. Une saison, un tableau.
+ *
+ * LE TABLEAU SE MET À JOUR TOUT SEUL. Le serveur rend une première version
+ * complète — donc indexable et lisible sans JavaScript — puis le hook prend
+ * le relais et rafraîchit les chiffres toutes les quinze secondes, sans
+ * rechargement. C'est ce qui permet de laisser la page ouverte sur un
+ * second écran pendant qu'on joue.
  */
 
 /** Lignes affichées avant de cliquer sur « afficher la suite ». */
@@ -33,16 +40,27 @@ const MARCHES = [
 ] as const
 
 export function TableauElo({
-  lignes,
+  lignes: lignesInitiales,
+  combats: combatsInitiaux,
+  derniereMaj: majInitiale,
   saison,
   cashprize,
 }: {
   lignes: LigneElo[]
+  combats: CombatRecent[]
+  derniereMaj: string | null
   saison: string
   cashprize: string
 }) {
   const [recherche, setRecherche] = useState('')
   const [limite, setLimite] = useState(LIMITE_INITIALE)
+
+  const { donnees, enDirect } = useClassementDirect({
+    lignes: lignesInitiales,
+    combats: combatsInitiaux,
+    derniereMaj: majInitiale,
+  })
+  const lignes = donnees.lignes
 
   const resultats = useMemo(() => {
     const terme = recherche.trim().toLowerCase()
@@ -108,9 +126,23 @@ export function TableauElo({
       {/* ═════════════════════════ RECHERCHE ═════════════════════════ */}
       <div>
         <BarreOutils>
-          <p className="font-mono text-[11px] tracking-[.12em] text-gris uppercase">
-            {lignes.length} joueur{lignes.length > 1 ? 's' : ''} classé
-            {lignes.length > 1 ? 's' : ''}
+          <p className="flex items-center gap-2 font-mono text-[11px] tracking-[.12em] text-gris uppercase">
+            {/*
+              La pastille dit si le direct fonctionne. Verte et pulsante, les
+              chiffres se rafraîchissent seuls ; grise, le sondage a échoué et
+              ce qui est affiché date de la dernière lecture réussie. Sans
+              elle, un visiteur ne pourrait pas distinguer « rien ne bouge
+              parce que rien ne se passe » de « rien ne bouge parce que c'est
+              cassé ».
+            */}
+            <span
+              aria-hidden
+              className={`inline-block size-1.5 rounded-full ${
+                enDirect ? 'animate-pulse bg-vert' : 'bg-gris'
+              }`}
+            />
+            {enDirect ? 'En direct' : 'Hors ligne'} · {lignes.length} joueur
+            {lignes.length > 1 ? 's' : ''} classé{lignes.length > 1 ? 's' : ''}
           </p>
           <Recherche
             valeur={recherche}

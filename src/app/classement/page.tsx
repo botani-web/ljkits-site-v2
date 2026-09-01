@@ -1,21 +1,18 @@
 import type { Metadata } from 'next'
 
+import { DerniersCombats } from '@/components/classement/DerniersCombats'
 import { TableauElo } from '@/components/classement/TableauElo'
 import { PagePublique } from '@/components/public/PagePublique'
-import { CadreTable, EnteteTable } from '@/components/ui/CadreTable'
 import { Enveloppe } from '@/components/ui/Enveloppe'
 import { EtatVide } from '@/components/ui/EtatVide'
 import { Section } from '@/components/ui/Section'
 import {
-  COMBATS_MINIMUM,
   PALIERS,
-  formaterKit,
   lireChiffresSaison,
   lireClassementElo,
   lireDerniersCombats,
   lireSaisonCourante,
 } from '@/lib/elo'
-import { formaterDateHeure } from '@/lib/format'
 import { IMAGE_OG } from '@/lib/site'
 
 /**
@@ -76,19 +73,13 @@ export default async function PageClassement() {
 
   return (
     <PagePublique>
-      <TableauElo lignes={lignes} saison={saison.nom} cashprize={CASHPRIZE} />
-
-      {chiffres.derniereMaj && (
-        <Enveloppe className="-mt-8 pb-8">
-          <p className="font-mono text-[11px] text-gris">
-            Classement à jour au{' '}
-            <time dateTime={chiffres.derniereMaj.toISOString()}>
-              {formaterDateHeure(chiffres.derniereMaj)}
-            </time>{' '}
-            · {chiffres.combats} combat{chiffres.combats > 1 ? 's' : ''} cette saison
-          </p>
-        </Enveloppe>
-      )}
+      <TableauElo
+        lignes={lignes}
+        combats={combats}
+        derniereMaj={chiffres.derniereMaj?.toISOString() ?? null}
+        saison={saison.nom}
+        cashprize={CASHPRIZE}
+      />
 
       {/* ══════════════════════════ LES PALIERS ══════════════════════════ */}
       <Section
@@ -130,80 +121,7 @@ export default async function PageClassement() {
         </div>
       </Section>
 
-      {/* ═══════════════════════ LES DERNIERS COMBATS ═══════════════════════ */}
-      <Section
-        etiquette="En direct"
-        titre={
-          <>
-            Les derniers <span className="text-or">combats</span>
-          </>
-        }
-        chapeau="Chaque duel de la saison est enregistré : les deux kits, l’Elo échangé et les points de vie qui restaient au vainqueur."
-      >
-        {combats.length === 0 ? (
-          <EtatVide message="Aucun combat classé pour le moment." />
-        ) : (
-          <CadreTable fond="braise">
-            <div className="max-lg:hidden">
-              <EnteteTable
-                colonnes="minmax(0,1fr) 150px 150px 92px 110px"
-                libelles={['Vainqueur', 'Kit', 'Vaincu', 'Elo', 'Quand']}
-                alignerADroite={[3, 4]}
-              />
-            </div>
-
-            <ol>
-              {combats.map((combat) => (
-                <li
-                  key={combat.id}
-                  className="grid items-center gap-3 border-b border-bord px-4.5 py-[13px] last:border-b-0 max-lg:grid-cols-[minmax(0,1fr)_92px] lg:grid-cols-[minmax(0,1fr)_150px_150px_92px_110px]"
-                >
-                  <span className="min-w-0">
-                    <span className="block truncate text-[15px] font-semibold text-creme">
-                      {combat.tueurPseudo}
-                    </span>
-                    <span className="mt-0.5 block truncate font-mono text-[11px] text-gris lg:hidden">
-                      bat {combat.victimePseudo} · {formaterKit(combat.kitTueur)}
-                    </span>
-                  </span>
-
-                  <span className="max-lg:hidden font-mono text-[12px] text-gris">
-                    {formaterKit(combat.kitTueur)}
-                  </span>
-
-                  <span className="max-lg:hidden min-w-0">
-                    <span className="block truncate font-mono text-[12px] text-gris">
-                      {combat.victimePseudo}
-                    </span>
-                    <span className="block truncate font-mono text-[11px] text-gris/60">
-                      {formaterKit(combat.kitVictime)}
-                    </span>
-                  </span>
-
-                  <span className="text-right font-mono text-[13px]">
-                    <span className="font-bold text-vert">+{combat.gain}</span>
-                    <span className="text-gris"> / </span>
-                    <span className="text-oni">−{combat.perte}</span>
-                  </span>
-
-                  <span className="max-lg:hidden text-right font-mono text-[11px] text-gris">
-                    {combat.pvRestants !== null
-                      ? `${combat.pvRestants} PV restants`
-                      : formaterDateHeure(combat.instant)}
-                  </span>
-                </li>
-              ))}
-            </ol>
-          </CadreTable>
-        )}
-
-        <p className="mt-3.5 font-mono text-[11px] text-gris">
-          {chiffres.joueurs} joueur{chiffres.joueurs > 1 ? 's' : ''} a
-          {chiffres.joueurs > 1 ? 'yant' : 'yant'} combattu cette saison ·{' '}
-          {COMBATS_MINIMUM} combats minimum pour le cashprize · la liaison Discord est
-          obligatoire pour apparaître ici.
-        </p>
-      </Section>
+      <DerniersCombats combatsInitiaux={combats} joueurs={chiffres.joueurs} />
     </PagePublique>
   )
 }
