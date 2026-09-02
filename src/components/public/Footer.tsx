@@ -38,7 +38,7 @@ export async function Footer() {
                 />
               </Link>
               <p className="max-w-[34ch] text-sm text-gris">
-                Le PvP Soup à l’ancienne. Un projet passion, sans pay-to-win, porté par la
+                Le PvP Soup compétitif. Un projet passion, sans pay-to-win, porté par la
                 nostalgie du soup français de 2014.
               </p>
             </div>

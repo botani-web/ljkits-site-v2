@@ -33,7 +33,7 @@ export const metadata: Metadata = {
   // Sert de base aux URL relatives des métadonnées Open Graph des sous-pages.
   metadataBase: new URL(SITE.url),
   title: {
-    default: 'LJKITS — Le PvP Soup à l’ancienne',
+    default: 'LJKITS — Le PvP Soup Compétitif',
     // Les pages filles n'ont qu'à définir leur titre court.
     template: '%s — LJKITS',
   },
