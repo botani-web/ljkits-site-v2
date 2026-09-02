@@ -25,7 +25,14 @@ import { IMAGE_OG } from '@/lib/site'
  * ⚠ LECTURE SEULE : les tables `elo_*` appartiennent au plugin LJElo. Cette
  * page ne fait que des lectures.
  */
-export const revalidate = 60
+/*
+ * 15 s et non 60 : avec 60, le CDN servait à l'arrivée une page vieille de
+ * plusieurs minutes (`age: 199` constaté le 02/09/2026), puisqu'en trafic
+ * faible la régénération n'est déclenchée que par la visite qui reçoit la
+ * version périmée. Le hook corrige le tableau dès le montage, mais le
+ * premier rendu doit rester crédible.
+ */
+export const revalidate = 15
 
 /** Le montant annoncé. Il doit rester en accord avec LJElo/config.yml. */
 const CASHPRIZE = '150€'

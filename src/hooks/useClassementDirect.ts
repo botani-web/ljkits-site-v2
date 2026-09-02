@@ -32,7 +32,17 @@ export type DonneesClassement = {
   derniereMaj: string | null
 }
 
-/** Intervalle de sondage. Aligné sur le `s-maxage` de la route. */
+/**
+ * Intervalle de sondage. Aligné sur le `s-maxage` de la route.
+ *
+ * ET UNE LECTURE IMMÉDIATE AU MONTAGE — voir `demarrer()`. Sans elle, la
+ * page vivait quinze secondes sur le HTML servi par le CDN, qui peut avoir
+ * plusieurs minutes (constaté le 02/09/2026 : `x-vercel-cache: STALE`,
+ * `age: 199`). Un visiteur qui regarde et repart avant la première lecture
+ * ne voyait jamais les chiffres à jour, et concluait que le direct était
+ * cassé. Il fallait rafraîchir à la main pour tomber, par chance, sur une
+ * page régénérée.
+ */
 const INTERVALLE_MS = 15_000
 
 /**
@@ -96,6 +106,10 @@ export function useClassementDirect(initiales: DonneesClassement) {
 
     function demarrer() {
       if (minuteur) return
+      // Tout de suite, puis à intervalle : le HTML initial vient du CDN et
+      // peut être vieux de plusieurs minutes — on ne le laisse pas s'afficher
+      // quinze secondes sans le corriger.
+      void lire()
       minuteur = setInterval(() => void lire(), INTERVALLE_MS)
     }
 
@@ -107,8 +121,7 @@ export function useClassementDirect(initiales: DonneesClassement) {
 
     function surVisibilite() {
       if (document.visibilityState === 'visible') {
-        void lire()
-        demarrer()
+        demarrer() // lit immédiatement, puis relance la boucle
       } else {
         arreter()
       }
