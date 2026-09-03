@@ -260,6 +260,10 @@ export async function lireFicheJoueur(
 
   const ligne = lignes[0]
   if (!ligne) return null
+  // Un joueur non lié n'a pas d'Elo, nulle part : sa fiche n'existe pas.
+  // Le serveur n'écrit plus sa ligne depuis le 03/09/2026 ; celle-ci reste
+  // une ceinture pour les lignes d'avant et pour un compte délié.
+  if (!ligne.lie) return null
 
   return {
     uuid: ligne.uuid,
