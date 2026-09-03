@@ -214,10 +214,14 @@ export function Boutique({
               <EtatVide message="Aucun grade en vente pour le moment." />
             ) : (
               <div className="grid items-start gap-3.5 lg:grid-cols-3">
-                {grades.map((grade) => (
+                {grades.map((grade, index) => (
                   <CarteGrade
                     key={grade.slug}
                     grade={grade}
+                    // Celui du milieu : le compromis, et celui que les
+                    // boutiques mettent en avant partout — pas un hasard,
+                    // c'est le palier qu'on regarde en premier.
+                    recommande={grades.length === 3 && index === 1}
                     dansLePanier={contient(panier, { type: 'GRADE', slug: grade.slug })}
                     onBasculer={() => basculerArticle({ type: 'GRADE', slug: grade.slug })}
                   />

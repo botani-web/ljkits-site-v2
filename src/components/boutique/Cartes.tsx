@@ -50,14 +50,28 @@ function etatDeVente({
  */
 export function CarteGrade({
   grade,
+  recommande = false,
   dansLePanier,
   onBasculer,
 }: {
   grade: GradeBoutique
+  /** Une seule carte par grille : celle qu'on conseille. */
+  recommande?: boolean
   dansLePanier: boolean
   onBasculer: () => void
 }) {
-  const misEnAvant = grade.etiquette !== null
+  /*
+    LA MISE EN AVANT NE SUIT PLUS L'ÉTIQUETTE.
+    ══════════════════════════════════════════════════════════════════════
+    Les trois grades portent désormais une étiquette — leur bonus de coins,
+    qui est l'argument principal de chacun. Si l'étiquette décidait aussi
+    du surlignage, les trois cartes seraient dorées et plus aucune ne
+    ressortirait : mettre tout en avant, c'est ne rien mettre en avant.
+
+    C'est donc `recommande` qui décide, passé par le parent : une seule
+    carte l'a.
+  */
+  const misEnAvant = recommande
   const vente = etatDeVente(grade)
 
   return (
@@ -69,6 +83,12 @@ export function CarteGrade({
       }`}
     >
       {grade.etiquette && <Ruban>{grade.etiquette}</Ruban>}
+
+      {recommande && (
+        <p className="border-b border-or/40 bg-or/12 py-2 text-center font-mono text-[10px] font-bold tracking-[.18em] text-or uppercase">
+          Le plus pris
+        </p>
+      )}
 
       <div
         className={`border-b border-bord px-6.5 pt-7 pb-6 ${

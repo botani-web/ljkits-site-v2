@@ -85,20 +85,26 @@ export default async function PageBoutique() {
       <header className="halo-hero pt-[clamp(50px,6.5vw,84px)] pb-[clamp(24px,3vw,34px)] text-center">
         <Enveloppe>
           <div className="mx-auto max-w-[900px]">
-            <Etiquette>Boutique · livraison en 90 secondes</Etiquette>
+            <Etiquette>Boutique · livraison en 90 secondes · aucun kit en vente</Etiquette>
 
+            {/*
+              Le hero vendait « les particules qui explosent quand tu tues »
+              et « le message à côté de ton kill ». Les deux sont passés en
+              boutique coins et s'achètent désormais SANS grade : c'était
+              devenu une promesse fausse. Il ne reste que ce qui est vrai —
+              gagner plus vite, et se voir.
+            */}
             <h1 className="text-h1 mt-4 font-titre">
-              Fais-toi
+              Va plus vite.
               <br />
-              <span className="text-or">un nom</span>.
+              <span className="text-or">Pas plus fort</span>.
             </h1>
 
-            <p className="mx-auto mt-5 max-w-[56ch] text-[clamp(16px,1.8vw,18.5px)] text-balance text-gris">
-              Tout le monde a la même épée et les mêmes cinq cœurs. La seule chose qui te
-              distingue, c’est{' '}
-              <b className="font-semibold text-creme">ce que les autres voient de toi</b> : ton
-              nom en couleur dans le chat, les particules qui explosent quand tu tues, et le
-              message que tout le monde lit à côté de ton kill.
+            <p className="mx-auto mt-5 max-w-[58ch] text-[clamp(16px,1.8vw,18.5px)] text-balance text-gris">
+              Rien ici ne te rendra plus puissant en combat : les trente-neuf kits
+              s’obtiennent en jouant, sans exception. Ce qui s’achète, c’est{' '}
+              <b className="font-semibold text-creme">du temps</b> — un bonus de coins à
+              vie sur chaque kill, ou de quoi débloquer tout de suite ce que tu voulais.
             </p>
 
             {/*
