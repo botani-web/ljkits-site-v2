@@ -91,9 +91,14 @@ export default async function PageKits() {
       {/* ═══════════════════════ LES EXCLUSIFS ═══════════════════════ */}
       {exclusifs.length > 0 && (
         <Section>
-          <div
-            className="hachures grid items-center gap-[clamp(26px,4vw,50px)] rounded-bloc border border-oni/40 p-[clamp(30px,5vw,52px)] lg:grid-cols-[minmax(0,1fr)_minmax(0,320px)]"
-          >
+          {/*
+            Bloc en COLONNE, et non en deux colonnes côte à côte.
+            Avec seize exclusifs, la grille de kanji faisait six rangées
+            serrées dans 320 px à droite du texte : le bloc paraissait
+            déséquilibré et les idéogrammes illisibles. Ils passent donc
+            dessous, sur toute la largeur, alignés à droite.
+          */}
+          <div className="hachures rounded-bloc border border-oni/40 p-[clamp(30px,5vw,52px)]">
             <div>
               <Etiquette className="text-oni">
                 {exclusifs.length === 1
@@ -120,15 +125,18 @@ export default async function PageKits() {
               La grille de kanji ne montre que les exclusifs qui en ont un.
               Un kanji manquant en base n'affiche pas de case vide : il retire
               simplement la sienne.
+
+              Quatre colonnes sur mobile, huit sur grand écran : seize kits
+              tiennent alors en deux rangées, quel que soit le nombre exact.
             */}
-            <ul className="grid grid-cols-3 gap-2">
+            <ul className="mt-[clamp(26px,4vw,44px)] ml-auto grid w-full max-w-[min(100%,720px)] grid-cols-4 gap-2 sm:grid-cols-6 lg:grid-cols-8">
               {exclusifs
                 .filter((kit) => kit.kanji)
                 .map((kit) => (
                   <li key={kit.slug}>
                     <Link
                       href={`/kits/${kit.slug}`}
-                      className="flex min-h-11 flex-col items-center justify-center rounded-controle border border-bord bg-nuit px-2.5 py-4 text-center transition-colors hover:border-oni"
+                      className="flex min-h-11 flex-col items-center justify-center rounded-controle border border-bord bg-nuit px-2 py-3.5 text-center transition-colors hover:border-oni"
                     >
                       <span className="text-2xl leading-none text-oni" aria-hidden="true">
                         {kit.kanji}
