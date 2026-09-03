@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import Link from 'next/link'
 
 import { BoutonAjout } from '@/components/boutique/BoutonAjout'
@@ -263,6 +264,15 @@ export function CartePackCoins({
 }) {
   const vente = etatDeVente(pack)
   const coins = pack.coins ?? 0
+  /*
+    L'image du palier, déduite du slug : « coins-coffret » -> /coins/coffret.webp.
+    Un palier sans fichier n'affiche simplement pas d'illustration, il ne
+    casse pas la carte — c'est ce qui permet d'ajouter un palier depuis
+    l'admin avant d'avoir son visuel.
+  */
+  const image = pack.slug.startsWith('coins-')
+    ? `/coins/${pack.slug.slice('coins-'.length)}.webp`
+    : null
   const parMille = coins > 0 ? pack.prixEurosCentimes / (coins / 1000) : 0
   const economie =
     parMilleReference > 0 && parMille > 0
@@ -280,6 +290,24 @@ export function CartePackCoins({
           Le premier palier
         </p>
       )}
+
+      {/*
+        L'illustration du palier. `sizes` évite au navigateur de télécharger
+        du 512 pour une vignette de 220 : il choisit la densité utile.
+        Décorative — le montant juste dessous porte l'information, donc
+        alt vide plutôt qu'un texte redondant au lecteur d'écran.
+      */}
+      {image ? (
+        <div className="relative mx-auto mt-3 aspect-square w-full max-w-[168px]">
+          <Image
+            src={image}
+            alt=""
+            fill
+            sizes="(max-width: 560px) 60vw, 200px"
+            className="object-contain"
+          />
+        </div>
+      ) : null}
 
       <p className="mt-3 font-mono text-[clamp(26px,3.4vw,34px)] leading-none font-bold text-or">
         {coins.toLocaleString('fr-FR')}
