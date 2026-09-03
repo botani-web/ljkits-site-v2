@@ -5,12 +5,11 @@ import { useActionState, useEffect, useMemo, useState } from 'react'
 import { creerCommande, type EtatCommande } from '@/actions/commandes'
 import { ETAT_VIDE } from '@/actions/etat'
 import { BarreBoutique } from '@/components/boutique/BarreBoutique'
-import { CarteGrade, CartePack } from '@/components/boutique/Cartes'
-import { GrilleKitsBoutique } from '@/components/boutique/GrilleKitsBoutique'
+import { CarteGrade, CartePackCoins } from '@/components/boutique/Cartes'
 import { ModaleRecapitulatif } from '@/components/boutique/ModaleRecapitulatif'
 import { PaiementTebex } from '@/components/boutique/PaiementTebex'
 import { Panier } from '@/components/boutique/Panier'
-import type { GradeBoutique, KitBoutique, PackBoutique } from '@/components/boutique/types'
+import type { GradeBoutique, PackBoutique } from '@/components/boutique/types'
 import { EtatVide } from '@/components/ui/EtatVide'
 import { Section } from '@/components/ui/Section'
 import {
@@ -43,12 +42,10 @@ import {
  */
 export function Boutique({
   grades,
-  kits,
   packs,
   vitrine,
 }: {
   grades: GradeBoutique[]
-  kits: KitBoutique[]
   packs: PackBoutique[]
   vitrine: React.ReactNode
 }) {
@@ -73,17 +70,32 @@ export function Boutique({
         prixCentimes: grade.prixEurosCentimes,
       })
     }
-    for (const kit of kits) {
-      table.set(`KIT:${kit.slug}`, {
-        nom: `Kit ${kit.nom}`,
-        prixCentimes: kit.prixEurosCentimes,
-      })
-    }
+    // Aucune entrée 'KIT' : la boutique n'en vend plus depuis le
+    // 03/09/2026. Le type reste dans le panier et dans TypeArticle parce
+    // que des commandes passées le référencent — on cesse d'en proposer,
+    // on ne réécrit pas l'historique. Un panier qui contiendrait encore un
+    // kit (onglet resté ouvert) ne trouvera pas son libellé et sera
+    // simplement ignoré au récapitulatif.
     for (const pack of packs) {
       table.set(`PACK:${pack.slug}`, { nom: pack.nom, prixCentimes: pack.prixEurosCentimes })
     }
     return table
-  }, [grades, kits, packs])
+  }, [grades, packs])
+
+  /*
+    Les packs qui donnent des coins, et le prix aux 1 000 coins du plus
+    petit d'entre eux. C'est lui qui sert de référence : chaque carte
+    affiche de combien elle fait mieux, ce qui rend le dégressif lisible
+    sans calculatrice.
+  */
+  const packsCoins = useMemo(
+    () => packs.filter((pack) => (pack.coins ?? 0) > 0),
+    [packs],
+  )
+  const parMilleReference = useMemo(() => {
+    const unitaires = packsCoins.map((p) => p.prixEurosCentimes / ((p.coins ?? 1) / 1000))
+    return unitaires.length > 0 ? Math.max(...unitaires) : 0
+  }, [packsCoins])
 
   useEffect(() => {
     // Un article retiré de la vente depuis la dernière visite ne peut plus
@@ -173,33 +185,38 @@ export function Boutique({
 
       {vitrine}
 
-      {/* ════════════════════════ LES KITS ET LE PACK ════════════════════════ */}
+      {/* ══════════════════════════ LES COINS ══════════════════════════ */}
+      {/*
+        Plus aucun kit ici depuis le 03/09/2026. Les trente-neuf kits
+        s'obtiennent en jouant, sans exception : c'est la promesse du
+        serveur, et la vendre à moitié la rendrait fausse. Ce qui s'achète,
+        ce sont des coins — le temps de grind, pas la puissance.
+      */}
       <Section
         fond="charbon"
-        id="kits"
-        etiquette="Les kits"
+        id="coins"
+        etiquette="La monnaie"
         titre={
           <>
-            Débloque-les <span className="text-or">tout de suite</span>
+            Gagne du temps, <span className="text-or">pas de la puissance</span>
           </>
         }
-        chapeau="Chaque kit affiche aussi son prix en coins, pour que tu voies exactement combien d’heures de jeu tu économises."
+        chapeau="Les coins débloquent des kits que tu peux tous obtenir en jouant. Plus le palier est gros, moins les 1 000 coins te coûtent."
       >
-        {packs.map((pack) => (
-          <div key={pack.slug} className="mb-3.5">
-            <CartePack
-              pack={pack}
-              kitsInclus={pack.kitsInclus}
-              dansLePanier={contient(panier, { type: 'PACK', slug: pack.slug })}
-              onBasculer={() => basculerArticle({ type: 'PACK', slug: pack.slug })}
-            />
-          </div>
-        ))}
-
-        {kits.length === 0 ? (
-          <EtatVide message="Aucun kit en vente pour le moment." />
+        {packsCoins.length === 0 ? (
+          <EtatVide message="Aucun pack de coins pour le moment." />
         ) : (
-          <GrilleKitsBoutique kits={kits} panier={panier} onBasculer={basculerArticle} />
+          <div className="grid gap-3 min-[560px]:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+            {packsCoins.map((pack) => (
+              <CartePackCoins
+                key={pack.slug}
+                pack={pack}
+                parMilleReference={parMilleReference}
+                dansLePanier={contient(panier, { type: 'PACK', slug: pack.slug })}
+                onBasculer={() => basculerArticle({ type: 'PACK', slug: pack.slug })}
+              />
+            ))}
+          </div>
         )}
       </Section>
 

@@ -191,6 +191,13 @@ model Pack {
   /// Prix affiché barré à côté du prix réel. null = pas de prix barré.
   prixBarreCentimes Int?
 
+  /// Coins livrés par ce pack. null = le pack n'en donne pas.
+  ///
+  /// La boutique ne vend plus de kits depuis le 03/09/2026 : ils
+  /// s'obtiennent tous en jouant. Un pack est donc soit un lot de coins,
+  /// soit un regroupement d'articles — jamais un raccourci vers un kit.
+  coins Int?
+
   ordre     Int
   visible   Boolean @default(true)
   achetable Boolean @default(true)

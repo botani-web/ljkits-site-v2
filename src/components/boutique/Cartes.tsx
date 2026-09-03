@@ -238,6 +238,77 @@ export function CarteKitBoutique({
  * Le pack, en bloc large hachuré de rouge : c'est l'offre groupée, elle ne
  * ressemble à aucune carte de la grille exprès.
  */
+/**
+ * Une carte de pack de coins.
+ *
+ * ═══════════════════════════════════════════════════════════════════════
+ *  LE PRIX AUX 1 000 COINS EST AFFICHÉ, PAS SUGGÉRÉ
+ * ═══════════════════════════════════════════════════════════════════════
+ * « Plus tu en prends, moins c'est cher » ne veut rien dire tant que
+ * l'acheteur doit sortir sa calculatrice. Chaque carte porte donc son
+ * prix unitaire, et celles qui font mieux que le plus petit palier
+ * affichent de combien.
+ */
+export function CartePackCoins({
+  pack,
+  parMilleReference,
+  dansLePanier,
+  onBasculer,
+}: {
+  pack: PackBoutique
+  /** Prix aux 1 000 coins du plus petit palier, pour calculer l'écart. */
+  parMilleReference: number
+  dansLePanier: boolean
+  onBasculer: () => void
+}) {
+  const vente = etatDeVente(pack)
+  const coins = pack.coins ?? 0
+  const parMille = coins > 0 ? pack.prixEurosCentimes / (coins / 1000) : 0
+  const economie =
+    parMilleReference > 0 && parMille > 0
+      ? Math.round((1 - parMille / parMilleReference) * 100)
+      : 0
+
+  return (
+    <article className="flex flex-col rounded-carte border border-bord bg-braise p-5.5 transition-colors hover:border-or/50">
+      {economie > 0 ? (
+        <p className="font-mono text-[10px] font-bold tracking-[.18em] text-vert uppercase">
+          −{economie} % aux 1 000 coins
+        </p>
+      ) : (
+        <p className="font-mono text-[10px] tracking-[.18em] text-gris uppercase">
+          Le premier palier
+        </p>
+      )}
+
+      <p className="mt-3 font-mono text-[clamp(26px,3.4vw,34px)] leading-none font-bold text-or">
+        {coins.toLocaleString('fr-FR')}
+      </p>
+      <p className="mt-1 font-mono text-[11px] tracking-[.16em] text-gris uppercase">coins</p>
+
+      <h3 className="mt-4 font-titre text-[15px]">{pack.nom}</h3>
+      <p className="mt-2 grow text-sm text-gris">{pack.description}</p>
+
+      <p className="mt-4 font-mono text-[13px] text-creme">
+        {(pack.prixEurosCentimes / 100).toFixed(2).replace('.', ',')} €
+        <span className="ml-2 text-[11px] text-gris">
+          soit {(parMille / 100).toFixed(2).replace('.', ',')} € / 1 000
+        </span>
+      </p>
+
+      <div className="mt-4">
+        <BoutonAjout
+          dansLePanier={dansLePanier}
+          indisponible={vente.indisponible}
+          libelleIndisponible={vente.libelle}
+          libelle={`Prendre — ${(pack.prixEurosCentimes / 100).toFixed(2).replace('.', ',')} €`}
+          onClick={onBasculer}
+        />
+      </div>
+    </article>
+  )
+}
+
 export function CartePack({
   pack,
   kitsInclus,

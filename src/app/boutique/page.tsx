@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 
 import { Boutique } from '@/components/boutique/Boutique'
-import type { GradeBoutique, KitBoutique, PackBoutique } from '@/components/boutique/types'
+import type { GradeBoutique, PackBoutique } from '@/components/boutique/types'
 import { BoutonIpGeant } from '@/components/public/CopieIp'
 import { PagePublique } from '@/components/public/PagePublique'
 import { Accordeon, Question } from '@/components/ui/Accordeon'
@@ -30,7 +30,7 @@ export const metadata: Metadata = {
 
 export default async function PageBoutique() {
   // Trois lectures indépendantes, lancées en parallèle.
-  const [gradesEnBase, kitsEnBase, packsEnBase] = await Promise.all([
+  const [gradesEnBase, packsEnBase] = await Promise.all([
     prisma.grade.findMany({
       where: { visible: true },
       orderBy: [{ ordre: 'asc' }, { id: 'asc' }],
@@ -41,10 +41,6 @@ export default async function PageBoutique() {
     // exclusifs : c'est `type` qui les range ensuite dans l'un ou l'autre
     // rayon, côté client. `bientot` n'exclut pas non plus : le kit s'affiche,
     // mais son bouton est inerte.
-    prisma.kit.findMany({
-      where: { visible: true, achetable: true, prixEurosCentimes: { not: null } },
-      orderBy: [{ ordre: 'asc' }, { id: 'asc' }],
-    }),
     prisma.pack.findMany({
       where: { visible: true },
       orderBy: [{ ordre: 'asc' }, { id: 'asc' }],
@@ -71,22 +67,6 @@ export default async function PageBoutique() {
     heriteDe: grade.heriteDuPrecedent && index > 0 ? gradesEnBase[index - 1].nom : null,
   }))
 
-  const kits: KitBoutique[] = kitsEnBase.map((kit) => ({
-    slug: kit.slug,
-    nom: kit.nom,
-    kanji: kit.kanji,
-    role: kit.role,
-    descriptionCourte: kit.descriptionCourte,
-    prixCoins: kit.prixCoins,
-    // Le `where` ci-dessus garantit que ce n'est pas null ; TypeScript ne le
-    // sait pas, d'où le `?? 0` défensif.
-    prixEurosCentimes: kit.prixEurosCentimes ?? 0,
-    type: kit.type,
-    bientot: kit.bientot,
-    achetable: kit.achetable,
-    paiementPret: kit.tebexPackageId !== null,
-  }))
-
   const packs: PackBoutique[] = packsEnBase.map((pack) => ({
     slug: pack.slug,
     nom: pack.nom,
@@ -95,6 +75,7 @@ export default async function PageBoutique() {
     prixBarreCentimes: pack.prixBarreCentimes,
     achetable: pack.achetable,
     paiementPret: pack.tebexPackageId !== null,
+    coins: pack.coins,
     kitsInclus: pack.kits.map((kit) => kit.nom),
   }))
 
@@ -130,14 +111,14 @@ export default async function PageBoutique() {
                 Voir les grades
               </LienBouton>
               <a
-                href="#kits"
+                href="#coins"
                 className={classesBouton({
                   variante: 'vide',
                   taille: 'grande',
                   className: 'max-[560px]:w-full',
                 })}
               >
-                Voir les kits
+                Voir les coins
               </a>
             </div>
           </div>
@@ -169,7 +150,7 @@ export default async function PageBoutique() {
       </Enveloppe>
 
       {/* ══════════ GRADES · VITRINE · KITS · PANIER (îlot client) ══════════ */}
-      <Boutique grades={grades} kits={kits} packs={packs} vitrine={<Vitrine />} />
+      <Boutique grades={grades} packs={packs} vitrine={<Vitrine />} />
 
       {/* ══════════════════════════ LA LIVRAISON ══════════════════════════ */}
       <Section

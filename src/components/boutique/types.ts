@@ -60,6 +60,14 @@ export type PackBoutique = Payable & {
   prixBarreCentimes: number | null
   achetable: boolean
   /**
+   * Les coins livrés par ce pack. null = le pack n'en donne pas.
+   *
+   * Depuis le 03/09/2026, la boutique ne vend plus de kits : les packs
+   * sont des lots de coins. `kitsInclus` reste dans le type parce que
+   * l'historique des commandes peut encore référencer un ancien pack.
+   */
+  coins: number | null
+  /**
    * Les noms des kits que le pack contient, dans l'ordre du catalogue.
    * Affichés sous la description — « Sakura · Yumi · Tanuki… » — pour que
    * l'acheteur voie ce qu'il prend sans ouvrir une autre page.
