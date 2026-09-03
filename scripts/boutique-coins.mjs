@@ -28,43 +28,47 @@ const ECRIRE = process.argv.includes('--ecrire')
 /*
  * LES CINQ PALIERS.
  *
- * Le prix aux 1 000 coins baisse à chaque palier : 0,80 € pour le plus
- * petit, 0,50 € pour le plus gros. C'est ce que « plus on en prend, moins
- * c'est cher » veut dire concrètement, et le site l'affiche noir sur
- * blanc plutôt que de le laisser deviner.
+ * ═════════════════════════════════════════════════════════════════════
+ *  CALÉS SUR CE QUE COÛTE LE CATALOGUE, PAS SUR DES CHIFFRES RONDS
+ * ═════════════════════════════════════════════════════════════════════
+ * Relevé du 03/09/2026 dans kits.yml :
  *
- * Repères de l'économie en jeu, pour situer les montants :
- *   500 coins    offerts à l'arrivée
- *   1 000        offerts en liant son Discord
- *   500 à 2 000  les kits d'entrée
- *   12 000       les kits de haut de tableau
- *   25 000       n'importe lequel des seize exclusifs
+ *   498 500 coins   les trente-neuf kits, tout compris
+ *   400 000         les seize exclusifs
+ *    98 500         les vingt-trois classiques
+ *    25 000         n'importe quel exclusif
+ *    12 000         le plus cher des classiques
  *
- * Le palier « Coffret » à 10 € couvre donc un peu plus d'un exclusif, et
- * le « Coffre » à 20 € en couvre deux. C'est volontaire : les paliers
- * doivent correspondre à quelque chose que le joueur veut, pas à des
- * chiffres ronds arbitraires.
+ * Première version : 100 000 coins pour 50 €, soit quatre exclusifs — un
+ * cinquième du catalogue pour le plus gros palier de la boutique. Cher
+ * pour peu, et surtout illisible : personne ne sait ce que « 100 000
+ * coins » lui donne.
+ *
+ * Chaque palier correspond maintenant à une phrase que le joueur peut se
+ * dire : « un exclusif », « les trois quarts des classiques », « tout ».
+ * Le prix aux 1 000 coins passe de 0,20 € à 0,073 € du plus petit au plus
+ * gros — le dégressif est réel, et affiché sur chaque carte.
  */
 const PACKS = [
   {
-    slug: 'coins-poignee', nom: 'Une poignée', coins: 2500, prix: 200,
-    description: "De quoi débloquer un premier kit d'entrée et voir si le serveur te plaît.",
+    slug: 'coins-poignee', nom: 'Une poignée', coins: 10000, prix: 200,
+    description: 'Deux ou trois kits classiques, de quoi varier ton jeu.',
   },
   {
-    slug: 'coins-bourse', nom: 'Une bourse', coins: 7000, prix: 500,
-    description: 'Trois ou quatre kits classiques, ou un bon kit de milieu de tableau.',
+    slug: 'coins-bourse', nom: 'Une bourse', coins: 30000, prix: 500,
+    description: "N'importe lequel des seize exclusifs, ou cinq kits classiques.",
   },
   {
-    slug: 'coins-coffret', nom: 'Un coffret', coins: 15000, prix: 1000,
-    description: 'Un kit exclusif à portée, ou la moitié du catalogue classique.',
+    slug: 'coins-coffret', nom: 'Un coffret', coins: 75000, prix: 1000,
+    description: 'Les trois quarts du catalogue classique, ou trois exclusifs.',
   },
   {
-    slug: 'coins-coffre', nom: 'Un coffre', coins: 35000, prix: 2000,
-    description: 'Deux exclusifs, ou un exclusif et tout ce qui te manque en dessous.',
+    slug: 'coins-coffre', nom: 'Un coffre', coins: 200000, prix: 2000,
+    description: 'Huit exclusifs. La moitié de ce qui se débloque sur le serveur.',
   },
   {
-    slug: 'coins-tresor', nom: 'Un trésor', coins: 100000, prix: 5000,
-    description: 'Quatre exclusifs. Le meilleur prix aux 1 000 coins de la boutique.',
+    slug: 'coins-tresor', nom: 'Un trésor', coins: 550000, prix: 4000,
+    description: 'Tout. Les trente-neuf kits, exclusifs compris, et il en reste.',
   },
 ]
 

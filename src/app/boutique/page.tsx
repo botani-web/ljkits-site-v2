@@ -101,25 +101,21 @@ export default async function PageBoutique() {
               message que tout le monde lit à côté de ton kill.
             </p>
 
-            <div className="mt-7 flex flex-wrap justify-center gap-2.75">
+            {/*
+              Un seul bouton, qui descend AUX RAYONS. Il y en avait deux —
+              « voir les grades » et « voir les coins » — qui menaient à
+              deux sections empilées à des hauteurs différentes. Les rayons
+              sont maintenant côte à côte : un seul point d'entrée suffit.
+            */}
+            <div className="mt-7 flex justify-center">
               <LienBouton
-                href="#grades"
+                href="#rayons"
                 variante="or"
                 taille="grande"
                 className="max-[560px]:w-full"
               >
-                Voir les grades
+                Voir la boutique
               </LienBouton>
-              <a
-                href="#coins"
-                className={classesBouton({
-                  variante: 'vide',
-                  taille: 'grande',
-                  className: 'max-[560px]:w-full',
-                })}
-              >
-                Voir les coins
-              </a>
             </div>
           </div>
         </Enveloppe>
@@ -149,7 +145,7 @@ export default async function PageBoutique() {
         </GrilleCloisonnee>
       </Enveloppe>
 
-      {/* ══════════ GRADES · VITRINE · KITS · PANIER (îlot client) ══════════ */}
+      {/* ═══════════ RAYONS · VITRINE · PANIER (îlot client) ═══════════ */}
       <Boutique grades={grades} packs={packs} vitrine={<Vitrine />} />
 
       {/* ══════════════════════════ LA LIVRAISON ══════════════════════════ */}

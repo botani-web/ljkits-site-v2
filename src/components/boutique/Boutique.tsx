@@ -40,6 +40,12 @@ import {
  * entre les grades et les kits. C'est ce qui permet de garder une section
  * purement statique au milieu d'un îlot client sans l'envoyer au navigateur.
  */
+/** Les deux rayons. L'ordre est celui des onglets. */
+const RAYONS = [
+  { cle: 'grades' as const, nom: 'Grades' },
+  { cle: 'coins' as const, nom: 'Coins' },
+]
+
 export function Boutique({
   grades,
   packs,
@@ -52,6 +58,15 @@ export function Boutique({
   const [panier, setPanier] = useState<ArticlePanier[]>([])
   const [pseudo, setPseudo] = useState<string | null>(null)
   const [modaleOuverte, setModaleOuverte] = useState(false)
+  /*
+    LA CATÉGORIE AFFICHÉE.
+    ══════════════════════════════════════════════════════════════════════
+    Avant, tout était empilé : les grades, PUIS une section de démonstration,
+    PUIS les coins. Pour voir ce qu'on venait acheter, il fallait traverser
+    ce qu'on ne cherchait pas. Une boutique ne se feuillette pas, elle se
+    parcourt par rayon.
+  */
+  const [categorie, setCategorie] = useState<'grades' | 'coins'>('grades')
   const [panierOuvert, setPanierOuvert] = useState(false)
 
   /**
@@ -149,76 +164,108 @@ export function Boutique({
         onOuvrirPanier={() => setPanierOuvert(true)}
       />
 
-      {/* ═══════════════════════════ LES GRADES ═══════════════════════════ */}
-      <Section
-        fond="charbon"
-        id="grades"
-        etiquette="Les grades"
-        titre={
-          <>
-            Trois façons de se faire <span className="text-or">reconnaître</span>
-          </>
-        }
-        chapeau={
-          <>
-            Permanents et cumulatifs : chaque grade contient tout ce que donne le précédent.{' '}
-            <b className="font-semibold text-creme">Un seul achat, à vie</b> — pas
-            d’abonnement, pas de renouvellement, rien qui expire.
-          </>
-        }
-      >
-        {grades.length === 0 ? (
-          <EtatVide message="Aucun grade en vente pour le moment." />
-        ) : (
-          <div className="grid items-start gap-3.5 lg:grid-cols-3">
-            {grades.map((grade) => (
-              <CarteGrade
-                key={grade.slug}
-                grade={grade}
-                dansLePanier={contient(panier, { type: 'GRADE', slug: grade.slug })}
-                onBasculer={() => basculerArticle({ type: 'GRADE', slug: grade.slug })}
-              />
-            ))}
+      {/* ══════════════════════════ LES RAYONS ══════════════════════════ */}
+      <Section fond="charbon" id="rayons">
+        <div
+          role="tablist"
+          aria-label="Rayons de la boutique"
+          className="mx-auto flex max-w-[520px] gap-2 rounded-controle border border-bord bg-nuit p-1.5"
+        >
+          {RAYONS.map((rayon) => {
+            const actif = categorie === rayon.cle
+            return (
+              <button
+                key={rayon.cle}
+                type="button"
+                role="tab"
+                aria-selected={actif}
+                onClick={() => setCategorie(rayon.cle)}
+                className={[
+                  'flex min-h-11 flex-1 flex-col items-center justify-center rounded-controle px-3 py-2.5 transition-colors',
+                  actif
+                    ? 'bg-or text-nuit'
+                    : 'text-gris hover:bg-braise hover:text-creme',
+                ].join(' ')}
+              >
+                <span className="font-titre text-[15px] leading-none">{rayon.nom}</span>
+                <span
+                  className={[
+                    'mt-1 font-mono text-[10.5px] tracking-[.08em]',
+                    actif ? 'text-nuit/70' : 'text-gris',
+                  ].join(' ')}
+                >
+                  {rayon.cle === 'grades' ? `${grades.length} grades` : `${packsCoins.length} paliers`}
+                </span>
+              </button>
+            )
+          })}
+        </div>
+
+        {/* ---------------------------- LES GRADES ---------------------------- */}
+        {categorie === 'grades' && (
+          <div className="mt-[clamp(26px,4vw,42px)]">
+            <p className="mx-auto mb-6 max-w-[62ch] text-center text-[15px] text-gris">
+              Permanents et cumulatifs : chaque grade contient tout ce que donne le
+              précédent.{' '}
+              <b className="font-semibold text-creme">Un seul achat, à vie</b> — pas
+              d’abonnement, rien qui expire.
+            </p>
+            {grades.length === 0 ? (
+              <EtatVide message="Aucun grade en vente pour le moment." />
+            ) : (
+              <div className="grid items-start gap-3.5 lg:grid-cols-3">
+                {grades.map((grade) => (
+                  <CarteGrade
+                    key={grade.slug}
+                    grade={grade}
+                    dansLePanier={contient(panier, { type: 'GRADE', slug: grade.slug })}
+                    onBasculer={() => basculerArticle({ type: 'GRADE', slug: grade.slug })}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ----------------------------- LES COINS ----------------------------- */}
+        {/*
+          Plus aucun kit ici depuis le 03/09/2026. Les trente-neuf kits
+          s'obtiennent en jouant, sans exception : c'est la promesse du
+          serveur, et la vendre à moitié la rendrait fausse. Ce qui s'achète,
+          ce sont des coins — le temps de grind, pas la puissance.
+        */}
+        {categorie === 'coins' && (
+          <div className="mt-[clamp(26px,4vw,42px)]">
+            <p className="mx-auto mb-6 max-w-[62ch] text-center text-[15px] text-gris">
+              Les coins débloquent des kits que tu peux{' '}
+              <b className="font-semibold text-creme">tous obtenir en jouant</b>. Plus le
+              palier est gros, moins les 1 000 coins te coûtent.
+            </p>
+            {packsCoins.length === 0 ? (
+              <EtatVide message="Aucun pack de coins pour le moment." />
+            ) : (
+              <div className="grid gap-3 min-[560px]:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+                {packsCoins.map((pack) => (
+                  <CartePackCoins
+                    key={pack.slug}
+                    pack={pack}
+                    parMilleReference={parMilleReference}
+                    dansLePanier={contient(panier, { type: 'PACK', slug: pack.slug })}
+                    onBasculer={() => basculerArticle({ type: 'PACK', slug: pack.slug })}
+                  />
+                ))}
+              </div>
+            )}
           </div>
         )}
       </Section>
 
-      {vitrine}
-
-      {/* ══════════════════════════ LES COINS ══════════════════════════ */}
       {/*
-        Plus aucun kit ici depuis le 03/09/2026. Les trente-neuf kits
-        s'obtiennent en jouant, sans exception : c'est la promesse du
-        serveur, et la vendre à moitié la rendrait fausse. Ce qui s'achète,
-        ce sont des coins — le temps de grind, pas la puissance.
+        La démonstration passe APRÈS les rayons. Elle était intercalée entre
+        les grades et les coins : pour voir la seconde moitié du catalogue,
+        il fallait traverser une section qui ne vendait rien.
       */}
-      <Section
-        fond="charbon"
-        id="coins"
-        etiquette="La monnaie"
-        titre={
-          <>
-            Gagne du temps, <span className="text-or">pas de la puissance</span>
-          </>
-        }
-        chapeau="Les coins débloquent des kits que tu peux tous obtenir en jouant. Plus le palier est gros, moins les 1 000 coins te coûtent."
-      >
-        {packsCoins.length === 0 ? (
-          <EtatVide message="Aucun pack de coins pour le moment." />
-        ) : (
-          <div className="grid gap-3 min-[560px]:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-            {packsCoins.map((pack) => (
-              <CartePackCoins
-                key={pack.slug}
-                pack={pack}
-                parMilleReference={parMilleReference}
-                dansLePanier={contient(panier, { type: 'PACK', slug: pack.slug })}
-                onBasculer={() => basculerArticle({ type: 'PACK', slug: pack.slug })}
-              />
-            ))}
-          </div>
-        )}
-      </Section>
+      {vitrine}
 
       {/* ═══════════════════════════ LE PANIER ═══════════════════════════ */}
       <Panier
