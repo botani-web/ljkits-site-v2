@@ -3,27 +3,23 @@
 import { formaterEuros } from '@/lib/format'
 
 /**
- * La barre de la boutique : le pseudo de livraison à gauche, le panier à
- * droite. Collante sous la barre de navigation, et propre à /boutique.
+ * La barre de la boutique, collante sous la navigation : les rayons à gauche,
+ * le pseudo de livraison au milieu, le panier à droite.
  *
- * Elle remplace la colonne latérale d'avant, que la mise en page à une seule
- * colonne de la maquette ne permet plus. Elle s'arrime par `top-nav`, comme la
- * barre d'outils de /kits.
+ * Les liens de rayon sont des ancres : depuis la refonte du 03/09/2026, les
+ * grades et les coins sont tous deux affichés, l'un sous l'autre. On ne
+ * choisit plus un rayon, on y descend.
  *
- * ⚠ VOCABULAIRE. Pas un mot de « compte », de « connexion » ou de
- * « déconnexion », pas d'avatar, pas de pastille d'état. Il n'y a pas de
- * comptes sur ce site, et une barre qui en a l'air ferait réclamer un mot de
- * passe qui n'existe pas. Chaque libellé dit la même chose : c'est le pseudo
+ * ⚠ VOCABULAIRE. Pas un mot de « compte » ni de « connexion » : il n'y a pas
+ * de comptes sur ce site. Chaque libellé dit la même chose — c'est le pseudo
  * qui reçoit la livraison.
- *
- * Les deux contrôles ouvrent le même tiroir — on y choisit son pseudo ET on y
- * voit son panier. Deux panneaux séparés pour deux boutons voisins n'auraient
- * fait qu'ajouter un choix à faire.
- *
- * À 360px, le mot « Panier » disparaît : il ne reste que l'icône et le
- * compteur. Le bloc de gauche, lui, tronque le pseudo plutôt que de pousser le
- * bouton hors de l'écran.
  */
+const RAYONS = [
+  { href: '#grades', nom: 'Grades' },
+  { href: '#coins', nom: 'Coins' },
+  { href: '#aide', nom: 'Aide' },
+]
+
 export function BarreBoutique({
   pseudo,
   nombreArticles,
@@ -38,7 +34,18 @@ export function BarreBoutique({
   return (
     <div className="sticky top-nav z-50 border-y border-bord bg-nuit/95 py-2.5 backdrop-blur-xl">
       <div className="mx-auto flex w-full max-w-contenu items-center gap-3 px-gouttiere">
-        {/* ----------------------- pseudo de livraison ---------------------- */}
+        <nav aria-label="Rayons" className="hidden shrink-0 items-center gap-1 lg:flex">
+          {RAYONS.map((rayon) => (
+            <a
+              key={rayon.href}
+              href={rayon.href}
+              className="rounded-controle px-3 py-2 font-mono text-[11.5px] font-bold tracking-[.1em] text-gris uppercase transition-colors hover:bg-braise hover:text-creme"
+            >
+              {rayon.nom}
+            </a>
+          ))}
+        </nav>
+
         <button
           type="button"
           onClick={onOuvrirPanier}
@@ -57,7 +64,6 @@ export function BarreBoutique({
             <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" />
             <path d="m3.3 7 8.7 5 8.7-5M12 22V12" />
           </svg>
-
           {pseudo === null ? (
             <span className="truncate font-mono text-[11.5px] tracking-[.08em] text-soupe uppercase">
               Choisir mon pseudo
@@ -68,13 +74,11 @@ export function BarreBoutique({
               <span className="font-bold text-creme">{pseudo}</span>
             </span>
           )}
-
           <span className="ml-auto hidden shrink-0 font-mono text-[10.5px] text-gris underline underline-offset-2 min-[560px]:inline">
             {pseudo === null ? 'Renseigner' : 'Changer'}
           </span>
         </button>
 
-        {/* ---------------------------- panier ---------------------------- */}
         <button
           type="button"
           onClick={onOuvrirPanier}
@@ -93,12 +97,8 @@ export function BarreBoutique({
             <path d="M4.5 8h15l-1.2 11.4a1.6 1.6 0 0 1-1.6 1.4H7.3a1.6 1.6 0 0 1-1.6-1.4Z" />
             <path d="M8.8 10.5V7a3.2 3.2 0 0 1 6.4 0v3.5" />
           </svg>
-
           <span className="max-[400px]:hidden">Panier</span>
           <span>({nombreArticles})</span>
-
-          {/* Le total n'apparaît qu'à partir de 560px : à 360, il pousserait
-              le pseudo hors de la barre. */}
           {nombreArticles > 0 && (
             <span className="hidden border-l border-encre/25 pl-2.5 min-[560px]:inline">
               {formaterEuros(total)}

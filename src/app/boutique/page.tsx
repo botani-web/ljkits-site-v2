@@ -5,11 +5,11 @@ import type { GradeBoutique, PackBoutique } from '@/components/boutique/types'
 import { BoutonIpGeant } from '@/components/public/CopieIp'
 import { PagePublique } from '@/components/public/PagePublique'
 import { Accordeon, Question } from '@/components/ui/Accordeon'
-import { classesBouton, LienBouton } from '@/components/ui/Bouton'
+import { LienBouton } from '@/components/ui/Bouton'
 import { Enveloppe } from '@/components/ui/Enveloppe'
-import { CaseCloisonnee, GrilleCloisonnee } from '@/components/ui/GrilleCloisonnee'
 import { BlocFinal, Section } from '@/components/ui/Section'
-import { Etiquette, TeteSection } from '@/components/ui/TeteSection'
+import { Etiquette } from '@/components/ui/TeteSection'
+import { formaterEuros } from '@/lib/format'
 import { prisma } from '@/lib/prisma'
 import { IMAGE_OG } from '@/lib/site'
 
@@ -18,42 +18,42 @@ export const revalidate = 3600 // une heure
 export const metadata: Metadata = {
   title: 'Boutique',
   description:
-    'Soutiens LJKITS et débloque des kits et des cosmétiques. Tout le contenu reste obtenable en jeu, sans payer.',
+    'Grades à vie et packs de coins pour soutenir LJKITS. Aucun kit en vente, aucun avantage en combat : tout le contenu reste obtenable en jouant.',
   openGraph: {
     type: 'website',
     title: 'Boutique — LJKITS',
-    description: 'Soutiens le serveur. Aucun avantage en combat, jamais.',
+    description: 'Grades à vie et packs de coins. Aucun avantage en combat, jamais.',
     url: '/boutique',
     images: IMAGE_OG,
   },
 }
 
+/**
+ * LA BOUTIQUE — refonte du 03/09/2026.
+ *
+ * La version d'avant se lisait comme un article : un hero de trois phrases,
+ * un bandeau, des onglets, une vitrine, puis seulement les prix. Une boutique
+ * fait l'inverse : elle montre d'abord, elle explique ensuite.
+ *
+ * L'ordre de cette page est donc celui d'un magasin :
+ *   1. un bandeau court — le nom du rayon, une promesse, l'article phare ;
+ *   2. les produits, prix en gros, les deux rayons l'un sous l'autre ;
+ *   3. l'aide : comment ça se passe, ce qui n'est pas en vente, la FAQ.
+ */
 export default async function PageBoutique() {
-  // Trois lectures indépendantes, lancées en parallèle.
   const [gradesEnBase, packsEnBase] = await Promise.all([
     prisma.grade.findMany({
       where: { visible: true },
       orderBy: [{ ordre: 'asc' }, { id: 'asc' }],
       include: { avantages: { orderBy: { ordre: 'asc' }, select: { texte: true } } },
     }),
-    // Un kit n'est proposé ici que s'il est explicitement mis en vente ET
-    // qu'il a un prix en euros. Le filtre ne distingue pas les classiques des
-    // exclusifs : c'est `type` qui les range ensuite dans l'un ou l'autre
-    // rayon, côté client. `bientot` n'exclut pas non plus : le kit s'affiche,
-    // mais son bouton est inerte.
     prisma.pack.findMany({
       where: { visible: true },
       orderBy: [{ ordre: 'asc' }, { id: 'asc' }],
-      // Les noms des kits inclus, pour les lister sous la description du pack.
-      // Lecture supplémentaire et purement décorative : le contenu réel du
-      // pack est décidé par Tebex à la livraison, pas par cette liste.
       include: { kits: { orderBy: { ordre: 'asc' }, select: { nom: true } } },
     }),
   ])
 
-  // « Tout le grade X » : X est le grade juste avant dans l'ordre. Le calcul
-  // est fait ici plutôt que dans le composant client, qui n'a pas à connaître
-  // la règle.
   const grades: GradeBoutique[] = gradesEnBase.map((grade, index) => ({
     slug: grade.slug,
     nom: grade.nom,
@@ -79,139 +79,138 @@ export default async function PageBoutique() {
     kitsInclus: pack.kits.map((kit) => kit.nom),
   }))
 
+  // L'article phare du bandeau : le grade du milieu, celui que la carte met
+  // déjà en avant. S'il n'y a pas trois grades, pas d'article phare.
+  const phare = grades.length === 3 ? grades[1] : null
+
   return (
     <PagePublique>
-      {/* ═══════════════════════════ HERO ═══════════════════════════ */}
-      <header className="halo-hero pt-[clamp(50px,6.5vw,84px)] pb-[clamp(24px,3vw,34px)] text-center">
+      {/* ═══════════════════════════ BANDEAU ═══════════════════════════ */}
+      <header className="halo-hero-gauche pt-[clamp(36px,5vw,60px)] pb-[clamp(22px,3vw,32px)]">
         <Enveloppe>
-          <div className="mx-auto max-w-[900px]">
-            <Etiquette>Boutique · livraison en 90 secondes · aucun kit en vente</Etiquette>
+          <div className="grid items-center gap-[clamp(22px,4vw,44px)] lg:grid-cols-[minmax(0,1fr)_minmax(0,380px)]">
+            <div>
+              <Etiquette>Boutique officielle · vendeur Tebex</Etiquette>
+              <h1 className="text-h1 mt-3 font-titre">
+                Soutiens le serveur.
+                <br />
+                <span className="text-or">Pas plus fort</span>, jamais.
+              </h1>
+              <p className="mt-4 max-w-[54ch] text-[clamp(15.5px,1.7vw,17.5px)] text-balance text-gris">
+                Des grades à vie et des packs de coins. Aucun kit en vente, aucun avantage en
+                combat : tout ce qui se joue s’obtient en jouant.
+              </p>
 
-            {/*
-              Le hero vendait « les particules qui explosent quand tu tues »
-              et « le message à côté de ton kill ». Les deux sont passés en
-              boutique coins et s'achètent désormais SANS grade : c'était
-              devenu une promesse fausse. Il ne reste que ce qui est vrai —
-              gagner plus vite, et se voir.
-            */}
-            <h1 className="text-h1 mt-4 font-titre">
-              Va plus vite.
-              <br />
-              <span className="text-or">Pas plus fort</span>.
-            </h1>
-
-            <p className="mx-auto mt-5 max-w-[58ch] text-[clamp(16px,1.8vw,18.5px)] text-balance text-gris">
-              Rien ici ne te rendra plus puissant en combat : les trente-neuf kits
-              s’obtiennent en jouant, sans exception. Ce qui s’achète, c’est{' '}
-              <b className="font-semibold text-creme">du temps</b> — un bonus de coins à
-              vie sur chaque kill, ou de quoi débloquer tout de suite ce que tu voulais.
-            </p>
-
-            {/*
-              Un seul bouton, qui descend AUX RAYONS. Il y en avait deux —
-              « voir les grades » et « voir les coins » — qui menaient à
-              deux sections empilées à des hauteurs différentes. Les rayons
-              sont maintenant côte à côte : un seul point d'entrée suffit.
-            */}
-            <div className="mt-7 flex justify-center">
-              <LienBouton
-                href="#rayons"
-                variante="or"
-                taille="grande"
-                className="max-[560px]:w-full"
-              >
-                Voir la boutique
-              </LienBouton>
+              <ul className="mt-5 flex flex-wrap gap-2">
+                {CONFIANCE.map((promesse) => (
+                  <li
+                    key={promesse}
+                    className="flex items-center gap-2 rounded-micro border border-bord bg-charbon px-3 py-1.5 font-mono text-[10.5px] tracking-[.1em] text-gris uppercase"
+                  >
+                    <span aria-hidden="true" className="font-bold text-vert">
+                      ✓
+                    </span>
+                    {promesse}
+                  </li>
+                ))}
+              </ul>
             </div>
+
+            {phare && (
+              <a
+                href="#grades"
+                className="group relative overflow-hidden rounded-bloc border border-or/50 bg-charbon p-5.5 transition-colors hover:border-or"
+              >
+                <p className="font-mono text-[10px] font-bold tracking-[.2em] text-or uppercase">
+                  Le plus choisi
+                </p>
+                <div className="mt-3 flex items-center gap-4">
+                  <span
+                    aria-hidden="true"
+                    className="flex size-14 shrink-0 items-center justify-center rounded-carte border border-or/40 bg-nuit text-[28px] font-bold text-or"
+                  >
+                    {phare.kanji ?? '❀'}
+                  </span>
+                  <span className="min-w-0">
+                    <span className="block font-titre text-[22px] leading-none">
+                      Grade {phare.nom}
+                    </span>
+                    <span className="mt-1.5 block font-mono text-[12px] text-gris">
+                      {phare.etiquette ?? ''} sur chaque kill, à vie
+                    </span>
+                  </span>
+                  <span className="ml-auto shrink-0 font-titre text-[26px] text-creme">
+                    {formaterEuros(phare.prixEurosCentimes)}
+                  </span>
+                </div>
+                <span className="mt-4 block font-mono text-[11px] font-bold tracking-[.1em] text-soupe uppercase group-hover:text-or">
+                  Voir les grades →
+                </span>
+              </a>
+            )}
           </div>
         </Enveloppe>
       </header>
 
-      {/* ═══════════════════════ BANDEAU DE CONFIANCE ═══════════════════════ */}
-      {/*
-        Il remplace l'ancien <BandeauPositionnement> : même rôle — dire d'entrée
-        que rien ici ne rend plus fort — mais découpé en quatre promesses
-        vérifiables plutôt qu'un seul pavé.
-      */}
-      <Enveloppe className="pb-[clamp(24px,3vw,34px)]">
-        <GrilleCloisonnee colonnes="grid-cols-1 min-[560px]:grid-cols-2 lg:grid-cols-4">
-          {CONFIANCE.map((promesse) => (
-            <CaseCloisonnee key={promesse.titre} className="flex items-start gap-3 p-5">
-              <span aria-hidden="true" className="shrink-0 font-mono font-bold text-vert">
-                ✓
-              </span>
-              <span>
-                <span className="block text-[14.5px] font-semibold">{promesse.titre}</span>
-                <span className="mt-1 block font-mono text-[10.5px] text-gris">
-                  {promesse.detail}
-                </span>
-              </span>
-            </CaseCloisonnee>
-          ))}
-        </GrilleCloisonnee>
-      </Enveloppe>
+      {/* ═══════════ LES RAYONS · LE PANIER (îlot client) ═══════════ */}
+      <Boutique grades={grades} packs={packs} />
 
-      {/* ═══════════ RAYONS · VITRINE · PANIER (îlot client) ═══════════ */}
-      <Boutique grades={grades} packs={packs} vitrine={<Vitrine />} />
-
-      {/* ══════════════════════════ LA LIVRAISON ══════════════════════════ */}
+      {/* ═══════════════════════════ L'AIDE ═══════════════════════════ */}
       <Section
-        fond="charbon"
+        id="aide"
         etiquette="De la commande au jeu"
-        titre="Quatre étapes, une minute et demie"
+        titre="Comment ça se passe"
+        className="scroll-mt-[calc(var(--spacing-nav)+64px)]"
       >
-        <div className="grid gap-3 min-[560px]:grid-cols-2 lg:grid-cols-4">
+        <ol className="grid gap-3 min-[560px]:grid-cols-2 lg:grid-cols-4">
           {ETAPES.map((etape, index) => (
-            <div key={etape.titre} className="rounded-carte border border-bord bg-braise p-5.5">
+            <li key={etape.titre} className="rounded-carte border border-bord bg-charbon p-5">
               <p className="font-mono text-[11px] font-bold tracking-[.2em] text-soupe">
-                ÉTAPE {String(index + 1).padStart(2, '0')}
+                {String(index + 1).padStart(2, '0')}
               </p>
               <h3 className="mt-3 font-titre text-[15px]">{etape.titre}</h3>
-              <p className="mt-2.25 text-sm text-gris">{etape.texte}</p>
-            </div>
+              <p className="mt-2 text-sm text-gris">{etape.texte}</p>
+            </li>
           ))}
-        </div>
+        </ol>
 
-        {/* ------------------------- L'ENGAGEMENT ------------------------- */}
-        <div className="mt-3.5 grid items-center gap-[clamp(24px,4vw,46px)] rounded-bloc border border-vert/35 bg-charbon p-[clamp(26px,4vw,42px)] lg:grid-cols-[minmax(0,1fr)_minmax(0,320px)]">
-          <div>
-            <Etiquette className="text-vert">L’engagement</Etiquette>
-            <h3 className="mt-3 font-titre text-[clamp(19px,2.6vw,26px)] leading-tight">
-              Ton achat ne te rendra <span className="text-vert">jamais plus fort</span>
-            </h3>
-            <p className="mt-3.5 max-w-[56ch] text-[15px] text-gris">
-              C’est ce qui fait que le serveur vaut le coup d’être joué. Les kits vendus ont
-              exactement les mêmes statistiques que ceux débloqués en coins, et les grades ne
-              touchent ni aux dégâts, ni à la vie, ni au knockback.{' '}
+        {/* ---------------------- ce qui ne sera jamais en vente ---------------------- */}
+        <div className="mt-3.5 grid gap-3 lg:grid-cols-2">
+          <div className="rounded-bloc border border-vert/35 bg-charbon p-[clamp(22px,3vw,30px)]">
+            <Etiquette className="text-vert">Ce que tu achètes</Etiquette>
+            <ul className="mt-4 space-y-2.5 text-[14.5px]">
+              {EN_VENTE.map((ligne) => (
+                <li key={ligne} className="flex gap-2.5 text-gris">
+                  <span aria-hidden="true" className="shrink-0 font-mono font-bold text-vert">
+                    ✓
+                  </span>
+                  {ligne}
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div className="rounded-bloc border border-oni/35 bg-charbon p-[clamp(22px,3vw,30px)]">
+            <Etiquette className="text-oni">Ce qui ne sera jamais en vente</Etiquette>
+            <ul className="mt-4 space-y-2.5 text-[14.5px]">
+              {JAMAIS_EN_VENTE.map((ligne) => (
+                <li key={ligne} className="flex gap-2.5 text-gris">
+                  <span aria-hidden="true" className="shrink-0 font-mono font-bold text-oni">
+                    ✗
+                  </span>
+                  {ligne}
+                </li>
+              ))}
+            </ul>
+            <p className="mt-4 text-[13px] text-gris">
+              Les grades ne touchent ni aux dégâts, ni à la vie, ni au knockback.{' '}
               <b className="font-semibold text-creme">Cette liste ne bougera pas.</b>
             </p>
           </div>
-
-          <ul className="overflow-hidden rounded-carte border border-bord bg-nuit">
-            {JAMAIS_EN_VENTE.map((interdit) => (
-              <li
-                key={interdit}
-                className="flex items-center gap-2.75 border-b border-bord px-4 py-3 font-mono text-[11.5px] text-gris last:border-b-0"
-              >
-                <span aria-hidden="true" className="shrink-0 font-bold text-oni">
-                  ✗
-                </span>
-                {interdit}
-              </li>
-            ))}
-          </ul>
         </div>
       </Section>
 
       {/* ═════════════════════════════ LA FAQ ═════════════════════════════ */}
-      <Section>
-        <TeteSection
-          centre
-          etiquette="Avant d’acheter"
-          titre="Les questions qui reviennent"
-          className="mb-[clamp(26px,3.5vw,42px)]"
-        />
-
+      <Section fond="charbon" centre etiquette="Avant d’acheter" titre="Les questions qui reviennent">
         <Accordeon>
           {QUESTIONS.map((entree) => (
             <Question key={entree.question} question={entree.question}>
@@ -245,158 +244,10 @@ export default async function PageBoutique() {
 }
 
 /* -------------------------------------------------------------------------- */
-/* Sections statiques                                                         */
-/* -------------------------------------------------------------------------- */
-
-/**
- * La vitrine des perks : ce que les grades donnent, montré plutôt que décrit.
- *
- * Trois cartes et non quatre. La quatrième de la maquette, « Rejoue tes dix
- * derniers combats », listait des résultats de duels inventés avec de vrais
- * pseudos : aucune source en base, donc supprimée.
- *
- * Les exemples de messages de mort utilisent des placeholders neutres et non
- * des pseudos : rien ici ne doit se faire passer pour une donnée réelle.
- */
-function Vitrine() {
-  return (
-    <Section
-      etiquette="Ce que ça donne, concrètement"
-      titre={
-        <>
-          Regarde avant de <span className="text-or">choisir</span>
-        </>
-      }
-      chapeau="Les perks les plus visibles des grades, en vrai. Tu choisis ton style une fois en jeu, et tu peux en changer quand tu veux."
-    >
-      <div className="grid gap-3.5 lg:grid-cols-2">
-        <CarteVitrine
-          tag="Samouraï et plus"
-          titre="Particules à la mort de ta cible"
-          texte="Sept chorégraphies complètes qui se déclenchent sur le corps de ta victime. Tout le monde autour les voit."
-        >
-          <ul className="grid grid-cols-2 gap-1.75 min-[560px]:grid-cols-4">
-            {PARTICULES.map((particule, index) => (
-              <li
-                key={particule.nom}
-                className="rounded-controle border border-bord bg-nuit px-2 py-3.5 text-center transition-colors hover:border-soupe"
-              >
-                <span
-                  aria-hidden="true"
-                  // Le décalage évite que la rangée entière pulse d'un bloc.
-                  style={{
-                    backgroundColor: particule.couleur,
-                    animationDelay: `${index * 0.2}s`,
-                  }}
-                  className="point-respirant mx-auto block size-2.25 rounded-full"
-                />
-                <span className="mt-2.5 block font-mono text-[9px] leading-snug tracking-[.08em] text-gris">
-                  {particule.nom}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </CarteVitrine>
-
-        <CarteVitrine
-          tag="Samouraï et plus"
-          titre="Ton message de mort"
-          texte="Sept styles, cinq variantes chacun. Diffusé au tueur, à la victime et à tout le monde dans un rayon de 20 blocs."
-        >
-          <div className="rounded-controle border border-bord bg-nuit p-4.5 font-mono text-xs leading-[1.9]">
-            {MESSAGES_DE_MORT.map((message) => (
-              <p key={message.style}>
-                <span className="text-gris">{message.style} · </span>
-                <span className="text-creme">{message.exemple}</span>
-              </p>
-            ))}
-          </div>
-          <p className="mt-3 font-mono text-[10px] text-gris">
-            {'<toi>'} et {'<ta cible>'} sont remplacés par les vrais pseudos en jeu.
-          </p>
-        </CarteVitrine>
-
-        <CarteVitrine
-          tag="Shogun uniquement"
-          titre="Défie qui tu veux"
-          texte="La commande /duel envoie une invitation. Si l’autre accepte, vous partez tous les deux en cage, kit PvP forcé, sans que rien ne compte au classement."
-        >
-          <ul className="overflow-hidden rounded-controle border border-bord bg-nuit">
-            {REGLES_DU_DUEL.map((regle) => (
-              <li
-                key={regle.libelle}
-                className="flex gap-3.5 border-b border-bord px-4 py-2.75 font-mono text-[11.5px] last:border-b-0"
-              >
-                <span className="text-gris">{regle.libelle}</span>
-                <span className="ml-auto font-bold text-creme">{regle.valeur}</span>
-              </li>
-            ))}
-          </ul>
-        </CarteVitrine>
-      </div>
-    </Section>
-  )
-}
-
-function CarteVitrine({
-  tag,
-  titre,
-  texte,
-  children,
-}: {
-  tag: string
-  titre: string
-  texte: string
-  children: React.ReactNode
-}) {
-  return (
-    <article className="flex flex-col rounded-bloc border border-bord bg-charbon p-6.5">
-      <p className="font-mono text-[10px] tracking-[.18em] text-or uppercase">{tag}</p>
-      <h3 className="mt-3 font-titre text-[19px] tracking-[-.01em]">{titre}</h3>
-      <p className="mt-2.75 text-[14.5px] text-gris">{texte}</p>
-      <div className="mt-4.5 flex-1">{children}</div>
-    </article>
-  )
-}
-
-/* -------------------------------------------------------------------------- */
 /* Contenu                                                                    */
 /* -------------------------------------------------------------------------- */
 
-const CONFIANCE = [
-  { titre: 'Livré en 90 secondes', detail: 'Automatique, sans ticket' },
-  { titre: 'Achat permanent', detail: 'Aucun abonnement, jamais repris' },
-  { titre: 'Paiement sécurisé', detail: 'Traité par Tebex, vendeur officiel' },
-  { titre: 'Zéro pay-to-win', detail: 'Aucun avantage en combat' },
-]
-
-const PARTICULES = [
-  { nom: 'Brasier', couleur: '#FE9301' },
-  { nom: 'Hémorragie', couleur: '#E92813' },
-  { nom: 'Vortex des âmes', couleur: '#B98BE0' },
-  { nom: 'Orage', couleur: '#8FB8E0' },
-  { nom: 'Sakura', couleur: '#F19FD0' },
-  { nom: 'Détonation', couleur: '#FDC003' },
-  { nom: 'Portail du vide', couleur: '#6E56A8' },
-]
-
-/**
- * Les exemples de messages de mort.
- * Placeholders neutres et non pseudos : la maquette montrait des noms de
- * joueurs inventés, ce qui laissait croire à une capture réelle.
- */
-const MESSAGES_DE_MORT = [
-  { style: 'Katana', exemple: '<toi> a tranché <ta cible>' },
-  { style: 'Spectral', exemple: '<ta cible> s’est éteint sous <toi>' },
-  { style: 'Sobre', exemple: '<toi> → <ta cible>' },
-]
-
-const REGLES_DU_DUEL = [
-  { libelle: 'Kit imposé', valeur: 'PvP, pour les deux' },
-  { libelle: 'Consentement', valeur: 'Obligatoire' },
-  { libelle: 'Kills et coins', valeur: 'Non comptés' },
-  { libelle: 'Classement', valeur: 'Aucun impact' },
-]
+const CONFIANCE = ['Livré en 90 s', 'Achat permanent', 'Paiement Tebex', 'Zéro pay-to-win']
 
 const ETAPES = [
   {
@@ -406,8 +257,7 @@ const ETAPES = [
   },
   {
     titre: 'Le paiement',
-    texte:
-      'Chez Tebex, jamais sur ce site. Carte, PayPal, Apple Pay et Google Pay acceptés.',
+    texte: 'Chez Tebex, jamais sur ce site. Carte, PayPal, Apple Pay et Google Pay acceptés.',
   },
   {
     titre: 'La livraison',
@@ -420,11 +270,16 @@ const ETAPES = [
   },
 ]
 
+const EN_VENTE = [
+  'Un grade, à vie : bonus de coins, couleur de pseudo, rôle Discord',
+  'Des coins, pour débloquer tout de suite un kit que tu aurais eu en jouant',
+]
+
 const JAMAIS_EN_VENTE = [
-  'Des coins, jamais en vente',
+  'Des kits : les trente-neuf s’obtiennent tous en jouant',
   'Du stuff ou de l’armure',
-  'Des dégâts ou de la vie',
-  'Des points de classement',
+  'Des dégâts, de la vie ou du knockback',
+  'Des points de classement ou de l’Elo',
   'Une place dans le staff',
 ]
 
@@ -432,13 +287,19 @@ const QUESTIONS = [
   {
     question: 'Combien de temps je garde mon grade ?',
     reponses: [
-      'À vie. Pas d’abonnement, pas de renouvellement, rien qui expire. Les grades et les kits achetés ne sont jamais repris, y compris aux resets de classement. Les seuls grades temporaires sont ceux gagnés au classement mensuel, qui durent 30 jours.',
+      'À vie. Pas d’abonnement, pas de renouvellement, rien qui expire. Les grades ne sont jamais repris, y compris aux resets de classement. Les seuls grades temporaires sont ceux gagnés au classement mensuel, qui durent 30 jours.',
     ],
   },
   {
     question: 'Le bonus de coins, ce n’est pas du pay-to-win ?',
     reponses: [
-      'C’est la bonne question, alors voici la vraie réponse : le bonus fait débloquer les kits plus vite, il ne donne aucun avantage en combat. Comme les kits sont équilibrés entre eux et qu’aucun n’est objectivement meilleur, arriver plus tôt au Kitsune ne fait gagner aucun duel. Et si un kit devenait trop fort, c’est le kit qui serait corrigé — pas le grade.',
+      'Le bonus fait débloquer les kits plus vite, il ne donne aucun avantage en combat. Les kits sont équilibrés entre eux et aucun n’est objectivement meilleur : arriver plus tôt au Kitsune ne fait gagner aucun duel. Si un kit devenait trop fort, c’est le kit qui serait corrigé — pas le grade.',
+    ],
+  },
+  {
+    question: 'À quoi servent les coins ?',
+    reponses: [
+      'À débloquer des kits, exactement comme ceux que tu gagnes à chaque kill. Un pack de coins ne donne rien qu’un joueur ne puisse obtenir en jouant : il fait juste gagner du temps.',
     ],
   },
   {
@@ -463,13 +324,13 @@ const QUESTIONS = [
   {
     question: 'J’ai moins de 18 ans.',
     reponses: [
-      'Demande l’accord de la personne qui possède le moyen de paiement avant d’acheter. Ce n’est pas une formule de style : la quasi-totalité des litiges sur les serveurs Minecraft viennent d’achats faits sans autorisation, et ça finit toujours mal pour le joueur.',
+      'Demande l’accord de la personne qui possède le moyen de paiement avant d’acheter. La quasi-totalité des litiges sur les serveurs Minecraft viennent d’achats faits sans autorisation, et ça finit toujours mal pour le joueur.',
     ],
   },
   {
     question: 'Où part l’argent ?',
     reponses: [
-      'Dans l’hébergement, en premier lieu : le VPS et le nom de domaine coûtent une quarantaine d’euros par mois, et Tebex prélève environ 7,5 % en gérant la TVA, la fraude et les litiges. Le développement est bénévole. Ce qui dépasse sert à payer des créateurs pour faire venir du monde — un serveur PvP vide n’intéresse personne.',
+      'Dans l’hébergement en premier lieu : le VPS et le nom de domaine coûtent une quarantaine d’euros par mois, et Tebex prélève environ 7,5 % en gérant la TVA, la fraude et les litiges. Le développement est bénévole. Ce qui dépasse sert à payer des créateurs pour faire venir du monde — un serveur PvP vide n’intéresse personne.',
     ],
   },
 ]
