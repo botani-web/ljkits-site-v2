@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react'
 
 import { CarteKit, estKitDeGrade, type KitEnCarte } from '@/components/public/CarteKit'
+import { type CleTexte, t, type Locale } from '@/lib/i18n'
 import { BarreOutils, Recherche } from '@/components/ui/BarreOutils'
 import { Enveloppe } from '@/components/ui/Enveloppe'
 import { EtatVide } from '@/components/ui/EtatVide'
@@ -25,21 +26,21 @@ import { Filtre } from '@/components/ui/Pilule'
  */
 type CleFiltre = 'tous' | 'gratuit' | 'coins' | 'exclusif'
 
-const FILTRES: { cle: CleFiltre; label: string; garde: (kit: KitEnCarte) => boolean }[] = [
-  { cle: 'tous', label: 'Tous', garde: () => true },
-  // Un kit de grade coute zero coin sans etre gratuit : il n'a rien a faire
+const FILTRES: { cle: CleFiltre; cleTexte: CleTexte; garde: (kit: KitEnCarte) => boolean }[] = [
+  { cle: 'tous', cleTexte: 'kits.filtre.tous', garde: () => true },
+  // Un kit de grade coûte zéro coin sans être gratuit : il n'a rien à faire
   // dans cet onglet, il est dans « Exclusifs ».
   {
     cle: 'gratuit',
-    label: 'Gratuits',
+    cleTexte: 'kits.filtre.gratuits',
     garde: (kit) => kit.prixCoins === 0 && !estKitDeGrade(kit),
   },
   {
     cle: 'coins',
-    label: 'À débloquer',
+    cleTexte: 'kits.filtre.debloquer',
     garde: (kit) => kit.prixCoins > 0 && kit.type === 'GRATUIT',
   },
-  { cle: 'exclusif', label: 'Exclusifs', garde: (kit) => kit.type === 'EXCLUSIF' },
+  { cle: 'exclusif', cleTexte: 'kits.filtre.exclusifs', garde: (kit) => kit.type === 'EXCLUSIF' },
 ]
 
 /**
@@ -50,26 +51,26 @@ const FILTRES: { cle: CleFiltre; label: string; garde: (kit: KitEnCarte) => bool
  */
 type CleTri = 'prix' | 'prixDesc' | 'nom'
 
-const TRIS: Record<CleTri, { libelle: string; suivant: CleTri; comparer: (a: KitEnCarte, b: KitEnCarte) => number }> = {
+const TRIS: Record<CleTri, { cleTexte: CleTexte; suivant: CleTri; comparer: (a: KitEnCarte, b: KitEnCarte) => number }> = {
   prix: {
-    libelle: 'Tri : prix croissant',
+    cleTexte: 'kits.tri.prix',
     suivant: 'prixDesc',
     comparer: (a, b) => a.prixCoins - b.prixCoins,
   },
   prixDesc: {
-    libelle: 'Tri : prix décroissant',
+    cleTexte: 'kits.tri.prix-desc',
     suivant: 'nom',
     comparer: (a, b) => b.prixCoins - a.prixCoins,
   },
   nom: {
-    libelle: 'Tri : ordre alphabétique',
+    cleTexte: 'kits.tri.nom',
     suivant: 'prix',
     // localeCompare avec 'fr' : sans lui, « Épée » se classerait après « Zéro ».
     comparer: (a, b) => a.nom.localeCompare(b.nom, 'fr'),
   },
 }
 
-export function GrilleKits({ kits }: { kits: KitEnCarte[] }) {
+export function GrilleKits({ kits, locale }: { kits: KitEnCarte[]; locale: Locale }) {
   const [filtre, setFiltre] = useState<CleFiltre>('tous')
   const [tri, setTri] = useState<CleTri>('prix')
   const [recherche, setRecherche] = useState('')
@@ -114,7 +115,7 @@ export function GrilleKits({ kits }: { kits: KitEnCarte[] }) {
     */
     <div>
       <BarreOutils>
-        <div className="flex flex-wrap gap-1.5 max-[560px]:w-full" role="group" aria-label="Filtrer les kits">
+        <div className="flex flex-wrap gap-1.5 max-[560px]:w-full" role="group" aria-label={t(locale, 'kits.filtrer')}>
           {FILTRES.map((option) => (
             <Filtre
               key={option.cle}
@@ -122,7 +123,7 @@ export function GrilleKits({ kits }: { kits: KitEnCarte[] }) {
               onClick={() => setFiltre(option.cle)}
               className="max-[560px]:flex-1"
             >
-              {option.label}
+              {t(locale, option.cleTexte)}
             </Filtre>
           ))}
         </div>
@@ -132,34 +133,34 @@ export function GrilleKits({ kits }: { kits: KitEnCarte[] }) {
           onClick={() => setTri(TRIS[tri].suivant)}
           className="inline-flex min-h-11 items-center rounded-controle border border-bord bg-charbon px-3 font-mono text-[11.5px] tracking-[.08em] text-gris uppercase transition-colors hover:text-creme max-[560px]:w-full"
         >
-          {TRIS[tri].libelle}
+          {t(locale, TRIS[tri].cleTexte)}
         </button>
 
         <Recherche
           valeur={recherche}
           onChange={setRecherche}
-          etiquette="Chercher un kit"
-          placeholder="Chercher un kit ou une capacité"
+          etiquette={t(locale, 'kits.chercher')}
+          placeholder={t(locale, 'kits.chercher-placeholder')}
         />
       </BarreOutils>
 
       <Enveloppe>
         <p className="pt-4.5 font-mono text-[11.5px] tracking-[.06em] text-gris" aria-live="polite">
           <b className="text-soupe">{kitsAffiches.length}</b>{' '}
-          {kitsAffiches.length > 1 ? 'kits' : 'kit'}
-          {filtree && ` sur ${kits.length}`}
+          {t(locale, kitsAffiches.length > 1 ? 'kits.plusieurs' : 'kits.un')}
+          {filtree && ` ${t(locale, 'kits.sur')} ${kits.length}`}
         </p>
 
         {kitsAffiches.length === 0 ? (
           <EtatVide
             className="mt-5.5"
-            message="Aucun kit ne correspond à cette recherche."
-            action={{ libelle: 'Tout réafficher', onClick: reinitialiser }}
+            message={t(locale, 'kits.aucun-resultat')}
+            action={{ libelle: t(locale, 'kits.tout-reafficher'), onClick: reinitialiser }}
           />
         ) : (
           <div className="mt-5.5 grid gap-3 [grid-template-columns:repeat(auto-fill,minmax(292px,1fr))] max-[560px]:grid-cols-1">
             {kitsAffiches.map((kit) => (
-              <CarteKit key={kit.slug} kit={kit} />
+              <CarteKit key={kit.slug} kit={kit} locale={locale} />
             ))}
           </div>
         )}

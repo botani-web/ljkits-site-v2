@@ -8,6 +8,7 @@ import { EtatVide } from '@/components/ui/EtatVide'
 import { Etiquette } from '@/components/ui/TeteSection'
 import { lireReglages } from '@/lib/reglages'
 import { AGE_MINIMUM, CONSERVATION_MOIS, lireQuestionsActives } from '@/lib/recrutement'
+import { estLocale, LANGUE_DEFAUT, lien, t, champ, champOptionnel, type Locale } from '@/lib/i18n'
 
 /**
  * Le formulaire de recrutement staff.
@@ -37,14 +38,21 @@ export const metadata: Metadata = {
  */
 export const dynamic = 'force-dynamic'
 
-export default async function PageRecrutement() {
+export default async function PageRecrutement({
+  params,
+}: {
+  params: Promise<{ locale: string }>
+}) {
+  const { locale: brut } = await params
+  const locale: Locale = estLocale(brut) ? brut : LANGUE_DEFAUT
+
   const { recrutementOuvert, recrutementMessageFerme, discord } = await lireReglages()
 
   // Les questions ne sont même pas lues si c'est fermé.
   const questions = recrutementOuvert ? await lireQuestionsActives() : []
 
   return (
-    <PagePublique>
+    <PagePublique locale={locale}>
       <header className="halo-hero border-b border-bord py-[clamp(48px,6vw,80px)] text-center">
         <Enveloppe>
           <div className="mx-auto max-w-lecture">

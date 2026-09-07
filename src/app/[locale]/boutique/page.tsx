@@ -12,6 +12,7 @@ import { Etiquette } from '@/components/ui/TeteSection'
 import { formaterEuros } from '@/lib/format'
 import { prisma } from '@/lib/prisma'
 import { IMAGE_OG } from '@/lib/site'
+import { estLocale, LANGUE_DEFAUT, lien, t, champ, champOptionnel, type Locale } from '@/lib/i18n'
 
 export const revalidate = 3600 // une heure
 
@@ -40,7 +41,14 @@ export const metadata: Metadata = {
  *   2. les produits, prix en gros, les deux rayons l'un sous l'autre ;
  *   3. l'aide : comment ça se passe, ce qui n'est pas en vente, la FAQ.
  */
-export default async function PageBoutique() {
+export default async function PageBoutique({
+  params,
+}: {
+  params: Promise<{ locale: string }>
+}) {
+  const { locale: brut } = await params
+  const locale: Locale = estLocale(brut) ? brut : LANGUE_DEFAUT
+
   const [gradesEnBase, packsEnBase] = await Promise.all([
     prisma.grade.findMany({
       where: { visible: true },
@@ -84,7 +92,7 @@ export default async function PageBoutique() {
   const phare = grades.length === 3 ? grades[1] : null
 
   return (
-    <PagePublique>
+    <PagePublique locale={locale}>
       {/* ═══════════════════════════ BANDEAU ═══════════════════════════ */}
       <header className="halo-hero-gauche pt-[clamp(36px,5vw,60px)] pb-[clamp(22px,3vw,32px)]">
         <Enveloppe>

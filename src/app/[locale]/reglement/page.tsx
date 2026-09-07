@@ -8,6 +8,7 @@ import { markdownVersHtml } from '@/lib/markdown'
 import { prisma } from '@/lib/prisma'
 import { lireReglages } from '@/lib/reglages'
 import { IMAGE_OG } from '@/lib/site'
+import { estLocale, LANGUE_DEFAUT, lien, t, champ, champOptionnel, type Locale } from '@/lib/i18n'
 
 export const revalidate = 3600 // une heure
 
@@ -25,7 +26,14 @@ export const metadata: Metadata = {
   },
 }
 
-export default async function PageReglement() {
+export default async function PageReglement({
+  params,
+}: {
+  params: Promise<{ locale: string }>
+}) {
+  const { locale: brut } = await params
+  const locale: Locale = estLocale(brut) ? brut : LANGUE_DEFAUT
+
   // Seules les sections publiées sont lues : les brouillons restent en admin.
   const { discord } = await lireReglages()
 
@@ -43,25 +51,24 @@ export default async function PageReglement() {
   )
 
   return (
-    <PagePublique>
+    <PagePublique locale={locale}>
       {/* ═══════════════════════════ EN-TÊTE ═══════════════════════════ */}
       <header className="halo-hero pt-[clamp(48px,6vw,80px)] pb-[clamp(30px,4vw,42px)] text-center">
         <Enveloppe>
           <div className="mx-auto max-w-lecture">
-            <Etiquette>Les règles du serveur</Etiquette>
+            <Etiquette>{t(locale, 'reglement.etiquette')}</Etiquette>
 
             <h1 className="text-h1 mt-4 font-titre">
-              Règlement <span className="text-or">LJKITS</span>
+              {t(locale, 'reglement.titre')} <span className="text-or">LJKITS</span>
             </h1>
 
             <p className="mx-auto mt-4.5 max-w-[52ch] text-gris">
-              En jouant sur LJKITS, tu acceptes ces règles. Elles existent pour une seule
-              raison : que le serveur reste agréable pour tout le monde.
+              {t(locale, 'reglement.intro')}
             </p>
 
             {derniereMaj && (
               <p className="mt-5 font-mono text-[11px] tracking-[.06em] text-gris">
-                Dernière mise à jour :{' '}
+                {t(locale, 'reglement.maj')}{' '}
                 <time dateTime={derniereMaj.toISOString()}>{formaterDate(derniereMaj)}</time>
               </p>
             )}
@@ -91,7 +98,7 @@ export default async function PageReglement() {
                       {String(index + 1).padStart(2, '0')}
                     </span>
                     <h2 className="font-titre text-[clamp(17px,2.2vw,21px)] leading-tight tracking-[-.01em]">
-                      {section.titre}
+                      {champ(locale, section.titre, section.titreEn)}
                     </h2>
                   </div>
 
@@ -103,7 +110,9 @@ export default async function PageReglement() {
                   <div
                     className="markdown px-5.5 py-5"
                     dangerouslySetInnerHTML={{
-                      __html: markdownVersHtml(section.contenu, { discord }),
+                      __html: markdownVersHtml(champ(locale, section.contenu, section.contenuEn), {
+                        discord,
+                      }),
                     }}
                   />
                 </section>
@@ -117,10 +126,10 @@ export default async function PageReglement() {
       <section className="pb-section">
         <Enveloppe>
           <div className="hachures mx-auto max-w-lecture rounded-bloc border border-oni/40 p-[clamp(26px,4vw,40px)] text-center">
-            <Etiquette className="text-oni">L’esprit du règlement en une phrase</Etiquette>
+            <Etiquette className="text-oni">{t(locale, 'reglement.esprit')}</Etiquette>
             <p className="mt-4 font-titre text-[clamp(19px,2.8vw,28px)] leading-tight">
-              Joue au soup comme en <span className="text-or">2014</span>, sans pourrir le jeu
-              des autres.
+              {t(locale, 'reglement.phrase-avant')} <span className="text-or">2014</span>
+              {t(locale, 'reglement.phrase-apres')}
             </p>
           </div>
         </Enveloppe>

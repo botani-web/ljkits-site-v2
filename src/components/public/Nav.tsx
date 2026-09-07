@@ -9,6 +9,14 @@ import { useReglages } from '@/components/public/ContexteReglages'
 import { BoutonCopieIp } from '@/components/public/CopieIp'
 import { IconeDiscord } from '@/components/public/IconeDiscord'
 import { classesBouton } from '@/components/ui/Bouton'
+import {
+  type CleTexte,
+  estLocale,
+  LANGUE_DEFAUT,
+  lien as chemin_,
+  t,
+  type Locale,
+} from '@/lib/i18n'
 
 /**
  * Barre de navigation du site public.
@@ -25,12 +33,33 @@ import { classesBouton } from '@/components/ui/Bouton'
  * Composant client pour deux raisons : usePathname(), qui met en soupe le lien
  * de la page courante, et le menu burger sous 860px.
  */
-const LIENS = [
-  { href: '/kits', label: 'Kits' },
-  { href: '/classement', label: 'Classement' },
-  { href: '/boutique', label: 'Boutique' },
-  { href: '/reglement', label: 'Règlement' },
+const LIENS: { href: string; cle: CleTexte }[] = [
+  { href: '/kits', cle: 'nav.kits' },
+  { href: '/classement', cle: 'nav.classement' },
+  { href: '/boutique', cle: 'nav.boutique' },
+  { href: '/reglement', cle: 'nav.reglement' },
 ]
+
+/**
+ * La langue se lit dans l'URL, pas dans une propriété : la nav est déjà un
+ * composant client à cause de usePathname(). Ça évite de faire descendre la
+ * langue à travers PagePublique et toutes les pages.
+ */
+function langueDe(chemin: string): Locale {
+  const premier = chemin.split('/')[1]
+  return estLocale(premier) ? premier : LANGUE_DEFAUT
+}
+
+/** L'adresse courante dans l'AUTRE langue, pour le bouton de bascule. */
+function versLautreLangue(chemin: string, locale: Locale): string {
+  const autre: Locale = locale === 'fr' ? 'en' : 'fr'
+  const morceaux = chemin.split('/')
+  if (estLocale(morceaux[1])) {
+    morceaux[1] = autre
+    return morceaux.join('/')
+  }
+  return chemin_(autre, chemin)
+}
 
 /** Un lien est-il celui de la page affichée ? */
 function estActif(href: string, chemin: string) {
@@ -39,6 +68,7 @@ function estActif(href: string, chemin: string) {
 
 export function Nav() {
   const chemin = usePathname()
+  const locale = langueDe(chemin)
   const { ip, discord } = useReglages()
   const [menuOuvert, setMenuOuvert] = useState(false)
 
@@ -48,19 +78,20 @@ export function Nav() {
   return (
     <nav className="sticky top-0 z-70 border-b border-bord bg-nuit/86 backdrop-blur-[14px]">
       <div className="mx-auto flex max-w-contenu items-center gap-6.5 px-gouttiere py-3">
-        <Link href="/" aria-label="LJKITS — retour à l’accueil" className="flex items-center">
+        <Link href={chemin_(locale, '/')} aria-label="LJKITS" className="flex items-center">
           <Image src="/logo-texte.png" alt="LJKITS" width={71} height={24} priority />
         </Link>
 
         {/* --- liens, à partir de 860px : en dessous ils vivent dans le panneau --- */}
         <div className="ml-2 hidden gap-6.5 min-[860px]:flex">
           {LIENS.map((lien) => {
-            const actif = estActif(lien.href, chemin)
+            const href = chemin_(locale, lien.href)
+            const actif = estActif(href, chemin)
 
             return (
               <Link
                 key={lien.href}
-                href={lien.href}
+                href={href}
                 aria-current={actif ? 'page' : undefined}
                 // min-h-11 : à 860px on est encore sur un écran tactile, et un
                 // lien de 19px de haut y est difficile à viser au pouce.
@@ -68,13 +99,25 @@ export function Nav() {
                   actif ? 'text-soupe' : 'text-gris hover:text-creme'
                 }`}
               >
-                {lien.label}
+                {t(locale, lien.cle)}
               </Link>
             )
           })}
         </div>
 
         <div className="ml-auto flex items-center gap-2.5">
+          {/*
+            La bascule garde la page : de /fr/kits on arrive sur /en/kits.
+            Renvoyer à l'accueil ferait perdre sa place au visiteur, ce qui
+            est la meilleure façon de ne jamais changer de langue.
+          */}
+          <Link
+            href={versLautreLangue(chemin, locale)}
+            aria-label={t(locale, 'nav.langue-aria')}
+            className={`${classesBouton({ variante: 'vide' })} max-[860px]:hidden`}
+          >
+            {t(locale, 'nav.langue')}
+          </Link>
           {/*
             Sous 860px, la barre ne garde que le logo, le Discord et le burger :
             les quatre ensemble ne tiennent pas dans les 324px utiles d'un
@@ -171,6 +214,8 @@ function MenuMobile({
   discord: string
   onFermer: () => void
 }) {
+  const locale = langueDe(chemin)
+
   const dialogue = useRef<HTMLDialogElement>(null)
 
   useEffect(() => {
@@ -242,12 +287,13 @@ function MenuMobile({
 
         <div className="flex flex-col">
           {LIENS.map((lien) => {
-            const actif = estActif(lien.href, chemin)
+            const href = chemin_(locale, lien.href)
+            const actif = estActif(href, chemin)
 
             return (
               <Link
                 key={lien.href}
-                href={lien.href}
+                href={href}
                 aria-current={actif ? 'page' : undefined}
                 // Fermeture au choix d'un lien. Nécessaire même pour la page
                 // courante : Next ne remonte alors pas le composant, et le
@@ -257,13 +303,23 @@ function MenuMobile({
                   actif ? 'bg-braise text-soupe' : 'text-creme hover:bg-braise'
                 }`}
               >
-                {lien.label}
+                {t(locale, lien.cle)}
               </Link>
             )
           })}
         </div>
 
         <div className="mt-4 flex flex-col gap-2.5 border-t border-bord pt-4">
+          {/* Masquée dans la barre sous 860px : c'est ici qu'elle vit. */}
+          <Link
+            href={versLautreLangue(chemin, locale)}
+            onClick={onFermer}
+            aria-label={t(locale, 'nav.langue-aria')}
+            className={classesBouton({ variante: 'vide' })}
+          >
+            {t(locale, 'nav.langue')}
+          </Link>
+
           <BoutonCopieIp
             aria-label={`Copier l’adresse du serveur, ${ip}`}
             className={classesBouton({ variante: 'plein', pleineLargeur: true })}

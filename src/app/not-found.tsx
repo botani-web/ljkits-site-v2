@@ -2,11 +2,12 @@ import { PagePublique } from '@/components/public/PagePublique'
 import { LienBouton } from '@/components/ui/Bouton'
 import { Enveloppe } from '@/components/ui/Enveloppe'
 import { Etiquette } from '@/components/ui/TeteSection'
+import { estLocale, LANGUE_DEFAUT, lien, t, champ, champOptionnel, type Locale } from '@/lib/i18n'
 
 /** Page 404 : kit inexistant, kit masqué, adresse mal tapée. */
 export default function PageIntrouvable() {
   return (
-    <PagePublique>
+    <PagePublique locale={LANGUE_DEFAUT}>
       <main className="halo-hero py-[clamp(72px,10vw,140px)] text-center">
         <Enveloppe>
           <div className="mx-auto max-w-lecture">

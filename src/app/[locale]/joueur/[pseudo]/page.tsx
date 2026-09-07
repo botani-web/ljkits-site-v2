@@ -23,6 +23,7 @@ import {
 } from '@/lib/elo'
 import { formaterDateHeure, formaterRatio } from '@/lib/format'
 import { IMAGE_OG } from '@/lib/site'
+import { estLocale, LANGUE_DEFAUT, lien, t, champ, champOptionnel, type Locale } from '@/lib/i18n'
 
 /**
  * La fiche d'un joueur.
@@ -33,7 +34,7 @@ import { IMAGE_OG } from '@/lib/site'
  */
 export const revalidate = 60
 
-type Params = { params: Promise<{ pseudo: string }> }
+type Params = { params: Promise<{ pseudo: string; locale: string }> }
 
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { pseudo } = await params
@@ -53,6 +54,9 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
 }
 
 export default async function PageJoueur({ params }: Params) {
+  const { locale: brut } = await params
+  const locale: Locale = estLocale(brut) ? brut : LANGUE_DEFAUT
+
   const { pseudo } = await params
   const recherche = decodeURIComponent(pseudo)
 
@@ -73,7 +77,7 @@ export default async function PageJoueur({ params }: Params) {
   const suivant = resteAvantSuivant(fiche.elo)
 
   return (
-    <PagePublique>
+    <PagePublique locale={locale}>
       {/* ═══════════════════════════ EN-TÊTE ═══════════════════════════ */}
       <header className="halo-hero-gauche pt-[clamp(40px,5vw,64px)] pb-[clamp(24px,3vw,36px)]">
         <Enveloppe>

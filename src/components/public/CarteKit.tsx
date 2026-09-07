@@ -2,6 +2,7 @@ import { Badge } from '@/components/ui/Badge'
 import { CarteLien, KanjiFiligrane } from '@/components/ui/Carte'
 import { LignesLore } from '@/components/ui/LignesLore'
 import { formaterCoins, formaterEuros } from '@/lib/format'
+import { t, type Locale } from '@/lib/i18n'
 
 /**
  * Les champs d'un kit nécessaires à l'affichage d'une carte.
@@ -42,7 +43,7 @@ export function estKitDeGrade(kit: { type: 'GRATUIT' | 'EXCLUSIF'; prixCoins: nu
   return kit.type === 'EXCLUSIF' && kit.prixCoins === 0
 }
 
-export function CarteKit({ kit }: { kit: KitEnCarte }) {
+export function CarteKit({ kit, locale }: { kit: KitEnCarte; locale: Locale }) {
   const exclusif = kit.type === 'EXCLUSIF'
 
   return (
@@ -68,7 +69,7 @@ export function CarteKit({ kit }: { kit: KitEnCarte }) {
           {kit.role}
         </Badge>
 
-        {kit.bientot && <Badge ton="soupe">Bientôt</Badge>}
+        {kit.bientot && <Badge ton="soupe">{t(locale, 'kits.bientot')}</Badge>}
       </div>
 
       {/*
@@ -84,13 +85,14 @@ export function CarteKit({ kit }: { kit: KitEnCarte }) {
 
       <div className="relative mt-4.5 flex items-end gap-3 border-t border-bord pt-3.5">
         <PrixKit
+          locale={locale}
           prixCoins={kit.prixCoins}
           valeur={estKitDeGrade(kit) ? 'Shogun' : undefined}
           mention={
             estKitDeGrade(kit)
-              ? 'livré avec le grade'
+              ? t(locale, 'kits.livre-avec-grade')
               : kit.prixCoins === 0 && kit.kitDeDepart
-                ? 'Kit de départ'
+                ? t(locale, 'kits.kit-de-depart')
                 : undefined
           }
         />
@@ -106,7 +108,7 @@ export function CarteKit({ kit }: { kit: KitEnCarte }) {
               exclusif ? 'border-soupe/40 text-soupe' : 'border-bord text-gris'
             }`}
           >
-            ou {formaterEuros(kit.prixEurosCentimes)}
+            {t(locale, 'kits.ou')} {formaterEuros(kit.prixEurosCentimes)}
           </span>
         )}
       </div>
@@ -124,12 +126,14 @@ export function PrixKit({
   prixCoins,
   mention,
   valeur,
+  locale,
   taille = 'carte',
 }: {
   prixCoins: number
   mention?: string
-  /** Remplace le chiffre : « Shogun » pour un kit livre avec un grade. */
+  /** Remplace le chiffre : « Shogun » pour un kit livré avec un grade. */
   valeur?: string
+  locale: Locale
   taille?: 'carte' | 'detail'
 }) {
   const gratuit = prixCoins === 0
@@ -146,10 +150,10 @@ export function PrixKit({
           remplace ? 'text-oni' : gratuit ? 'text-vert' : 'text-or'
         }`}
       >
-        {valeur ?? (gratuit ? 'Gratuit' : formaterCoins(prixCoins))}
+        {valeur ?? (gratuit ? t(locale, 'kits.gratuit') : formaterCoins(prixCoins))}
       </span>
       <span className="mt-1 block font-mono text-[10.5px] font-medium tracking-[.1em] text-gris uppercase">
-        {mention ?? (gratuit ? 'Offert' : 'coins')}
+        {mention ?? t(locale, gratuit ? 'kits.offert' : 'kits.coins')}
       </span>
     </p>
   )

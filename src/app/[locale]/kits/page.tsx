@@ -10,6 +10,7 @@ import { BlocFinal, Section } from '@/components/ui/Section'
 import { Etiquette } from '@/components/ui/TeteSection'
 import { prisma } from '@/lib/prisma'
 import { IMAGE_OG, reperes } from '@/lib/site'
+import { estLocale, LANGUE_DEFAUT, lien, t, champ, champOptionnel, type Locale } from '@/lib/i18n'
 
 export const revalidate = 3600 // une heure
 
@@ -27,8 +28,15 @@ export const metadata: Metadata = {
 /** Les quatre repères de jeu affichés sous le titre. */
 const REGLES_DU_JEU = reperes('soupe', 'epee', 'cooldown', 'knockback')
 
-export default async function PageKits() {
-  const kits = await prisma.kit.findMany({
+export default async function PageKits({
+  params,
+}: {
+  params: Promise<{ locale: string }>
+}) {
+  const { locale: brut } = await params
+  const locale: Locale = estLocale(brut) ? brut : LANGUE_DEFAUT
+
+  const kitsBruts = await prisma.kit.findMany({
     where: { visible: true },
     orderBy: { ordre: 'asc' },
     select: {
@@ -36,7 +44,9 @@ export default async function PageKits() {
       nom: true,
       kanji: true,
       role: true,
+      roleEn: true,
       descriptionCourte: true,
+      descriptionCourteEn: true,
       prixCoins: true,
       prixEurosCentimes: true,
       type: true,
@@ -44,32 +54,47 @@ export default async function PageKits() {
       kitDeDepart: true,
       caracteristiques: {
         orderBy: { ordre: 'asc' },
-        select: { libelle: true, valeur: true },
+        select: { libelle: true, valeur: true, libelleEn: true, valeurEn: true },
       },
     },
   })
+
+  // LA LANGUE EST RÉSOLUE ICI, PAS DANS LE COMPOSANT.
+  //
+  // La grille est un composant client : lui envoyer les deux langues
+  // doublerait la charge utile pour n'en afficher qu'une. On choisit donc
+  // avant de franchir la frontière, et la carte reste inchangée.
+  const kits = kitsBruts.map((kit) => ({
+    ...kit,
+    role: champ(locale, kit.role, kit.roleEn),
+    descriptionCourte: champ(locale, kit.descriptionCourte, kit.descriptionCourteEn),
+    caracteristiques: kit.caracteristiques.map((c) => ({
+      libelle: champ(locale, c.libelle, c.libelleEn),
+      valeur: champ(locale, c.valeur, c.valeurEn),
+    })),
+  }))
 
   const exclusifs = kits.filter((kit) => kit.type === 'EXCLUSIF')
   const nombreClassiques = kits.length - exclusifs.length
 
   return (
-    <PagePublique>
+    <PagePublique locale={locale}>
       {/* ═══════════════════════════ HERO ═══════════════════════════ */}
       <header className="halo-hero-gauche pt-[clamp(52px,7vw,86px)] pb-[clamp(34px,4vw,46px)]">
         <Enveloppe>
           <Etiquette>
-            {kits.length} kits · 0 armure · 0 niveau
+            {kits.length} {t(locale, 'kits.etiquette')}
           </Etiquette>
 
           <h1 className="text-h1 mt-4 font-titre">
-            Choisis <span className="text-or">ta lame</span>
+            {t(locale, 'kits.h1-avant')}{' '}
+            <span className="text-or">{t(locale, 'kits.h1-apres')}</span>
           </h1>
 
           <p className="mt-5 max-w-[56ch] text-[clamp(16px,1.8vw,18.5px)] text-gris">
-            Il n’y a ni stuff à farmer ni niveau à monter. Tout le monde sort du spawn avec
-            une épée en pierre, un inventaire de soupes et{' '}
-            <b className="font-semibold text-creme">une seule capacité</b>. C’est elle qui
-            décide de ta façon de jouer.
+            {t(locale, 'kits.chapo-1')}{' '}
+            <b className="font-semibold text-creme">{t(locale, 'kits.chapo-gras')}</b>
+            {t(locale, 'kits.chapo-2')}
           </p>
 
           <BandeauChiffres
@@ -86,7 +111,7 @@ export default async function PageKits() {
       </header>
 
       {/* ════════════════════ BARRE D'OUTILS ET GRILLE ════════════════════ */}
-      <GrilleKits kits={kits} />
+      <GrilleKits kits={kits} locale={locale} />
 
       {/* ═══════════════════════ LES EXCLUSIFS ═══════════════════════ */}
       {exclusifs.length > 0 && (
@@ -102,22 +127,21 @@ export default async function PageKits() {
             <div>
               <Etiquette className="text-oni">
                 {exclusifs.length === 1
-                  ? 'L’exclusif'
-                  : `Les ${exclusifs.length} exclusifs`}
+                  ? t(locale, 'kits.exclusif-un')
+                  : `${t(locale, 'kits.exclusifs-les')} ${exclusifs.length} ${t(locale, 'kits.exclusifs-n')}`}
               </Etiquette>
               <h2 className="text-h2 mt-3 font-titre">
-                Ils ne frappent pas plus fort.
+                {t(locale, 'kits.exclusifs-h2-1')}
                 <br />
-                Ils jouent <span className="text-oni">autrement</span>.
+                {t(locale, 'kits.exclusifs-h2-2')}{' '}
+                <span className="text-oni">{t(locale, 'kits.exclusifs-h2-3')}</span>.
               </h2>
               <p className="mt-4 max-w-[56ch] text-[15.5px] text-gris">
-                Ces kits ont été écrits de zéro pour LJKITS — tu ne les trouveras nulle part
-                ailleurs. Ils coûtent plus cher en coins parce qu’ils sont plus longs à
-                maîtriser, pas parce qu’ils gagnent les combats à ta place.{' '}
+                {t(locale, 'kits.exclusifs-texte')}{' '}
                 <b className="font-semibold text-creme">
-                  Chacun s’obtient en jouant, exactement comme les {nombreClassiques} autres.
+                  {t(locale, 'kits.exclusifs-gras').replace('{n}', String(nombreClassiques))}
                 </b>{' '}
-                L’option payante ne fait que raccourcir le grind, et fait tourner le serveur.
+                {t(locale, 'kits.exclusifs-fin')}
               </p>
             </div>
 

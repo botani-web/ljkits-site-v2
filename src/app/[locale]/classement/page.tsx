@@ -14,6 +14,7 @@ import {
   lireSaisonCourante,
 } from '@/lib/elo'
 import { IMAGE_OG } from '@/lib/site'
+import { estLocale, LANGUE_DEFAUT, lien, t, champ, champOptionnel, type Locale } from '@/lib/i18n'
 
 /**
  * Le classement Elo de la saison.
@@ -57,16 +58,23 @@ export const metadata: Metadata = {
   },
 }
 
-export default async function PageClassement() {
+export default async function PageClassement({
+  params,
+}: {
+  params: Promise<{ locale: string }>
+}) {
+  const { locale: brut } = await params
+  const locale: Locale = estLocale(brut) ? brut : LANGUE_DEFAUT
+
   const saison = await lireSaisonCourante()
 
   // Aucune saison ouverte : le serveur n'a jamais démarré le plugin. On le dit
   // au lieu d'afficher un tableau vide qui laisserait croire à une panne.
   if (!saison) {
     return (
-      <PagePublique>
+      <PagePublique locale={locale}>
         <Enveloppe className="py-[clamp(60px,8vw,120px)]">
-          <EtatVide message="Le classement Elo n’a pas encore démarré. Reviens à l’ouverture de la première saison." />
+          <EtatVide message={t(locale, 'classement.vide-page')} />
         </Enveloppe>
       </PagePublique>
     )
@@ -79,8 +87,9 @@ export default async function PageClassement() {
   ])
 
   return (
-    <PagePublique>
+    <PagePublique locale={locale}>
       <TableauElo
+        locale={locale}
         lignes={lignes}
         combats={combats}
         derniereMaj={chiffres.derniereMaj?.toISOString() ?? null}
@@ -95,10 +104,11 @@ export default async function PageClassement() {
         etiquette="Les paliers"
         titre={
           <>
-            Huit rangs, de Fer à <span className="text-or">Légende</span>
+            {t(locale, 'classement.paliers-titre')}{' '}
+            <span className="text-or">{t(locale, 'classement.paliers-legende')}</span>
           </>
         }
-        chapeau="Les bornes sont resserrées autour de 1000, le point de départ : la grande majorité des joueurs vit entre 800 et 1500, et des paliers larges rendraient la progression invisible. Ton palier change en direct, à chaque combat."
+        chapeau={t(locale, 'classement.paliers-chapeau')}
       >
         <div className="grid gap-3 min-[560px]:grid-cols-2 lg:grid-cols-4">
           {PALIERS.map((palier) => (
@@ -119,11 +129,11 @@ export default async function PageClassement() {
         <div className="hachures mt-3.5 flex flex-wrap items-start gap-5 rounded-carte border border-oni/40 p-6">
           <h3 className="shrink-0 font-titre text-base text-oni">Anti-farm</h3>
           <p className="flex-1 basis-[380px] text-[14.5px] text-gris">
-            Retuer la même personne rapporte de moins en moins :{' '}
-            <b className="font-semibold text-creme">moitié au 2ᵉ kill</b>, un quart au 3ᵉ, puis
-            plus rien pendant deux heures. Le coefficient s’applique aussi{' '}
-            <b className="font-semibold text-creme">à la perte</b> — se faire tuer en boucle par
-            un ami ne vide pas ton Elo, mais ne remplit pas le sien non plus.
+            {t(locale, 'classement.antifarm-1')}{' '}
+            <b className="font-semibold text-creme">{t(locale, 'classement.antifarm-gras1')}</b>
+            {t(locale, 'classement.antifarm-2')}{' '}
+            <b className="font-semibold text-creme">{t(locale, 'classement.antifarm-gras2')}</b>{' '}
+            {t(locale, 'classement.antifarm-3')}
           </p>
         </div>
       </Section>

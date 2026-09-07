@@ -18,6 +18,16 @@ import { markdownVersHtml } from '@/lib/markdown'
 import { prisma } from '@/lib/prisma'
 import { lireReglages } from '@/lib/reglages'
 import { IMAGE_OG, reperes } from '@/lib/site'
+import {
+  champ,
+  champOptionnel,
+  type CleTexte,
+  estLocale,
+  LANGUE_DEFAUT,
+  lien,
+  t,
+  type Locale,
+} from '@/lib/i18n'
 
 export const revalidate = 3600 // une heure
 
@@ -42,9 +52,11 @@ const CHAMPS_DE_CARTE = {
   type: true,
   bientot: true,
   kitDeDepart: true,
+  roleEn: true,
+  descriptionCourteEn: true,
   caracteristiques: {
     orderBy: { ordre: 'asc' as const },
-    select: { libelle: true, valeur: true },
+    select: { libelle: true, valeur: true, libelleEn: true, valeurEn: true },
   },
 } as const
 
@@ -73,7 +85,7 @@ async function lireKit(slug: string) {
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ slug: string }>
+  params: Promise<{ slug: string; locale: string }>
 }): Promise<Metadata> {
   const { slug } = await params
   const kit = await lireKit(slug)
@@ -129,7 +141,10 @@ function choisirSuggestions(
     .map((kit) => kit.slug)
 }
 
-export default async function PageKit({ params }: { params: Promise<{ slug: string }> }) {
+export default async function PageKit({ params }: { params: Promise<{ slug: string; locale: string }> }) {
+  const { locale: brut } = await params
+  const locale: Locale = estLocale(brut) ? brut : LANGUE_DEFAUT
+
   const { slug } = await params
   const kit = await lireKit(slug)
 
@@ -156,9 +171,18 @@ export default async function PageKit({ params }: { params: Promise<{ slug: stri
     select: CHAMPS_DE_CARTE,
   })
   // findMany ne garantit pas l'ordre du `in` : on remet le classement voulu.
-  const suggestions = slugsSuggeres
+  const suggestions: KitEnCarte[] = slugsSuggeres
     .map((slugSuggere) => suggestionsEnDesordre.find((s) => s.slug === slugSuggere))
-    .filter((s): s is KitEnCarte => s !== undefined)
+    .filter((s) => s !== undefined)
+    .map((s) => ({
+      ...s,
+      role: champ(locale, s.role, s.roleEn),
+      descriptionCourte: champ(locale, s.descriptionCourte, s.descriptionCourteEn),
+      caracteristiques: s.caracteristiques.map((c) => ({
+        libelle: champ(locale, c.libelle, c.libelleEn),
+        valeur: champ(locale, c.valeur, c.valeurEn),
+      })),
+    }))
 
   const exclusif = kit.type === 'EXCLUSIF'
   const { discord } = await lireReglages()
@@ -179,7 +203,7 @@ export default async function PageKit({ params }: { params: Promise<{ slug: stri
   const killsEstimes = Math.max(1, Math.round(kit.prixCoins / COINS_PAR_KILL))
 
   return (
-    <PagePublique>
+    <PagePublique locale={locale}>
       {/* ═══════════════════════════ FIL D'ARIANE ═══════════════════════════ */}
       <Enveloppe className="pt-5.5">
         <Link
@@ -196,7 +220,9 @@ export default async function PageKit({ params }: { params: Promise<{ slug: stri
           <div className="grid items-start gap-[clamp(28px,4vw,56px)] pt-[clamp(26px,3.5vw,40px)] lg:grid-cols-[minmax(0,1fr)_minmax(0,368px)]">
             {/* ---------------------- colonne de gauche ---------------------- */}
             <div>
-              <Badge ton={exclusif ? 'oni' : 'neutre'}>{kit.role}</Badge>
+              <Badge ton={exclusif ? 'oni' : 'neutre'}>
+                {champ(locale, kit.role, kit.roleEn)}
+              </Badge>
 
               <h1
                 className={`text-h1 mt-4 flex flex-wrap items-baseline gap-4 font-titre ${
@@ -212,13 +238,16 @@ export default async function PageKit({ params }: { params: Promise<{ slug: stri
               </h1>
 
               <p className="mt-4.5 max-w-[52ch] text-[clamp(16.5px,1.9vw,19.5px)] text-gris">
-                {kit.descriptionCourte}
+                {champ(locale, kit.descriptionCourte, kit.descriptionCourteEn)}
               </p>
 
               <article
                 className="markdown mt-6.5 max-w-[60ch]"
                 dangerouslySetInnerHTML={{
-                  __html: markdownVersHtml(kit.descriptionLongue, { discord }),
+                  __html: markdownVersHtml(
+                    champ(locale, kit.descriptionLongue, kit.descriptionLongueEn),
+                    { discord },
+                  ),
                 }}
               />
 
@@ -244,8 +273,9 @@ export default async function PageKit({ params }: { params: Promise<{ slug: stri
                   </div>
 
                   <p className="mt-2.25 font-mono text-[11px] text-gris">
-                    Environ {formaterCoins(killsEstimes)} kills pour le débloquer, à ~
-                    {COINS_PAR_KILL} coins le kill.
+                    {t(locale, 'kit.kills-estimes-1')} {formaterCoins(killsEstimes)}{' '}
+                    {t(locale, 'kit.kills-estimes-2')}
+                    {COINS_PAR_KILL} {t(locale, 'kit.kills-estimes-3')}
                   </p>
                 </div>
               )}
@@ -266,24 +296,24 @@ export default async function PageKit({ params }: { params: Promise<{ slug: stri
                     <BoutonCopieIp
                       className={classesBouton({ variante: 'plein', pleineLargeur: true })}
                     >
-                      Copier l’IP
+                      {t(locale, 'kit.copier-ip')}
                     </BoutonCopieIp>
                     <p className="mt-3 text-center font-mono text-[10.5px] leading-relaxed text-gris">
                       {kit.prixCoins === 0 ? (
-                        'Disponible dès ta première connexion.'
+                        t(locale, 'kit.des-la-connexion')
                       ) : kit.prixEurosCentimes !== null ? (
                         <>
-                          Débloque-le en jouant, ou{' '}
+                          {t(locale, 'kit.debloque-ou')}{' '}
                           <Link
-                            href="/boutique"
+                            href={lien(locale, '/boutique')}
                             className="border-b border-soupe/40 text-soupe"
                           >
-                            prends-le en boutique
+                            {t(locale, 'kit.prends-boutique')}
                           </Link>{' '}
-                          pour {formaterEuros(kit.prixEurosCentimes)}.
+                          {t(locale, 'kit.pour')} {formaterEuros(kit.prixEurosCentimes)}.
                         </>
                       ) : (
-                        'Débloque-le en jouant, avec les coins gagnés au combat.'
+                        t(locale, 'kit.debloque-coins')
                       )}
                     </p>
                   </>
@@ -291,14 +321,15 @@ export default async function PageKit({ params }: { params: Promise<{ slug: stri
               >
                 <SectionPanneau className="flex items-end gap-3.5">
                   <PrixKit
+                    locale={locale}
                     prixCoins={kit.prixCoins}
                     taille="detail"
                     valeur={estKitDeGrade(kit) ? 'Shogun' : undefined}
                     mention={
                       estKitDeGrade(kit)
-                        ? 'livré avec le grade'
+                        ? t(locale, 'kits.livre-avec-grade')
                         : kit.prixCoins === 0 && kit.kitDeDepart
-                          ? 'Kit de départ'
+                          ? t(locale, 'kits.kit-de-depart')
                           : undefined
                     }
                   />
@@ -324,7 +355,7 @@ export default async function PageKit({ params }: { params: Promise<{ slug: stri
                 {kit.bientot && (
                   <SectionPanneau dernier className="border-t border-bord">
                     <p className="font-mono text-[11px] text-soupe">
-                      Ce kit est annoncé mais pas encore jouable.
+                      {t(locale, 'kit.bientot-texte')}
                     </p>
                   </SectionPanneau>
                 )}
@@ -336,15 +367,14 @@ export default async function PageKit({ params }: { params: Promise<{ slug: stri
 
       {/* ══════════════════════ COMMENT L'OBTENIR ══════════════════════ */}
       <Section
-        etiquette={kit.prixCoins === 0 ? 'Rien à débloquer' : 'Deux chemins, un seul kit'}
-        titre="Comment l’obtenir"
+        etiquette={t(locale, kit.prixCoins === 0 ? 'kit.rien-debloquer' : 'kit.deux-chemins')}
+        titre={t(locale, 'kit.comment')}
       >
         <div className="grid gap-3.5 lg:grid-cols-2">
           {kit.prixCoins === 0 ? (
-            <Voie titre="Aucun coût" ton="gratuite" className="lg:col-span-2">
+            <Voie titre={t(locale, 'kit.aucun-cout')} ton="gratuite" className="lg:col-span-2">
               <p className="flex-1 text-[15px] text-gris">
-                Ce kit est disponible dès ta première connexion, sans rien débloquer. C’est le
-                point de départ de tout le monde.
+                {t(locale, 'kit.gratuit-texte')}
               </p>
               <BoutonCopieIp
                 className={classesBouton({
@@ -357,35 +387,45 @@ export default async function PageKit({ params }: { params: Promise<{ slug: stri
             </Voie>
           ) : (
             <>
-              <Voie titre="En jouant" ton="gratuite">
+              <Voie titre={t(locale, 'kit.en-jouant')} ton="gratuite">
                 <p className="flex-1 text-[15px] text-gris">
                   <b className="font-semibold text-creme">
-                    {formaterCoins(kit.prixCoins)} coins
+                    {formaterCoins(kit.prixCoins)} {t(locale, 'kit.coins-mot')}
                   </b>
-                  , gagnés au combat. C’est la voie normale, et celle que prend la majorité
-                  des joueurs.
+                  {t(locale, 'kit.voie-normale')}.
                 </p>
-                <LignesLore lignes={GAINS_EN_JEU} taille="compacte" />
+                <LignesLore
+                  lignes={GAINS_EN_JEU.map((gain) => ({
+                    libelle: t(locale, gain.cleLibelle as CleTexte),
+                    valeur: t(locale, gain.cleValeur as CleTexte),
+                  }))}
+                  taille="compacte"
+                />
                 <BoutonCopieIp
                   className={classesBouton({
                     variante: 'vide',
                     className: 'mt-4.5 justify-center',
                   })}
                 >
-                  Aller le chercher
+                  {t(locale, 'kit.aller-chercher')}
                 </BoutonCopieIp>
               </Voie>
 
               {kit.prixEurosCentimes !== null && (
-                <Voie titre="En boutique" ton="payante">
+                <Voie titre={t(locale, 'kit.en-boutique')} ton="payante">
                   <p className="flex-1 text-[15px] text-gris">
                     <b className="font-semibold text-creme">
                       {formaterEuros(kit.prixEurosCentimes)}
                     </b>{' '}
-                    pour le même kit, aux mêmes statistiques, simplement sans le grind. Ça
-                    fait tourner le serveur — ça ne te rend pas plus fort.
+                    {t(locale, 'kit.voie-payante')}
                   </p>
-                  <LignesLore lignes={GARANTIES_BOUTIQUE} taille="compacte" />
+                  <LignesLore
+                    lignes={GARANTIES_BOUTIQUE.map((g) => ({
+                      libelle: t(locale, g.cleLibelle as CleTexte),
+                      valeur: t(locale, g.cleValeur as CleTexte),
+                    }))}
+                    taille="compacte"
+                  />
                   <LienBouton
                     href="/boutique"
                     variante="vide"
@@ -406,7 +446,7 @@ export default async function PageKit({ params }: { params: Promise<{ slug: stri
         etiquette={`Identiques pour les ${tousLesKits.length} kits`}
         titre={
           <>
-            Les règles du soup ne changent <span className="text-or">jamais</span>
+            {t(locale, 'kit.regles-1')} <span className="text-or">{t(locale, 'kit.regles-2')}</span>
           </>
         }
       >
@@ -419,37 +459,37 @@ export default async function PageKit({ params }: { params: Promise<{ slug: stri
           }))}
         />
         <p className="mt-4 font-mono text-[11.5px] tracking-[.04em] text-gris">
-          Tout le monde sort du spawn avec le même stuff. Seule la capacité change.
+          {t(locale, 'kit.meme-stuff')}
         </p>
       </Section>
 
       {/* ═══════════════════════════ LES VOISINS ═══════════════════════════ */}
       {suggestions.length > 0 && (
         <Section
-          etiquette="Dans la même gamme de prix"
-          titre={exclusif ? 'Les autres kits maison' : 'Le prochain à viser'}
+          etiquette={t(locale, 'kit.meme-gamme')}
+          titre={exclusif ? t(locale, 'kit.autres-maison') : t(locale, 'kit.prochain')}
         >
           <div className="grid gap-3 lg:grid-cols-3">
             {suggestions.map((suggestion) => (
-              <CarteKit key={suggestion.slug} kit={suggestion} />
+              <CarteKit key={suggestion.slug} kit={suggestion} locale={locale} />
             ))}
           </div>
 
-          <LienFleche href="/kits" className="mt-4">
-            Voir les {tousLesKits.length} kits
+          <LienFleche href={lien(locale, '/kits')} className="mt-4">
+            {t(locale, 'kit.voir-les')} {tousLesKits.length} {t(locale, 'nav.kits').toLowerCase()}
           </LienFleche>
 
           {(precedent || suivant) && (
             <nav
-              aria-label="Kit précédent et suivant"
+              aria-label={t(locale, 'kit.nav-aria')}
               className="mt-[clamp(30px,4vw,44px)] grid gap-3 min-[560px]:grid-cols-2"
             >
               {precedent ? (
-                <LienKitVoisin kit={precedent} direction="precedent" />
+                <LienKitVoisin kit={precedent} direction="precedent" locale={locale} />
               ) : (
                 <span className="hidden min-[560px]:block" />
               )}
-              {suivant && <LienKitVoisin kit={suivant} direction="suivant" />}
+              {suivant && <LienKitVoisin kit={suivant} direction="suivant" locale={locale} />}
             </nav>
           )}
         </Section>
@@ -461,18 +501,18 @@ export default async function PageKit({ params }: { params: Promise<{ slug: stri
         titre={
           kit.bientot ? (
             <>
-              Prends de <span className="text-or">l’avance</span>.
+              {t(locale, 'kit.avance-1')} <span className="text-or">{t(locale, 'kit.avance-2')}</span>.
             </>
           ) : (
             <>
-              Va chercher le <span className="text-or">{kit.nom}</span>.
+              {t(locale, 'kit.va-chercher')} <span className="text-or">{kit.nom}</span>.
             </>
           )
         }
         chapeau={
           kit.prixCoins === 0
-            ? 'Il t’attend dès ta première connexion. Connecte-toi et saute dans l’arène.'
-            : `Connecte-toi, enchaîne les kills, et il est à toi. ${formaterCoins(kit.prixCoins)} coins, ça se fait plus vite qu’on ne croit.`
+            ? t(locale, 'kit.appel-gratuit')
+            : t(locale, 'kit.appel-payant').replace('{prix}', formaterCoins(kit.prixCoins))
         }
       >
         <BoutonIpGeant />
@@ -496,18 +536,18 @@ export default async function PageKit({ params }: { params: Promise<{ slug: stri
  * détaillés sur /classement.
  */
 const GAINS_EN_JEU = [
-  { libelle: 'Par kill', valeur: '~20 coins' },
-  { libelle: 'Tous les 10 kills', valeur: '+50 coins' },
-  { libelle: 'KOTH remporté', valeur: '500 coins' },
-  { libelle: 'Totem remporté', valeur: 'Une part de 2 500' },
-  { libelle: 'Discord lié', valeur: '1 000 coins, une fois' },
+  { cleLibelle: 'kit.gain.kill', cleValeur: 'kit.gain.kill-v' },
+  { cleLibelle: 'kit.gain.dix', cleValeur: 'kit.gain.dix-v' },
+  { cleLibelle: 'kit.gain.koth', cleValeur: 'kit.gain.koth-v' },
+  { cleLibelle: 'kit.gain.totem', cleValeur: 'kit.gain.totem-v' },
+  { cleLibelle: 'kit.gain.discord', cleValeur: 'kit.gain.discord-v' },
 ]
 
 /** Ce que l'achat ne change pas. C'est l'argument central du positionnement. */
 const GARANTIES_BOUTIQUE = [
-  { libelle: 'Statistiques', valeur: 'Identiques' },
-  { libelle: 'Avantage en combat', valeur: 'Aucun' },
-  { libelle: 'Livraison', valeur: 'Sous 90 s en jeu' },
+  { cleLibelle: 'kit.garantie.stats', cleValeur: 'kit.garantie.stats-v' },
+  { cleLibelle: 'kit.garantie.avantage', cleValeur: 'kit.garantie.avantage-v' },
+  { cleLibelle: 'kit.garantie.livraison', cleValeur: 'kit.garantie.livraison-v' },
 ]
 
 /** Une des deux voies d'obtention : en jouant, ou en boutique. */
@@ -542,21 +582,23 @@ function Voie({
 function LienKitVoisin({
   kit,
   direction,
+  locale,
 }: {
   kit: { slug: string; nom: string }
   direction: 'precedent' | 'suivant'
+  locale: Locale
 }) {
   const versLaDroite = direction === 'suivant'
 
   return (
     <Link
-      href={`/kits/${kit.slug}`}
+      href={lien(locale, `/kits/${kit.slug}`)}
       className={`rounded-carte border border-bord bg-charbon px-5.5 py-4.5 transition-colors duration-[.18s] hover:border-soupe hover:bg-braise ${
         versLaDroite ? 'min-[560px]:text-right' : ''
       }`}
     >
       <span className="block font-mono text-[10.5px] tracking-[.18em] text-gris uppercase">
-        {versLaDroite ? 'Kit suivant' : 'Kit précédent'}
+        {t(locale, versLaDroite ? 'kit.suivant' : 'kit.precedent')}
       </span>
       <span className="mt-2 block font-titre text-[17px]">
         {versLaDroite ? `${kit.nom} →` : `← ${kit.nom}`}

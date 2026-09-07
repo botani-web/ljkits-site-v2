@@ -15,6 +15,7 @@ import { formaterOuverture, formaterOuvertureEnPhrase } from '@/lib/format'
 import { prisma } from '@/lib/prisma'
 import { lireReglages } from '@/lib/reglages'
 import { SITE } from '@/lib/site'
+import { estLocale, LANGUE_DEFAUT, lien, t, champ, champOptionnel, type Locale } from '@/lib/i18n'
 
 // Page statique, régénérée au plus toutes les heures. Les Server Actions de
 // l'admin appellent revalidatePath('/') dès qu'un kit change, pour que le
@@ -24,7 +25,14 @@ export const revalidate = 3600 // une heure
 /** Combien de joueurs l'aperçu du classement montre. */
 const TAILLE_APERCU = 5
 
-export default async function Accueil() {
+export default async function Accueil({
+  params,
+}: {
+  params: Promise<{ locale: string }>
+}) {
+  const { locale: brut } = await params
+  const locale: Locale = estLocale(brut) ? brut : LANGUE_DEFAUT
+
   const [nombreKits, saison, reglages] = await Promise.all([
     // Le nombre de kits est lu en base plutôt qu'écrit en dur : la maquette
     // annonçait « 29 kits » à un endroit et « 15 » à un autre.
@@ -66,23 +74,26 @@ export default async function Accueil() {
   const ouvertAuRendu = Date.now() >= ouverture.getTime()
 
   return (
-    <PagePublique>
+    <PagePublique locale={locale}>
       {/* ═══════════════════════════ HERO ═══════════════════════════ */}
       <header id="haut" className="halo-hero pt-[clamp(56px,8vw,104px)] pb-[clamp(48px,6vw,76px)] text-center">
         <Enveloppe>
           <div className="mx-auto max-w-[900px]">
             <h1 className="text-h1 font-titre text-balance">
-              Serveur Minecraft
+              {t(locale, 'accueil.h1-1')}
               <br />
-              <span className="text-oni">PvP Soup</span> en <span className="text-or">1.8</span>
+              <span className="text-oni">{t(locale, 'accueil.h1-2')}</span>{' '}
+              {t(locale, 'accueil.h1-3')} <span className="text-or">1.8</span>
             </h1>
 
             <p className="mx-auto mt-5.5 max-w-[56ch] text-[clamp(16.5px,2vw,20px)] text-balance text-gris">
-              Aucun cooldown d’attaque, aucune armure, et un bol de soupe pour se soigner.{' '}
-              <b className="font-semibold text-creme">{nombreKits} kits</b> à débloquer en
-              jouant, un{' '}
-              <b className="font-semibold text-creme">classement remis à zéro chaque lundi</b>,
-              et zéro pay to win.
+              {t(locale, 'accueil.chapo-1')}{' '}
+              <b className="font-semibold text-creme">
+                {nombreKits} {t(locale, 'accueil.chapo-kits')}
+              </b>{' '}
+              {t(locale, 'accueil.chapo-2')}{' '}
+              <b className="font-semibold text-creme">{t(locale, 'accueil.chapo-classement')}</b>
+              {t(locale, 'accueil.chapo-3')}
             </p>
 
             <div className="mt-8 flex flex-wrap justify-center gap-2.75">
@@ -129,7 +140,7 @@ export default async function Accueil() {
               {regle.zero ? ` ${regle.titre}` : regle.titre}
             </p>
             <p className="mt-2.25 font-mono text-[11px] leading-relaxed text-gris">
-              {regle.texte}
+              {t(locale, regle.cleTexte)}
             </p>
           </CaseCloisonnee>
         ))}
@@ -137,35 +148,40 @@ export default async function Accueil() {
 
       {/* ═════════════════════════ TROIS PILIERS ═════════════════════════ */}
       <Section
-        etiquette="Ce qui t’attend"
+        etiquette={t(locale, 'accueil.piliers-etiquette')}
         titre={
           <>
-            Trois raisons de <span className="text-or">rester</span>
+            {t(locale, 'accueil.piliers-titre-1')}{' '}
+            <span className="text-or">{t(locale, 'accueil.piliers-titre-2')}</span>
           </>
         }
       >
         <div className="grid gap-3.5 lg:grid-cols-3">
           <Pilier
-            href="/kits"
+            href={lien(locale, '/kits')}
             chiffre={String(nombreKits)}
-            titre="Kits"
-            lien="Voir les kits"
+            titre={t(locale, 'nav.kits')}
+            lien={t(locale, 'accueil.pilier-kits-lien')}
           >
-            Du Kangaroo au Kitsune. Tous débloquables en jouant, aucun réservé à la boutique.
+            {t(locale, 'accueil.pilier-kits-texte')}
           </Pilier>
 
           <Pilier
-            href="/classement"
+            href={lien(locale, '/classement')}
             chiffre="1000"
-            titre="Elo de départ"
-            lien="Voir le classement"
+            titre={t(locale, 'accueil.pilier-elo-titre')}
+            lien={t(locale, 'accueil.pilier-elo-lien')}
           >
-            Tout le monde part au même point. La saison dure un mois et se termine par un
-            cashprize.
+            {t(locale, 'accueil.pilier-elo-texte')}
           </Pilier>
 
-          <Pilier href="/boutique" chiffre="0" titre="Pay to win" lien="Voir la boutique">
-            Rien de ce qui se vend ne se gagne à ta place. Ni dégâts, ni stuff, ni coins.
+          <Pilier
+            href={lien(locale, '/boutique')}
+            chiffre="0"
+            titre="Pay to win"
+            lien={t(locale, 'accueil.pilier-p2w-lien')}
+          >
+            {t(locale, 'accueil.pilier-p2w-texte')}
           </Pilier>
         </div>
       </Section>
@@ -175,11 +191,11 @@ export default async function Accueil() {
         <Section fond="charbon">
           <div className="grid items-center gap-[clamp(28px,4vw,56px)] lg:grid-cols-[minmax(0,1fr)_minmax(0,440px)]">
             <div>
-              <Etiquette>Compétition</Etiquette>
+              <Etiquette>{t(locale, 'accueil.competition')}</Etiquette>
               <h2 className="text-h2 mt-3 font-titre">
                 Un classement
                 <br />
-                qui se <span className="text-or">mérite</span>
+                qui se <span className="text-or">{t(locale, 'accueil.competition-titre-2')}</span>
               </h2>
               <p className="mt-3.5 max-w-[46ch] text-gris">
                 Tout le monde démarre à 1000 Elo. Tu en gagnes en battant plus fort que
@@ -247,7 +263,8 @@ export default async function Accueil() {
       <BlocFinal
         titre={
           <>
-            Le bol est <span className="text-or">plein</span>.
+            {t(locale, 'accueil.final-1')}{' '}
+            <span className="text-or">{t(locale, 'accueil.final-2')}</span>.
           </>
         }
         chapeau={
@@ -259,7 +276,7 @@ export default async function Accueil() {
       >
         <BoutonIpGeant />
         <p className="mt-4 font-mono text-[11.5px] text-gris">
-          Clique pour copier · Minecraft Java 1.8 → 1.21+
+          {t(locale, 'accueil.final-ip')}
         </p>
       </BlocFinal>
     </PagePublique>
@@ -281,22 +298,22 @@ const REGLES = [
   {
     zero: true,
     titre: 'cooldown',
-    texte: 'Tu cliques, ça touche. Le combat 1.8 intégral.',
+    cleTexte: 'accueil.regle.cooldown' as const,
   },
   {
     zero: true,
     titre: 'armure',
-    texte: 'Cinq cœurs, pour tout le monde, sans exception.',
+    cleTexte: 'accueil.regle.armure' as const,
   },
   {
     zero: false,
     titre: 'Clic droit',
-    texte: 'La soupe soigne. Gérer son stock fait partie du duel.',
+    cleTexte: 'accueil.regle.clic-droit' as const,
   },
   {
     zero: false,
     titre: 'Knockback 1.8',
-    texte: 'Le recul d’époque, réglé à la main. Le combo repart.',
+    cleTexte: 'accueil.regle.knockback' as const,
   },
 ]
 

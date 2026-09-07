@@ -12,6 +12,7 @@ import { Etiquette } from '@/components/ui/TeteSection'
 import { useClassementDirect } from '@/hooks/useClassementDirect'
 import { COMBATS_MINIMUM, palierDe, resteAvantSuivant, type CombatRecent, type LigneElo } from '@/lib/elo'
 import { formaterRatio } from '@/lib/format'
+import { t, type Locale } from '@/lib/i18n'
 
 /**
  * Le classement Elo : en-tête, podium et tableau.
@@ -47,7 +48,9 @@ export function TableauElo({
   derniereMaj: majInitiale,
   saison,
   cashprize,
+  locale,
 }: {
+  locale: Locale
   lignes: LigneElo[]
   combats: CombatRecent[]
   derniereMaj: string | null
@@ -95,30 +98,34 @@ export function TableauElo({
         <Enveloppe>
           <div className="grid items-end gap-[clamp(28px,4vw,56px)] lg:grid-cols-[minmax(0,1fr)_minmax(0,330px)]">
             <div>
-              <Etiquette>{saison} · mis à jour en direct</Etiquette>
+              <Etiquette>
+            {saison} · {t(locale, 'tableau.maj-direct')}
+          </Etiquette>
               <h1 className="text-h1 mt-4 font-titre">
                 Le classement <span className="text-or">Elo</span>
               </h1>
               <p className="mt-4.5 max-w-[54ch] text-[clamp(16px,1.8vw,18px)] text-gris">
-                Tout le monde démarre à <b className="font-semibold text-creme">1000 Elo</b>. Tu
-                en gagnes en tuant plus fort que toi, tu en perds en tombant contre plus
-                faible. La saison dure un mois, puis tout repart à zéro.{' '}
-                <b className="font-semibold text-creme">Cherche ton pseudo</b> pour voir ta place
-                exacte.
+                {t(locale, 'tableau.intro-1')}{' '}
+                <b className="font-semibold text-creme">1000 Elo</b>
+                {t(locale, 'tableau.intro-2')}{' '}
+                <b className="font-semibold text-creme">{t(locale, 'tableau.intro-3')}</b>{' '}
+                {t(locale, 'tableau.intro-4')}
               </p>
             </div>
 
             <div className="rounded-carte border border-or/40 bg-linear-160 from-or/10 to-braise p-6">
               <p className="font-mono text-[11px] tracking-[.12em] text-or uppercase">
-                Cashprize de la saison
+                {t(locale, 'tableau.cashprize-titre')}
               </p>
               <p className="mt-2 font-titre text-[clamp(34px,5vw,46px)] leading-none text-or">
                 {cashprize}
               </p>
               <p className="mt-3 border-t border-bord pt-3 text-sm text-gris">
-                Réparti entre les meilleurs du classement. Il faut{' '}
-                <b className="font-semibold text-creme">{COMBATS_MINIMUM} combats</b> minimum et
-                un compte Discord lié pour être éligible.
+                {t(locale, 'tableau.cashprize-1')}{' '}
+                <b className="font-semibold text-creme">
+                  {COMBATS_MINIMUM} {t(locale, 'tableau.combats')}
+                </b>{' '}
+                {t(locale, 'tableau.cashprize-2')}
               </p>
             </div>
           </div>
@@ -143,8 +150,9 @@ export function TableauElo({
                 enDirect ? 'animate-pulse bg-vert' : 'bg-gris'
               }`}
             />
-            {enDirect ? 'En direct' : 'Hors ligne'} · {lignes.length} joueur
-            {lignes.length > 1 ? 's' : ''} classé{lignes.length > 1 ? 's' : ''}
+            {t(locale, enDirect ? 'tableau.direct' : 'tableau.hors-ligne')} · {lignes.length}{' '}
+            {t(locale, lignes.length > 1 ? 'tableau.joueurs' : 'tableau.joueur')}{' '}
+            {t(locale, lignes.length > 1 ? 'tableau.classes' : 'tableau.classe')}
           </p>
           <Recherche
             valeur={recherche}
@@ -163,12 +171,12 @@ export function TableauElo({
               <EtatVide
                 message={
                   filtre
-                    ? 'Aucun joueur ne correspond à cette recherche.'
-                    : 'Personne n’est encore classé cette saison. Lie ton compte Discord et lance-toi — les premières places sont à prendre.'
+                    ? t(locale, 'tableau.aucun-resultat')
+                    : t(locale, 'tableau.personne')
                 }
                 action={
                   filtre
-                    ? { libelle: 'Réafficher le classement', onClick: () => setRecherche('') }
+                    ? { libelle: t(locale, 'tableau.reafficher'), onClick: () => setRecherche('') }
                     : undefined
                 }
               />
@@ -237,7 +245,8 @@ export function TableauElo({
 
                             {!ligne.eligible && (
                               <p className="mt-3 font-mono text-[11px] text-oni">
-                                Pas encore éligible · {COMBATS_MINIMUM - ligne.combats} combats
+                                {t(locale, 'tableau.pas-eligible')}{' '}
+                                {COMBATS_MINIMUM - ligne.combats} {t(locale, 'tableau.combats')}
                                 restants
                               </p>
                             )}
@@ -360,9 +369,10 @@ export function TableauElo({
                 )}
 
                 <p className="mt-3.5 font-mono text-[11px] text-gris" aria-live="polite">
-                  {resultats.length} joueur{resultats.length > 1 ? 's' : ''} affiché
-                  {resultats.length > 1 ? 's' : ''}
-                  {filtre && ` sur ${lignes.length}`}
+                  {resultats.length}{' '}
+                  {t(locale, resultats.length > 1 ? 'tableau.joueurs' : 'tableau.joueur')}{' '}
+                  {t(locale, resultats.length > 1 ? 'tableau.affiches' : 'tableau.affiche')}
+                  {filtre && ` ${t(locale, 'tableau.sur')} ${lignes.length}`}
                 </p>
               </>
             )}

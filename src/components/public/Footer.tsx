@@ -3,6 +3,7 @@ import Link from 'next/link'
 
 import { BoutonCopieIp, ToastCopie } from '@/components/public/CopieIp'
 import { Enveloppe } from '@/components/ui/Enveloppe'
+import { lien, t, type Locale } from '@/lib/i18n'
 import { lireReglages } from '@/lib/reglages'
 
 /**
@@ -14,7 +15,7 @@ import { lireReglages } from '@/lib/reglages'
  *
  * Il embarque le toast de copie d'IP, monté une seule fois par page.
  */
-export async function Footer() {
+export async function Footer({ locale }: { locale: Locale }) {
   const { ip, discord } = await lireReglages()
   const annee = new Date().getFullYear()
 
@@ -25,7 +26,7 @@ export async function Footer() {
           <div className="grid gap-9 min-[560px]:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr_1fr]">
             <div className="min-[560px]:col-span-2 lg:col-span-1">
               <Link
-                href="/"
+                href={lien(locale, '/')}
                 aria-label="LJKITS — retour à l’accueil"
                 className="inline-flex items-center"
               >
@@ -38,18 +39,19 @@ export async function Footer() {
                 />
               </Link>
               <p className="max-w-[34ch] text-sm text-gris">
-                Le PvP Soup compétitif. Un projet passion, sans pay-to-win, porté par la
-                nostalgie du soup français de 2014.
+                {t(locale, 'pied.baseline')}
               </p>
             </div>
 
-            <ColonneFooter titre="Serveur">
-              <LienFooter href="/kits">Les kits</LienFooter>
-              <LienFooter href="/classement">Classement</LienFooter>
-              <LienFooter href="/boutique">Boutique</LienFooter>
+            <ColonneFooter titre={t(locale, 'pied.colonne.serveur')}>
+              <LienFooter href={lien(locale, '/kits')}>{t(locale, 'pied.les-kits')}</LienFooter>
+              <LienFooter href={lien(locale, '/classement')}>
+                {t(locale, 'nav.classement')}
+              </LienFooter>
+              <LienFooter href={lien(locale, '/boutique')}>{t(locale, 'nav.boutique')}</LienFooter>
             </ColonneFooter>
 
-            <ColonneFooter titre="Communauté">
+            <ColonneFooter titre={t(locale, 'pied.colonne.communaute')}>
               <a
                 href={discord}
                 target="_blank"
@@ -58,15 +60,17 @@ export async function Footer() {
               >
                 Discord
               </a>
-              <LienFooter href="/reglement">Règlement</LienFooter>
+              <LienFooter href={lien(locale, '/reglement')}>
+                {t(locale, 'nav.reglement')}
+              </LienFooter>
             </ColonneFooter>
 
-            <ColonneFooter titre="Jouer">
+            <ColonneFooter titre={t(locale, 'pied.colonne.jouer')}>
               <BoutonCopieIp className="-my-1 flex min-h-11 items-center text-left text-[14.5px] text-gris transition-colors hover:text-creme">
                 {ip}
               </BoutonCopieIp>
               <span className="flex min-h-11 items-center text-[14.5px] text-gris">
-                Java 1.8 → 1.21+
+                {t(locale, 'pied.versions')}
               </span>
             </ColonneFooter>
           </div>
@@ -74,11 +78,10 @@ export async function Footer() {
           <div className="mt-11 flex flex-wrap gap-x-6.5 gap-y-2.5 border-t border-bord pt-5.5 pb-7 font-mono text-[11px] text-gris">
             <span>© {annee} LJKITS</span>
             <span>
-              Hommage indépendant, sans lien avec les anciens administrateurs de MJKits.
+              {t(locale, 'pied.hommage')}
             </span>
             <span>
-              Not an official Minecraft product. Not approved by or associated with Mojang or
-              Microsoft.
+              {t(locale, 'pied.mojang')}
             </span>
           </div>
         </Enveloppe>

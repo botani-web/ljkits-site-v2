@@ -39,6 +39,13 @@ model Kit {
   /// Texte long en Markdown, affiché sur la page /kits/[slug].
   descriptionLongue String @db.Text
 
+  /// ---- Version anglaise (site bilingue) ----
+  /// null = pas encore traduit : le site retombe sur le français, il ne
+  /// casse jamais. Même convention que les clés `-en` des plugins en jeu.
+  roleEn              String?
+  descriptionCourteEn String?
+  descriptionLongueEn String? @db.Text
+
   /// Prix en coins gagnés en jeu. 0 = offert.
   prixCoins         Int  @default(0)
   /// Prix en euros, en CENTIMES (400 = 4 €). null = pas de prix en euros.
@@ -87,6 +94,9 @@ model CaracteristiqueKit {
   valeur  String
   ordre   Int
 
+  libelleEn String?
+  valeurEn  String?
+
   kit Kit @relation(fields: [kitId], references: [id], onDelete: Cascade)
 
   @@index([kitId, ordre])
@@ -96,15 +106,18 @@ model CaracteristiqueKit {
 /// Pas de table "Reglement" englobante : la date de dernière mise à jour
 /// affichée côté public est le max(updatedAt) des sections publiées.
 model SectionReglement {
-  id      String  @id @default(cuid())
+  id      String @id @default(cuid())
   /// Titre de la section : "Triche — tolérance zéro".
   titre   String
   /// Corps de la section, en Markdown.
-  contenu String  @db.Text
+  contenu String @db.Text
   /// Position dans la page, sert aussi de numéro affiché (1, 2, 3…).
   ordre   Int
+
+  titreEn   String?
+  contenuEn String? @db.Text
   /// false = brouillon : la section reste invisible côté public.
-  publie  Boolean @default(false)
+  publie    Boolean @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -144,6 +157,9 @@ model Grade {
   /// null = carte normale ; du texte = carte mise en avant avec ce libellé.
   etiquette String?
 
+  sousTitreEn String?
+  etiquetteEn String?
+
   prixEurosCentimes Int
 
   ordre     Int
@@ -174,6 +190,8 @@ model AvantageGrade {
   texte   String
   ordre   Int
 
+  texteEn String?
+
   grade Grade @relation(fields: [gradeId], references: [id], onDelete: Cascade)
 
   @@index([gradeId, ordre])
@@ -186,6 +204,9 @@ model Pack {
   slug        String @unique
   nom         String
   description String
+
+  nomEn         String?
+  descriptionEn String?
 
   prixEurosCentimes Int
   /// Prix affiché barré à côté du prix réel. null = pas de prix barré.
@@ -367,6 +388,15 @@ model Joueur {
   /// timestamptz(6) côté PostgreSQL : la précision doit rester explicite,
   /// sinon Prisma proposerait de la ramener à 3.
   derniereMaj DateTime @default(now()) @map("derniere_maj") @db.Timestamptz(6)
+
+  /// ---- Colonnes écrites par le SERVEUR MINECRAFT (plugin LJRank) ----
+  /// Le site ne s'en sert pas, mais elles DOIVENT rester déclarées ici :
+  /// sans elles, `db:migrate:new` voit deux colonnes inconnues et propose
+  /// de les SUPPRIMER. Le garde-fou du script l'a bloqué le 07/09/2026 —
+  /// c'est exactement le scénario qui avait déjà coûté la table `joueur`.
+  /// Toute colonne ajoutée côté jeu doit être ajoutée ici en miroir.
+  departOffert Boolean @default(false) @map("depart_offert")
+  killsKit     String  @default("") @map("kills_kit")
 
   // Index créés par skript-db pour les classements. `map:` reprend leur nom
   // exact et `sort: Desc` leur sens : sans ces trois lignes, db push les
@@ -595,6 +625,8 @@ model SectionRecrutement {
   id  String @id @default(cuid())
   nom String
 
+  nomEn String?
+
   /// Position de la section dans le formulaire.
   ordre Int
 
@@ -621,6 +653,9 @@ model QuestionRecrutement {
 
   /// Texte d'aide affiché SOUS le champ. Optionnel.
   aide String? @db.Text
+
+  libelleEn String? @db.Text
+  aideEn    String? @db.Text
 
   type TypeQuestion @default(TEXTE_COURT)
 
@@ -810,22 +845,21 @@ model TentativeRecrutement {
   @@index([createdAt])
 }
 
-/* ══════════════════════════════════════════════════════════════════════════
-   LE CLASSEMENT ELO
-
-   Quatre tables CRÉÉES À LA MAIN dans la console Neon et ÉCRITES par le
-   plugin LJElo. Le site n'en fait que des lectures.
-
-   POURQUOI ELLES SONT DÉCLARÉES ICI ALORS QUE PRISMA NE LES A PAS CRÉÉES.
-   Prisma ne connaît que ce que ce fichier décrit. Une table absente du
-   schéma est, pour lui, une table à supprimer : le premier `db push` les
-   aurait effacées avec toute la saison en cours — exactement ce qui était
-   arrivé à la table `joueur`. Les déclarer, c'est les protéger.
-
-   Les `@@map`, `@map` et noms d'index reprennent EXACTEMENT le SQL du
-   plugin (LJElo/sql/schema-elo.sql). Le moindre écart ferait proposer à
-   Prisma un renommage, donc une migration destructrice.
-   ══════════════════════════════════════════════════════════════════════════ */
+/**
+ * ══════════════════════════════════════════════════════════════════════════
+ * LE CLASSEMENT ELO
+ * Quatre tables CRÉÉES À LA MAIN dans la console Neon et ÉCRITES par le
+ * plugin LJElo. Le site n'en fait que des lectures.
+ * POURQUOI ELLES SONT DÉCLARÉES ICI ALORS QUE PRISMA NE LES A PAS CRÉÉES.
+ * Prisma ne connaît que ce que ce fichier décrit. Une table absente du
+ * schéma est, pour lui, une table à supprimer : le premier `db push` les
+ * aurait effacées avec toute la saison en cours — exactement ce qui était
+ * arrivé à la table `joueur`. Les déclarer, c'est les protéger.
+ * Les `@@map`, `@map` et noms d'index reprennent EXACTEMENT le SQL du
+ * plugin (LJElo/sql/schema-elo.sql). Le moindre écart ferait proposer à
+ * Prisma un renommage, donc une migration destructrice.
+ * ══════════════════════════════════════════════════════════════════════════
+ */
 
 /// Une saison de classement. Le plugin en ouvre une par mois.
 model EloSaison {

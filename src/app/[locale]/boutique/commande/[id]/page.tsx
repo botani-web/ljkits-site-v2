@@ -12,6 +12,7 @@ import { Etiquette } from '@/components/ui/TeteSection'
 import { formaterEuros, formaterNumeroCommande } from '@/lib/format'
 import { prisma } from '@/lib/prisma'
 import { lireReglages } from '@/lib/reglages'
+import { estLocale, LANGUE_DEFAUT, lien, t, champ, champOptionnel, type Locale } from '@/lib/i18n'
 
 export const metadata: Metadata = {
   title: 'Ta commande',
@@ -33,8 +34,11 @@ export const metadata: Metadata = {
 export default async function PageCommande({
   params,
 }: {
-  params: Promise<{ id: string }>
+  params: Promise<{ id: string; locale: string }>
 }) {
+  const { locale: brut } = await params
+  const locale: Locale = estLocale(brut) ? brut : LANGUE_DEFAUT
+
   const { id } = await params
 
   const commande = await prisma.commande.findUnique({
@@ -47,7 +51,7 @@ export default async function PageCommande({
   const { discord } = await lireReglages()
 
   return (
-    <PagePublique>
+    <PagePublique locale={locale}>
       <main className="halo-hero pt-[clamp(48px,6vw,80px)] pb-section">
         <Enveloppe>
           <div className="mx-auto max-w-lecture">
