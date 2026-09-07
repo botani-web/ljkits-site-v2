@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react'
 
-import { CarteKit, type KitEnCarte } from '@/components/public/CarteKit'
+import { CarteKit, estKitDeGrade, type KitEnCarte } from '@/components/public/CarteKit'
 import { BarreOutils, Recherche } from '@/components/ui/BarreOutils'
 import { Enveloppe } from '@/components/ui/Enveloppe'
 import { EtatVide } from '@/components/ui/EtatVide'
@@ -27,7 +27,13 @@ type CleFiltre = 'tous' | 'gratuit' | 'coins' | 'exclusif'
 
 const FILTRES: { cle: CleFiltre; label: string; garde: (kit: KitEnCarte) => boolean }[] = [
   { cle: 'tous', label: 'Tous', garde: () => true },
-  { cle: 'gratuit', label: 'Gratuits', garde: (kit) => kit.prixCoins === 0 },
+  // Un kit de grade coute zero coin sans etre gratuit : il n'a rien a faire
+  // dans cet onglet, il est dans « Exclusifs ».
+  {
+    cle: 'gratuit',
+    label: 'Gratuits',
+    garde: (kit) => kit.prixCoins === 0 && !estKitDeGrade(kit),
+  },
   {
     cle: 'coins',
     label: 'À débloquer',

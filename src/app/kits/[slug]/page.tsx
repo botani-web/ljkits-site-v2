@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
-import { CarteKit, PrixKit, type KitEnCarte } from '@/components/public/CarteKit'
+import { CarteKit, estKitDeGrade, PrixKit, type KitEnCarte } from '@/components/public/CarteKit'
 import { BoutonCopieIp, BoutonIpGeant } from '@/components/public/CopieIp'
 import { PagePublique } from '@/components/public/PagePublique'
 import { Badge, LienFleche } from '@/components/ui/Badge'
@@ -293,8 +293,13 @@ export default async function PageKit({ params }: { params: Promise<{ slug: stri
                   <PrixKit
                     prixCoins={kit.prixCoins}
                     taille="detail"
+                    valeur={estKitDeGrade(kit) ? 'Shogun' : undefined}
                     mention={
-                      kit.prixCoins === 0 && kit.kitDeDepart ? 'Kit de départ' : undefined
+                      estKitDeGrade(kit)
+                        ? 'livré avec le grade'
+                        : kit.prixCoins === 0 && kit.kitDeDepart
+                          ? 'Kit de départ'
+                          : undefined
                     }
                   />
                   {kit.prixEurosCentimes !== null && (

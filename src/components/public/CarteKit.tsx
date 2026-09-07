@@ -30,6 +30,18 @@ export type KitEnCarte = {
  * en pied. Les kits exclusifs portent leur kanji en filigrane dans l'angle bas
  * droit et passent en rouge oni.
  */
+/**
+ * UN KIT LIVRE AVEC UN GRADE, PAS ACHETABLE.
+ *
+ * Regle deduite plutot que stockee : exclusif ET zero coin. Aucun autre kit
+ * ne combine les deux — les exclusifs classiques se debloquent en coins.
+ * Le jour ou un deuxieme kit de grade arrive avec une autre condition, ca
+ * merite une vraie colonne en base plutot que cette deduction.
+ */
+export function estKitDeGrade(kit: { type: 'GRATUIT' | 'EXCLUSIF'; prixCoins: number }) {
+  return kit.type === 'EXCLUSIF' && kit.prixCoins === 0
+}
+
 export function CarteKit({ kit }: { kit: KitEnCarte }) {
   const exclusif = kit.type === 'EXCLUSIF'
 
@@ -73,7 +85,14 @@ export function CarteKit({ kit }: { kit: KitEnCarte }) {
       <div className="relative mt-4.5 flex items-end gap-3 border-t border-bord pt-3.5">
         <PrixKit
           prixCoins={kit.prixCoins}
-          mention={kit.prixCoins === 0 && kit.kitDeDepart ? 'Kit de départ' : undefined}
+          valeur={estKitDeGrade(kit) ? 'Shogun' : undefined}
+          mention={
+            estKitDeGrade(kit)
+              ? 'livré avec le grade'
+              : kit.prixCoins === 0 && kit.kitDeDepart
+                ? 'Kit de départ'
+                : undefined
+          }
         />
 
         {/*
@@ -104,21 +123,30 @@ export function CarteKit({ kit }: { kit: KitEnCarte }) {
 export function PrixKit({
   prixCoins,
   mention,
+  valeur,
   taille = 'carte',
 }: {
   prixCoins: number
   mention?: string
+  /** Remplace le chiffre : « Shogun » pour un kit livre avec un grade. */
+  valeur?: string
   taille?: 'carte' | 'detail'
 }) {
   const gratuit = prixCoins === 0
   const classeTaille = taille === 'detail' ? 'text-[30px]' : 'text-[17px]'
+  // `valeur` remplace le chiffre lui-meme, pas seulement sa legende : un kit
+  // livre avec un grade n'a pas de prix en coins, et afficher « Gratuit » en
+  // vert le ferait passer pour un kit offert a tout le monde.
+  const remplace = valeur !== undefined
 
   return (
     <p className="leading-tight">
       <span
-        className={`font-mono font-bold ${classeTaille} ${gratuit ? 'text-vert' : 'text-or'}`}
+        className={`font-mono font-bold ${classeTaille} ${
+          remplace ? 'text-oni' : gratuit ? 'text-vert' : 'text-or'
+        }`}
       >
-        {gratuit ? 'Gratuit' : formaterCoins(prixCoins)}
+        {valeur ?? (gratuit ? 'Gratuit' : formaterCoins(prixCoins))}
       </span>
       <span className="mt-1 block font-mono text-[10.5px] font-medium tracking-[.1em] text-gris uppercase">
         {mention ?? (gratuit ? 'Offert' : 'coins')}

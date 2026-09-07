@@ -572,6 +572,32 @@ Attention : l'invisibilité ne cache ni les particules ni les objets que tu tien
   // ----------------------------- KITS EXCLUSIFS -----------------------------
 
   {
+    slug: 'hitsugi',
+    nom: 'Hitsugi',
+    kanji: '棺',
+    role: 'Enfermement',
+    descriptionCourte:
+      "Un cercueil d'obsidienne se referme sur ta cible. Elle étouffe, et tu continues de frapper.",
+    descriptionLongue: `Vise un joueur, clic droit. Pendant **une seconde**, des braises tournent autour de lui : c'est le seul moment où il peut encore décrocher. S'il reste, le piège se referme.
+
+Des murets montent au sol, l'eau et la lave se rencontrent, l'obsidienne prend. Le bloc qui se forme à hauteur de tête l'**étouffe** — la vraie suffocation du jeu, pas un effet maison.
+
+Le sol reste en murets : ta cible ne peut plus avancer d'un pouce, mais toi tu vois ses jambes et tu frappes. **Cinq secondes** plus tard, tout se fissure et disparaît sans laisser une trace sur la map.
+
+Une soupe rend plus de vie qu'une seconde d'étouffement n'en retire : ta cible peut s'en sortir. Elle y laissera son stack entier, sous tes coups. Ce kit ne tue pas tout seul — il ouvre la fenêtre.`,
+    prixCoins: 0,
+    prixEurosCentimes: null,
+    type: 'EXCLUSIF',
+    achetable: false,
+    kitDeDepart: false,
+    caracteristiques: [
+      { libelle: 'Incantation', valeur: '1 s · esquivable' },
+      { libelle: 'Étouffement', valeur: '5 s' },
+      { libelle: 'Portée', valeur: '5 blocs' },
+      { libelle: 'Recharge', valeur: '60 s' },
+    ],
+  },
+  {
     slug: 'yumi',
     nom: 'Yumi',
     kanji: '弓',
@@ -932,12 +958,22 @@ const GRADES: {
       'Symbole unique à côté du pseudo',
       "Animation d'arrivée au spawn",
       "Ton nom gravé sur l'holo du spawn",
+      'Le kit Hitsugi, réservé au grade',
     ],
   },
 ]
 
-/** Les slugs des kits exclusifs, source unique pour le pack. */
-const SLUGS_EXCLUSIFS = KITS.filter((kit) => kit.type === 'EXCLUSIF').map((kit) => kit.slug)
+/**
+ * Les slugs des kits exclusifs VENDUS, source unique pour le pack.
+ *
+ * Un kit livré avec un grade (zéro coin, comme Hitsugi) n'entre pas dans le
+ * pack : il s'obtient avec le grade Shogun, pas en achetant les kits. Sans ce
+ * filtre il aurait rejoint « Les six kits » en silence, sans que le nom ni le
+ * prix du pack ne bougent.
+ */
+const SLUGS_EXCLUSIFS = KITS.filter(
+  (kit) => kit.type === 'EXCLUSIF' && kit.prixCoins > 0,
+).map((kit) => kit.slug)
 
 const PACKS: {
   slug: string
