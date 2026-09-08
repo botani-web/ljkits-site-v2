@@ -30,10 +30,11 @@ export function DerniersCombats({
 
   return (
     <Section
-      etiquette="En direct"
+      etiquette={t(locale, 'classement.direct')}
       titre={
         <>
-          Les derniers <span className="text-or">combats</span>
+          {t(locale, 'tableau.derniers-1')}{' '}
+          <span className="text-or">{t(locale, 'tableau.derniers-2')}</span>
         </>
       }
       chapeau={t(locale, 'combats.chapeau')}
@@ -45,7 +46,13 @@ export function DerniersCombats({
           <div className="max-lg:hidden">
             <EnteteTable
               colonnes="minmax(0,1fr) 150px 150px 92px 110px"
-              libelles={['Vainqueur', 'Kit', 'Vaincu', 'Elo', 'Quand']}
+              libelles={[
+                t(locale, 'tableau.col-vainqueur'),
+                'Kit',
+                t(locale, 'tableau.col-vaincu'),
+                'Elo',
+                t(locale, 'tableau.col-quand'),
+              ]}
               alignerADroite={[3, 4]}
             />
           </div>
@@ -61,7 +68,7 @@ export function DerniersCombats({
                     {combat.tueurPseudo}
                   </span>
                   <span className="mt-0.5 block truncate font-mono text-[11px] text-gris lg:hidden">
-                    bat {combat.victimePseudo} · {formaterKit(combat.kitTueur)}
+                    {t(locale, 'tableau.bat')} {combat.victimePseudo} · {formaterKit(combat.kitTueur)}
                   </span>
                 </span>
 
@@ -86,8 +93,8 @@ export function DerniersCombats({
 
                 <span className="max-lg:hidden text-right font-mono text-[11px] text-gris">
                   {combat.pvRestants !== null
-                    ? `${combat.pvRestants} PV restants`
-                    : formaterDateHeure(combat.instant)}
+                    ? `${combat.pvRestants} ${t(locale, 'tableau.pv-restants')}`
+                    : formaterDateHeure(combat.instant, locale)}
                 </span>
               </li>
             ))}
@@ -96,9 +103,11 @@ export function DerniersCombats({
       )}
 
       <p className="mt-3.5 font-mono text-[11px] text-gris">
-        {joueurs} joueur{joueurs > 1 ? 's' : ''} ayant combattu cette saison ·{' '}
-        {COMBATS_MINIMUM} combats minimum pour le cashprize · la liaison Discord est
-        obligatoire pour apparaître ici.
+        {t(locale, joueurs > 1 ? 'classement.joueurs-saison' : 'classement.joueur-saison').replace(
+          '{n}',
+          String(joueurs),
+        )}{' · '}
+        {COMBATS_MINIMUM} {t(locale, 'combats.minimum')}
       </p>
     </Section>
   )

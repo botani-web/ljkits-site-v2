@@ -109,15 +109,14 @@ export default async function PageBoutique({
         <Enveloppe>
           <div className="grid items-center gap-[clamp(22px,4vw,44px)] lg:grid-cols-[minmax(0,1fr)_minmax(0,380px)]">
             <div>
-              <Etiquette>Boutique officielle · vendeur Tebex</Etiquette>
+              <Etiquette>{t(locale, 'boutique.etiquette-bandeau')}</Etiquette>
               <h1 className="text-h1 mt-3 font-titre">
-                Soutiens le serveur.
+                {t(locale, 'boutique.soutiens')}
                 <br />
-                <span className="text-or">Pas plus fort</span>, jamais.
+                <span className="text-or">{t(locale, 'boutique.pas-plus-fort')}</span>{t(locale, 'boutique.jamais')}
               </h1>
               <p className="mt-4 max-w-[54ch] text-[clamp(15.5px,1.7vw,17.5px)] text-balance text-gris">
                 {t(locale, 'boutique.chapo')}
-                combat : tout ce qui se joue s’obtient en jouant.
               </p>
 
               <ul className="mt-5 flex flex-wrap gap-2">
@@ -152,7 +151,7 @@ export default async function PageBoutique({
                   </span>
                   <span className="min-w-0">
                     <span className="block font-titre text-[22px] leading-none">
-                      Grade {phare.nom}
+                      {t(locale, 'boutique.grade-nomme').replace('{n}', phare.nom)}
                     </span>
                     <span className="mt-1.5 block font-mono text-[12px] text-gris">
                       {phare.etiquette ?? ''}{' '}
@@ -256,7 +255,7 @@ export default async function PageBoutique({
             <span className="text-or">{t(locale, 'boutique.final-2')}</span>.
           </>
         }
-        chapeau="Un grade se prend une fois et se garde à vie. Tu peux aussi tout débloquer en jouant — les deux chemins mènent au même endroit."
+        chapeau={t(locale, 'boutique.final-chapeau')}
       >
         <div className="flex flex-wrap justify-center gap-2.75">
           <LienBouton href="#grades" variante="or" taille="grande">

@@ -59,10 +59,11 @@ export function BoutonCopieIp({
  */
 export function BoutonIpGeant({ className = '' }: { className?: string }) {
   const { ip } = useReglages()
+  const locale = useLocale()
 
   return (
     <BoutonCopieIp
-      aria-label={`Copier l’adresse du serveur, ${ip}`}
+      aria-label={`${t(locale, 'ip.aria')}, ${ip}`}
       className={`inline-flex min-h-11 items-center gap-3.5 rounded-carte border border-bord bg-charbon px-5.5 py-4 font-mono text-[clamp(15px,2.4vw,21px)] font-bold text-or transition-colors hover:border-soupe ${className}`}
     >
       <svg

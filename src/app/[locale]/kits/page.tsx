@@ -37,7 +37,6 @@ export async function generateMetadata({
 }
 
 /** Les quatre repères de jeu affichés sous le titre. */
-const REGLES_DU_JEU = reperes('soupe', 'epee', 'cooldown', 'knockback')
 
 export default async function PageKits({
   params,
@@ -46,6 +45,7 @@ export default async function PageKits({
 }) {
   const { locale: brut } = await params
   const locale: Locale = estLocale(brut) ? brut : LANGUE_DEFAUT
+  const reglesDuJeu = reperes(locale, 'soupe', 'epee', 'cooldown', 'knockback')
 
   const kitsBruts = await prisma.kit.findMany({
     where: { visible: true },
@@ -111,7 +111,7 @@ export default async function PageKits({
           <BandeauChiffres
             className="mt-[clamp(32px,4vw,44px)]"
             colonnes="grid-cols-2 lg:grid-cols-4"
-            reperes={REGLES_DU_JEU.map((regle) => ({
+            reperes={reglesDuJeu.map((regle) => ({
               valeur: regle.valeur,
               label: regle.label,
               // Le seul repère qui dit une absence passe en rouge.
@@ -170,7 +170,7 @@ export default async function PageKits({
                 .map((kit) => (
                   <li key={kit.slug}>
                     <Link
-                      href={`/kits/${kit.slug}`}
+                      href={lien(locale, `/kits/${kit.slug}`)}
                       className="flex min-h-11 flex-col items-center justify-center rounded-controle border border-bord bg-nuit px-2 py-3.5 text-center transition-colors hover:border-oni"
                     >
                       <span className="text-2xl leading-none text-oni" aria-hidden="true">
@@ -190,25 +190,26 @@ export default async function PageKits({
       {/* ══════════════════════ GAGNER DES COINS ══════════════════════ */}
       <Section
         fond="charbon"
-        etiquette="La monnaie"
+        etiquette={t(locale, 'kits.monnaie')}
         titre={
           <>
-            Comment on remplit <span className="text-or">sa bourse</span>
+            {t(locale, 'kits.bourse-1')}{' '}
+            <span className="text-or">{t(locale, 'kits.bourse-2')}</span>
           </>
         }
-        chapeau="Aucun kit ne se paie obligatoirement. Voici tout ce qui rapporte des coins, sans sortir la carte bleue."
+        chapeau={t(locale, 'kits.coins-chapeau')}
       >
         <div className="grid gap-3 min-[560px]:grid-cols-2 lg:grid-cols-4">
           {SOURCES_DE_COINS.map((source) => (
             <div
-              key={source.titre}
+              key={source.cleTitre}
               className="rounded-carte border border-bord bg-braise p-5.5"
             >
               <p className="font-mono text-[clamp(26px,3.4vw,34px)] leading-none font-bold text-soupe">
                 {source.valeur}
               </p>
-              <h3 className="mt-3.5 font-titre text-[15px]">{source.titre}</h3>
-              <p className="mt-2.25 text-sm text-gris">{source.texte}</p>
+              <h3 className="mt-3.5 font-titre text-[15px]">{t(locale, source.cleTitre)}</h3>
+              <p className="mt-2.25 text-sm text-gris">{t(locale, source.cleTexte)}</p>
             </div>
           ))}
         </div>
@@ -216,13 +217,13 @@ export default async function PageKits({
 
       {/* ═════════════════════════════ APPEL ═════════════════════════════ */}
       <BlocFinal
-        etiquette="Rien à débourser pour commencer"
+        etiquette={t(locale, 'kits.rien-debourser')}
         titre={
           <>
-            Le premier kit est <span className="text-or">gratuit</span>.
+            {t(locale, 'kits.premier-gratuit-1')} <span className="text-or">{t(locale, 'kits.premier-gratuit-2')}</span>.
           </>
         }
-        chapeau="Connecte-toi, prends le PvP, vise le suivant. Un quart d’heure suffit pour le débloquer."
+        chapeau={t(locale, 'kits.premier-chapeau')}
       >
         <BoutonIpGeant />
       </BlocFinal>
@@ -251,30 +252,27 @@ export default async function PageKits({
 const SOURCES_DE_COINS = [
   {
     valeur: '~20',
-    titre: 'Par kill',
-    texte:
-      'Le gain dépend de la série de ta cible : plus elle enchaînait, plus elle vaut cher.',
+    cleTitre: 'coins.kill' as const,
+    cleTexte: 'coins.kill-t' as const,
   },
   {
     valeur: '+50',
-    titre: 'Tous les 10 kills',
-    texte: 'Un palier de session qui tombe tout seul, en plus des gains de chaque kill.',
+    cleTitre: 'coins.dix' as const,
+    cleTexte: 'coins.dix-t' as const,
   },
   {
     valeur: '500',
-    titre: 'Le KOTH',
-    texte:
-      'Tiens la zone assez longtemps sans te faire déloger et la récompense est à toi.',
+    cleTitre: 'coins.koth' as const,
+    cleTexte: 'coins.koth-t' as const,
   },
   {
     valeur: '2 500',
-    titre: 'Le Totem',
-    texte: 'La cagnotte de l’événement, répartie entre les joueurs qui l’ont fait tomber.',
+    cleTitre: 'coins.totem' as const,
+    cleTexte: 'coins.totem-t' as const,
   },
   {
     valeur: '1 000',
-    titre: 'Lier son Discord',
-    texte:
-      'Une seule fois : /discord en jeu, puis le code dans le salon de vérification.',
+    cleTitre: 'coins.discord' as const,
+    cleTexte: 'coins.discord-t' as const,
   },
 ]

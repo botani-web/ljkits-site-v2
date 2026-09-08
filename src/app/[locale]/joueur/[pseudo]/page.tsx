@@ -20,6 +20,8 @@ import {
   lireStatsParKit,
   palierDe,
   resteAvantSuivant,
+  nomPalier,
+  nomSaison,
 } from '@/lib/elo'
 import { formaterDateHeure, formaterRatio } from '@/lib/format'
 import { IMAGE_OG } from '@/lib/site'
@@ -37,17 +39,18 @@ export const revalidate = 60
 type Params = { params: Promise<{ pseudo: string; locale: string }> }
 
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
-  const { pseudo } = await params
+  const { pseudo, locale: brut } = await params
+  const locale: Locale = estLocale(brut) ? brut : LANGUE_DEFAUT
   const propre = decodeURIComponent(pseudo)
 
   return {
-    title: `${propre} — Classement Elo`,
-    description: `La fiche Elo de ${propre} sur LJKITS : rang, palier, combats, kits joués et derniers duels.`,
-    alternates: { canonical: `/joueur/${propre}` },
+    title: t(locale, 'joueur.meta-titre').replace('{p}', propre),
+    description: t(locale, 'joueur.meta-desc').replace('{p}', propre),
+    alternates: { canonical: lien(locale, `/joueur/${propre}`) },
     openGraph: {
       type: 'profile',
       title: `${propre} — LJKITS`,
-      description: `Rang, palier et derniers combats de ${propre}.`,
+      description: t(locale, 'joueur.meta-og-desc').replace('{p}', propre),
       images: IMAGE_OG,
     },
   }
@@ -82,10 +85,10 @@ export default async function PageJoueur({ params }: Params) {
       <header className="halo-hero-gauche pt-[clamp(40px,5vw,64px)] pb-[clamp(24px,3vw,36px)]">
         <Enveloppe>
           <Link
-            href="/classement"
+            href={lien(locale, '/classement')}
             className="font-mono text-[11px] tracking-[.12em] text-gris uppercase transition-colors hover:text-or"
           >
-            ← Retour au classement
+            {t(locale, 'joueur.retour-classement')}
           </Link>
 
           <div className="mt-5 grid items-center gap-[clamp(24px,4vw,48px)] lg:grid-cols-[168px_minmax(0,1fr)]">
@@ -112,7 +115,7 @@ export default async function PageJoueur({ params }: Params) {
                 className="font-mono text-[12px] tracking-[.14em] uppercase"
                 style={{ color: palier.couleur }}
               >
-                {palier.nom}
+                {nomPalier(palier, locale)}
                 {fiche.rang > 0 && <span className="text-gris"> · #{fiche.rang}</span>}
               </p>
 
@@ -125,11 +128,15 @@ export default async function PageJoueur({ params }: Params) {
 
               {suivant ? (
                 <p className="mt-2.5 text-sm text-gris">
-                  Plus que <b className="font-semibold text-creme">{suivant.reste} Elo</b> avant{' '}
-                  <span style={{ color: suivant.palier.couleur }}>{suivant.palier.nom}</span>
+                  {t(locale, 'joueur.plus-que')}{' '}
+                    <b className="font-semibold text-creme">{suivant.reste} Elo</b>{' '}
+                    {t(locale, 'joueur.avant')}{' '}
+                  <span style={{ color: suivant.palier.couleur }}>
+                    {nomPalier(suivant.palier, locale)}
+                  </span>
                 </p>
               ) : (
-                <p className="mt-2.5 text-sm text-or">Palier maximum atteint.</p>
+                <p className="mt-2.5 text-sm text-or">{t(locale, 'joueur.palier-max')}</p>
               )}
 
               {/* Les deux conditions d'éligibilité, dites explicitement. */}
@@ -153,20 +160,23 @@ export default async function PageJoueur({ params }: Params) {
       {/* ═══════════════════════════ LES CHIFFRES ═══════════════════════════ */}
       <Enveloppe className="pb-[clamp(30px,4vw,44px)]">
         <div className="grid gap-3 min-[520px]:grid-cols-3 lg:grid-cols-6">
-          <Chiffre valeur={fiche.kills} libelle="Kills" />
-          <Chiffre valeur={fiche.morts} libelle="Morts" />
-          <Chiffre valeur={formaterRatio(fiche.kills, fiche.morts)} libelle="Ratio K/D" />
+          <Chiffre valeur={fiche.kills} libelle={t(locale, 'joueur.kills')} />
+          <Chiffre valeur={fiche.morts} libelle={t(locale, 'joueur.morts')} />
+          <Chiffre
+            valeur={formaterRatio(fiche.kills, fiche.morts)}
+            libelle={t(locale, 'joueur.ratio')}
+          />
           <Chiffre valeur={fiche.serie} libelle={t(locale, 'joueur.serie-cours')} />
           <Chiffre valeur={fiche.recordSerie} libelle={t(locale, 'joueur.record-serie')} />
-          <Chiffre valeur={fiche.eloMax} libelle="Meilleur Elo" accent />
+          <Chiffre valeur={fiche.eloMax} libelle={t(locale, 'joueur.meilleur-elo')} accent />
         </div>
 
         {courbe.length >= 3 && (
           <div className="mt-3.5 rounded-carte border border-bord bg-braise p-6">
             <p className="font-mono text-[11px] tracking-[.12em] text-gris uppercase">
-              Progression sur les {courbe.length} derniers combats
+              {t(locale, 'joueur.progression').replace('{n}', String(courbe.length))}
             </p>
-            <CourbeElo points={courbe} className="mt-4" />
+            <CourbeElo points={courbe} locale={locale} className="mt-4" />
           </div>
         )}
       </Enveloppe>
@@ -175,10 +185,11 @@ export default async function PageJoueur({ params }: Params) {
       {kits.length > 0 && (
         <Section
           fond="charbon"
-          etiquette="Ses kits"
+          etiquette={t(locale, 'joueur.ses-kits')}
           titre={
             <>
-              Avec quoi il <span className="text-or">gagne</span>
+              {t(locale, 'joueur.avec-quoi-1')}{' '}
+              <span className="text-or">{t(locale, 'joueur.avec-quoi-2')}</span>
             </>
           }
           chapeau={t(locale, 'joueur.kits-chapeau')}
@@ -188,7 +199,9 @@ export default async function PageJoueur({ params }: Params) {
               <div key={kit.kit} className="rounded-carte border border-bord bg-braise p-5">
                 <h3 className="font-titre text-[16px]">{formaterKit(kit.kit)}</h3>
                 <p className="mt-2.5 font-titre text-[26px] leading-none text-or">{kit.taux}%</p>
-                <p className="mt-1 font-mono text-[11px] text-gris">de victoires</p>
+                <p className="mt-1 font-mono text-[11px] text-gris">
+                  {t(locale, 'joueur.de-victoires')}
+                </p>
 
                 {/* La barre dit la même chose que le pourcentage, en un coup d'œil. */}
                 <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-bord">
@@ -200,7 +213,7 @@ export default async function PageJoueur({ params }: Params) {
                   {' · '}
                   <span className="text-oni">{kit.defaites}D</span>
                   {' · '}
-                  {kit.total} combats
+                  {kit.total} {t(locale, 'joueur.n-combats')}
                 </p>
               </div>
             ))}
@@ -214,7 +227,8 @@ export default async function PageJoueur({ params }: Params) {
           etiquette={t(locale, 'joueur.face-a-face')}
           titre={
             <>
-              Ses <span className="text-or">adversaires</span>
+              {t(locale, 'joueur.ses-adversaires-1')}{' '}
+              <span className="text-or">{t(locale, 'joueur.ses-adversaires-2')}</span>
             </>
           }
           chapeau={t(locale, 'joueur.face-chapeau')}
@@ -227,7 +241,7 @@ export default async function PageJoueur({ params }: Params) {
               return (
                 <Link
                   key={adversaire.pseudo}
-                  href={`/joueur/${encodeURIComponent(adversaire.pseudo)}`}
+                  href={lien(locale, `/joueur/${encodeURIComponent(adversaire.pseudo)}`)}
                   className="group rounded-carte border border-bord bg-braise p-5 transition-colors hover:border-soupe"
                 >
                   <div className="flex items-center gap-2.5">
@@ -262,10 +276,11 @@ export default async function PageJoueur({ params }: Params) {
       {/* ═══════════════════════ LES DERNIERS COMBATS ═══════════════════════ */}
       <Section
         fond={adversaires.length > 0 ? 'charbon' : 'nuit'}
-        etiquette="Historique"
+        etiquette={t(locale, 'joueur.historique')}
         titre={
           <>
-            Ses derniers <span className="text-or">combats</span>
+            {t(locale, 'joueur.derniers-1')}{' '}
+            <span className="text-or">{t(locale, 'joueur.derniers-2')}</span>
           </>
         }
       >
@@ -302,7 +317,7 @@ export default async function PageJoueur({ params }: Params) {
 
                   <span className="min-w-0">
                     <Link
-                      href={`/joueur/${encodeURIComponent(combat.adversaire)}`}
+                      href={lien(locale, `/joueur/${encodeURIComponent(combat.adversaire)}`)}
                       className="block truncate text-[15px] font-semibold transition-colors hover:text-or"
                     >
                       <span className={`lg:hidden ${combat.victoire ? 'text-vert' : 'text-oni'}`}>
@@ -311,7 +326,7 @@ export default async function PageJoueur({ params }: Params) {
                       {combat.adversaire}
                     </Link>
                     <span className="mt-0.5 block truncate font-mono text-[11px] text-gris lg:hidden">
-                      {formaterKit(combat.monKit)} contre {formaterKit(combat.sonKit)}
+                      {formaterKit(combat.monKit)} {t(locale, 'joueur.contre')} {formaterKit(combat.sonKit)}
                     </span>
                   </span>
 
@@ -333,7 +348,7 @@ export default async function PageJoueur({ params }: Params) {
                   <span className="max-lg:hidden text-right font-mono text-[12px] text-gris">
                     {combat.eloApres}
                     <span className="block text-[10px] text-gris/70">
-                      {formaterDateHeure(combat.instant)}
+                      {formaterDateHeure(combat.instant, locale)}
                     </span>
                   </span>
                 </li>
@@ -343,7 +358,7 @@ export default async function PageJoueur({ params }: Params) {
         )}
 
         <p className="mt-3.5 font-mono text-[11px] text-gris">
-          {t(locale, 'joueur.fiche-a-jour')} {formaterDateHeure(fiche.derniereMaj)} · {t(locale, 'joueur.saison')} {saison.nom}
+          {t(locale, 'joueur.fiche-a-jour')} {formaterDateHeure(fiche.derniereMaj, locale)} · {t(locale, 'joueur.saison')} {nomSaison(saison.nom, locale)}
         </p>
       </Section>
     </PagePublique>

@@ -38,7 +38,6 @@ const NOMBRE_DE_SUGGESTIONS = 3
 const COINS_PAR_KILL = 20
 
 /** Les repères de jeu rappelés en bas de page. */
-const REPERES_AFFICHES = reperes('soupe', 'epee', 'armure', 'knockback')
 
 /** Les champs dont <CarteKit> a besoin — réutilisés pour les suggestions. */
 const CHAMPS_DE_CARTE = {
@@ -153,6 +152,7 @@ function choisirSuggestions(
 export default async function PageKit({ params }: { params: Promise<{ slug: string; locale: string }> }) {
   const { locale: brut } = await params
   const locale: Locale = estLocale(brut) ? brut : LANGUE_DEFAUT
+  const reperesAffiches = reperes(locale, 'soupe', 'epee', 'armure', 'knockback')
 
   const { slug } = await params
   const kit = await lireKit(slug)
@@ -216,10 +216,10 @@ export default async function PageKit({ params }: { params: Promise<{ slug: stri
       {/* ═══════════════════════════ FIL D'ARIANE ═══════════════════════════ */}
       <Enveloppe className="pt-5.5">
         <Link
-          href="/kits"
+          href={lien(locale, '/kits')}
           className="inline-flex min-h-11 items-center font-mono text-[11.5px] tracking-[.12em] text-gris uppercase transition-colors hover:text-soupe"
         >
-          <span aria-hidden="true">←</span>&nbsp;Tous les kits
+          <span aria-hidden="true">←</span>&nbsp;{t(locale, 'kit.retour-fleche')}
         </Link>
       </Enveloppe>
 
@@ -263,16 +263,19 @@ export default async function PageKit({ params }: { params: Promise<{ slug: stri
               {kit.prixCoins > 0 && (
                 <div className="mt-8 max-w-[60ch]">
                   <p className="flex flex-wrap items-baseline gap-3 font-mono text-[11px] tracking-[.1em] text-gris uppercase">
-                    Place dans la progression
+                    {t(locale, 'kit.place-progression')}
                     <b className="font-bold text-soupe">
-                      {rangDePrix}
-                      <sup>e</sup> kit le moins cher sur {tousLesKits.length}
+                      {t(locale, 'kit.moins-cher')
+                        .replace('{r}', String(rangDePrix))
+                        .replace('{n}', String(tousLesKits.length))}
                     </b>
                   </p>
 
                   <div
                     role="img"
-                    aria-label={`${formaterCoins(kit.prixCoins)} coins sur ${formaterCoins(prixMax)} pour le kit le plus cher`}
+                    aria-label={t(locale, 'kit.jauge-aria')
+                      .replace('{c}', formaterCoins(kit.prixCoins))
+                      .replace('{m}', formaterCoins(prixMax))}
                     className="mt-2.5 h-1.5 overflow-hidden rounded-[3px] border border-bord bg-braise"
                   >
                     <span
@@ -299,7 +302,7 @@ export default async function PageKit({ params }: { params: Promise<{ slug: stri
               <Panneau
                 ombre
                 ton={exclusif ? 'oni' : 'defaut'}
-                titre={exclusif ? 'Kit exclusif' : 'Fiche technique'}
+                titre={t(locale, exclusif ? 'kit.exclusif-fiche' : 'kit.fiche-technique')}
                 pied={
                   <>
                     <BoutonCopieIp
@@ -354,8 +357,8 @@ export default async function PageKit({ params }: { params: Promise<{ slug: stri
                     <LignesLore
                       separateur={false}
                       lignes={kit.caracteristiques.map((carac) => ({
-                        libelle: carac.libelle,
-                        valeur: carac.valeur,
+                        libelle: champ(locale, carac.libelle, carac.libelleEn),
+                        valeur: champ(locale, carac.valeur, carac.valeurEn),
                       }))}
                     />
                   </SectionPanneau>
@@ -391,7 +394,7 @@ export default async function PageKit({ params }: { params: Promise<{ slug: stri
                   className: 'mt-4.5 justify-center',
                 })}
               >
-                Copier l’IP
+                {t(locale, 'ip.copier')}
               </BoutonCopieIp>
             </Voie>
           ) : (
@@ -436,11 +439,11 @@ export default async function PageKit({ params }: { params: Promise<{ slug: stri
                     taille="compacte"
                   />
                   <LienBouton
-                    href="/boutique"
+                    href={lien(locale, '/boutique')}
                     variante="vide"
                     className="mt-4.5 justify-center"
                   >
-                    Voir la boutique
+                    {t(locale, 'kit.voir-boutique')}
                   </LienBouton>
                 </Voie>
               )}
@@ -452,7 +455,7 @@ export default async function PageKit({ params }: { params: Promise<{ slug: stri
       {/* ════════════════════════ LES CONSTANTES ════════════════════════ */}
       <Section
         fond="charbon"
-        etiquette={`Identiques pour les ${tousLesKits.length} kits`}
+        etiquette={t(locale, 'kit.identiques').replace('{n}', String(tousLesKits.length))}
         titre={
           <>
             {t(locale, 'kit.regles-1')} <span className="text-or">{t(locale, 'kit.regles-2')}</span>
@@ -461,7 +464,7 @@ export default async function PageKit({ params }: { params: Promise<{ slug: stri
       >
         <BandeauChiffres
           colonnes="grid-cols-2 lg:grid-cols-4"
-          reperes={REPERES_AFFICHES.map((repere) => ({
+          reperes={reperesAffiches.map((repere) => ({
             valeur: repere.valeur,
             label: repere.label,
             ton: repere.cle === 'armure' ? ('oni' as const) : ('or' as const),
@@ -506,7 +509,7 @@ export default async function PageKit({ params }: { params: Promise<{ slug: stri
 
       {/* ═════════════════════════════ APPEL ═════════════════════════════ */}
       <BlocFinal
-        etiquette="Il t’attend en jeu"
+        etiquette={t(locale, 'kit.attend')}
         titre={
           kit.bientot ? (
             <>

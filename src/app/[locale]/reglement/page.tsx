@@ -77,7 +77,7 @@ export default async function PageReglement({
             {derniereMaj && (
               <p className="mt-5 font-mono text-[11px] tracking-[.06em] text-gris">
                 {t(locale, 'reglement.maj')}{' '}
-                <time dateTime={derniereMaj.toISOString()}>{formaterDate(derniereMaj)}</time>
+                <time dateTime={derniereMaj.toISOString()}>{formaterDate(derniereMaj, locale)}</time>
               </p>
             )}
           </div>
@@ -90,7 +90,7 @@ export default async function PageReglement({
           <div className="mx-auto flex max-w-lecture flex-col gap-3.5">
             {sections.length === 0 ? (
               <p className="rounded-carte border border-dashed border-bord px-6 py-12 text-center font-mono text-[13px] text-gris">
-                Le règlement est en cours de rédaction. Reviens d’ici peu.
+                {t(locale, 'reglement.en-cours')}
               </p>
             ) : (
               sections.map((section, index) => (

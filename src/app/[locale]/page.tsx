@@ -10,7 +10,7 @@ import { Enveloppe } from '@/components/ui/Enveloppe'
 import { CaseCloisonnee, GrilleCloisonnee } from '@/components/ui/GrilleCloisonnee'
 import { BlocFinal, Section } from '@/components/ui/Section'
 import { Etiquette } from '@/components/ui/TeteSection'
-import { lireClassementElo, lireSaisonCourante, palierDe } from '@/lib/elo'
+import { lireClassementElo, lireSaisonCourante, nomPalier, palierDe } from '@/lib/elo'
 import { formaterOuverture, formaterOuvertureEnPhrase } from '@/lib/format'
 import { prisma } from '@/lib/prisma'
 import { lireReglages } from '@/lib/reglages'
@@ -108,7 +108,7 @@ export default async function Accueil({
                 })}
               >
                 <IconeDiscord className="size-4 shrink-0 fill-current" />
-                Rejoindre le Discord
+                {t(locale, 'commande.rejoindre-discord')}
               </a>
 
               <BoutonIpGeant className="max-[560px]:w-full max-[560px]:justify-center" />
@@ -128,7 +128,7 @@ export default async function Accueil({
         colonnes="grid-cols-1 min-[560px]:grid-cols-2 lg:grid-cols-4"
       >
         {REGLES.map((regle) => (
-          <CaseCloisonnee key={regle.titre} className="px-gouttiere py-6.5">
+          <CaseCloisonnee key={regle.cleTitre} className="px-gouttiere py-6.5">
             {/*
               Un <p> et non un <h2> : « 0 cooldown » n'introduit pas une
               section, c'est une constante affichée. Quatre h2 de plus ici
@@ -137,7 +137,7 @@ export default async function Accueil({
             */}
             <p className="font-titre text-[clamp(18px,2.4vw,25px)] leading-tight">
               {regle.zero && <span className="text-oni">0</span>}
-              {regle.zero ? ` ${regle.titre}` : regle.titre}
+              {regle.zero ? ` ${t(locale, regle.cleTitre)}` : t(locale, regle.cleTitre)}
             </p>
             <p className="mt-2.25 font-mono text-[11px] leading-relaxed text-gris">
               {t(locale, regle.cleTexte)}
@@ -178,7 +178,7 @@ export default async function Accueil({
           <Pilier
             href={lien(locale, '/boutique')}
             chiffre="0"
-            titre="Pay to win"
+            titre={t(locale, 'accueil.pay-to-win')}
             lien={t(locale, 'accueil.pilier-p2w-lien')}
           >
             {t(locale, 'accueil.pilier-p2w-texte')}
@@ -193,18 +193,16 @@ export default async function Accueil({
             <div>
               <Etiquette>{t(locale, 'accueil.competition')}</Etiquette>
               <h2 className="text-h2 mt-3 font-titre">
-                Un classement
+                {t(locale, 'accueil.un-classement')}
                 <br />
-                qui se <span className="text-or">{t(locale, 'accueil.competition-titre-2')}</span>
+                {t(locale, 'accueil.qui-se')}{' '}
+                <span className="text-or">{t(locale, 'accueil.competition-titre-2')}</span>
               </h2>
               <p className="mt-3.5 max-w-[46ch] text-gris">
-                Tout le monde démarre à 1000 Elo. Tu en gagnes en battant plus fort que
-                toi, tu en perds en tombant contre plus faible — et un compte Discord lié
-                est obligatoire pour figurer au tableau. La saison dure un mois, puis tout
-                repart à zéro avec un cashprize à la clé.
+                {t(locale, 'accueil.competition-long')}
               </p>
-              <LienFleche href="/classement" className="mt-4">
-                Classement complet
+              <LienFleche href={lien(locale, '/classement')} className="mt-4">
+                {t(locale, 'classement.complet')}
               </LienFleche>
             </div>
 
@@ -240,7 +238,7 @@ export default async function Accueil({
                         className="block font-mono text-[10.5px]"
                         style={{ color: palierDe(ligne.elo).couleur }}
                       >
-                        {palierDe(ligne.elo).nom}
+                        {nomPalier(palierDe(ligne.elo), locale)}
                       </span>
                     </span>
 
@@ -252,7 +250,7 @@ export default async function Accueil({
               </ol>
 
               <p className="border-t border-bord bg-nuit p-2.75 text-center font-mono text-[10.5px] text-gris">
-                Cherche ton pseudo sur la page classement
+                {t(locale, 'accueil.cherche-pseudo')}
               </p>
             </CadreTable>
           </div>
@@ -297,22 +295,22 @@ export default async function Accueil({
 const REGLES = [
   {
     zero: true,
-    titre: 'cooldown',
+    cleTitre: 'accueil.regle.cooldown-titre' as const,
     cleTexte: 'accueil.regle.cooldown' as const,
   },
   {
     zero: true,
-    titre: 'armure',
+    cleTitre: 'accueil.regle.armure-titre' as const,
     cleTexte: 'accueil.regle.armure' as const,
   },
   {
     zero: false,
-    titre: 'Clic droit',
+    cleTitre: 'accueil.regle.clic-droit-titre' as const,
     cleTexte: 'accueil.regle.clic-droit' as const,
   },
   {
     zero: false,
-    titre: 'Knockback 1.8',
+    cleTitre: 'accueil.regle.knockback-titre' as const,
     cleTexte: 'accueil.regle.knockback' as const,
   },
 ]

@@ -126,17 +126,17 @@ export function Boutique({ grades, packs }: { grades: GradeBoutique[]; packs: Pa
       {/* ═══════════════════════════ LES GRADES ═══════════════════════════ */}
       <Section
         id="grades"
-        etiquette="Rayon 01 · Les grades"
+        etiquette={t(locale, 'boutique.rayon-grades')}
         titre={
           <>
             {t(locale, 'boutique.achat-vie-1')} <span className="text-or">{t(locale, 'boutique.achat-vie-2')}</span>
           </>
         }
-        chapeau="Trois grades, cumulatifs : chaque grade contient tout ce que donne le précédent. Ils changent ce que tu gagnes et comment on te voit — jamais ce que tu fais en combat."
+        chapeau={t(locale, 'boutique.grades-chapeau-long')}
         className="scroll-mt-[calc(var(--spacing-nav)+64px)]"
       >
         {grades.length === 0 ? (
-          <EtatVide message="Aucun grade en vente pour le moment." />
+          <EtatVide message={t(locale, 'boutique.aucun-grade')} />
         ) : (
           <div className="grid items-start gap-3.5 lg:grid-cols-3">
             {grades.map((grade, index) => (
@@ -157,17 +157,17 @@ export function Boutique({ grades, packs }: { grades: GradeBoutique[]; packs: Pa
       <Section
         id="coins"
         fond="charbon"
-        etiquette="Rayon 02 · Les coins"
+        etiquette={t(locale, 'boutique.rayon-coins')}
         titre={
           <>
-            Le temps, <span className="text-or">pas la puissance</span>
+            {t(locale, 'boutique.temps-1')} <span className="text-or">{t(locale, 'boutique.temps-2')}</span>
           </>
         }
-        chapeau="Les coins débloquent les kits — et tous les kits s'obtiennent en jouant, sans exception. Ici, tu achètes de quoi aller tout de suite au kit que tu voulais. Plus le palier est gros, moins les 1 000 coins te coûtent."
+        chapeau={t(locale, 'boutique.coins-chapeau-long')}
         className="scroll-mt-[calc(var(--spacing-nav)+64px)]"
       >
         {packsCoins.length === 0 ? (
-          <EtatVide message="Aucun pack de coins pour le moment." />
+          <EtatVide message={t(locale, 'boutique.aucun-pack')} />
         ) : (
           <div className="grid gap-3 min-[560px]:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
             {packsCoins.map((pack) => (
@@ -184,8 +184,7 @@ export function Boutique({ grades, packs }: { grades: GradeBoutique[]; packs: Pa
         )}
         {aucunPackPayable && (
           <p className="mt-5 text-center font-mono text-[11.5px] tracking-[.06em] text-gris">
-            Les packs de coins sont en cours de branchement au paiement : les prix sont
-            définitifs, l’achat ouvre dans quelques jours.
+            {t(locale, 'boutique.packs-branchement')}
           </p>
         )}
       </Section>

@@ -2,7 +2,7 @@ import { Badge } from '@/components/ui/Badge'
 import { CarteLien, KanjiFiligrane } from '@/components/ui/Carte'
 import { LignesLore } from '@/components/ui/LignesLore'
 import { formaterCoins, formaterEuros } from '@/lib/format'
-import { t, type Locale } from '@/lib/i18n'
+import { lien, t, type Locale } from '@/lib/i18n'
 
 /**
  * Les champs d'un kit nécessaires à l'affichage d'une carte.
@@ -48,7 +48,7 @@ export function CarteKit({ kit, locale }: { kit: KitEnCarte; locale: Locale }) {
 
   return (
     <CarteLien
-      href={`/kits/${kit.slug}`}
+      href={lien(locale, `/kits/${kit.slug}`)}
       ton={exclusif ? 'oni' : 'defaut'}
       className="group p-5.5 pb-4.5"
     >

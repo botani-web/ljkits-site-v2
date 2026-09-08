@@ -149,19 +149,19 @@ export function Nav() {
             de base : elle gagne sans dépendre de cet ordre.
           */}
           <BoutonCopieIp
-            aria-label={`Copier l’adresse du serveur, ${ip}`}
+            aria-label={`${t(locale, 'ip.aria')}, ${ip}`}
             className={classesBouton({
               variante: 'plein',
               className: 'max-[860px]:hidden',
             })}
           >
-            Copier l’IP
+            {t(locale, 'ip.copier')}
           </BoutonCopieIp>
 
           <button
             type="button"
             onClick={() => setMenuOuvert(true)}
-            aria-label="Ouvrir le menu"
+            aria-label={t(locale, 'nav.ouvrir-menu')}
             aria-expanded={menuOuvert}
             aria-controls="menu-mobile"
             aria-haspopup="dialog"
@@ -247,7 +247,7 @@ function MenuMobile({
     <dialog
       ref={dialogue}
       id="menu-mobile"
-      aria-label="Navigation"
+      aria-label={t(locale, 'nav.navigation')}
       // Déclenché par Échap comme par close() : on resynchronise l'état React.
       onClose={onFermer}
       // Un clic sur le fond a pour cible le <dialog> lui-même.
@@ -263,12 +263,12 @@ function MenuMobile({
       <div className="mx-auto mt-[76px] flex max-h-[calc(100dvh-92px)] max-w-contenu flex-col overflow-y-auto rounded-carte border border-bord bg-charbon p-4 shadow-[0_18px_50px_rgba(0,0,0,.55)]">
         <div className="mb-3 flex items-center justify-between">
           <span className="font-mono text-[10.5px] font-bold tracking-[.2em] text-soupe uppercase">
-            Navigation
+            {t(locale, 'nav.navigation')}
           </span>
           <button
             type="button"
             onClick={onFermer}
-            aria-label="Fermer le menu"
+            aria-label={t(locale, 'nav.fermer-menu')}
             className="flex size-11 items-center justify-center rounded-controle border border-bord text-gris transition-colors hover:border-oni hover:text-oni"
           >
             <svg
@@ -321,7 +321,7 @@ function MenuMobile({
           </Link>
 
           <BoutonCopieIp
-            aria-label={`Copier l’adresse du serveur, ${ip}`}
+            aria-label={`${t(locale, 'ip.aria')}, ${ip}`}
             className={classesBouton({ variante: 'plein', pleineLargeur: true })}
           >
             <svg
@@ -346,7 +346,7 @@ function MenuMobile({
             className={classesBouton({ variante: 'vide', pleineLargeur: true })}
           >
             <IconeDiscord className="size-4 shrink-0 fill-current" />
-            Rejoindre le Discord
+            {t(locale, 'commande.rejoindre-discord')}
           </a>
         </div>
       </div>

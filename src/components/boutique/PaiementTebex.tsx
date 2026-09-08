@@ -6,7 +6,7 @@ import { useEffect, useRef } from 'react'
 import { classesBouton } from '@/components/ui/Bouton'
 import { Panneau, SectionPanneau } from '@/components/ui/Panneau'
 import { useLocale } from '@/hooks/useLocale'
-import { t } from '@/lib/i18n'
+import { lien, t } from '@/lib/i18n'
 
 /**
  * Le passage au paiement, une fois la commande créée côté serveur.
@@ -64,7 +64,7 @@ export function PaiementTebex({
       onCancel={(evenement) => evenement.preventDefault()}
       className="m-auto w-full max-w-[440px] bg-transparent p-4 text-creme backdrop:bg-nuit/80 backdrop:backdrop-blur-sm"
     >
-      <Panneau ombre titre={<span id="titre-paiement">Paiement</span>}>
+      <Panneau ombre titre={<span id="titre-paiement">{t(locale, 'tebex.paiement')}</span>}>
         <SectionPanneau dernier>
           <p className="text-[14.5px] text-creme">
             {t(locale, 'boutique.tebex')}
@@ -81,7 +81,7 @@ export function PaiementTebex({
               className: 'mt-4.5',
             })}
           >
-            Payer sur Tebex
+            {t(locale, 'tebex.payer')}
           </a>
 
           {/*
@@ -91,10 +91,10 @@ export function PaiementTebex({
             le panier quand ce statut dit « payée ».
           */}
           <Link
-            href={`/boutique/commande/${commandeId}`}
+            href={lien(locale, `/boutique/commande/${commandeId}`)}
             className="mt-3 block text-center font-mono text-[10.5px] tracking-[.08em] text-gris uppercase underline underline-offset-2 transition-colors hover:text-creme"
           >
-            Suivre ma commande
+            {t(locale, 'tebex.suivre')}
           </Link>
         </SectionPanneau>
       </Panneau>

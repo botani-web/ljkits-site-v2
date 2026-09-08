@@ -89,14 +89,14 @@ export function ModaleRecapitulatif({
               onClick={onFermer}
               className="mt-3 block w-full text-center font-mono text-[10.5px] tracking-[.08em] text-gris uppercase transition-colors hover:text-creme"
             >
-              Revenir au panier
+              {t(locale, 'panier.revenir')}
             </button>
           </>
         }
       >
         <SectionPanneau>
           <p className="font-mono text-[10.5px] font-bold tracking-[.18em] text-gris uppercase">
-            Pseudo de livraison
+            {t(locale, 'boutique.pseudo-livraison')}
           </p>
           <p className="mt-2 truncate font-mono text-[17px] font-bold text-creme">{pseudo}</p>
           <p className="mt-1.5 text-[12.5px] text-gris">
@@ -125,7 +125,7 @@ export function ModaleRecapitulatif({
         <SectionPanneau>
           <div className="flex items-baseline justify-between gap-3">
             <span className="font-mono text-[11px] tracking-[.1em] text-gris uppercase">
-              Total
+              {t(locale, 'panier.total')}
             </span>
             <span className="font-mono text-[22px] leading-none font-bold text-or">
               {formaterEuros(total)}

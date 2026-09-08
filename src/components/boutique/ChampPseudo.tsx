@@ -54,14 +54,14 @@ export function ChampPseudo({
   return (
     <div className="rounded-carte border border-bord bg-braise p-4">
       <p className="font-mono text-[10.5px] font-bold tracking-[.18em] text-gris uppercase">
-        Pseudo de livraison
+        {t(locale, 'boutique.pseudo-livraison')}
       </p>
 
       {pseudo === null ? (
         <>
           <div className="mt-2.5 flex gap-2">
             <label htmlFor="pseudo-minecraft" className="sr-only">
-              Ton pseudo Minecraft, celui qui recevra la livraison
+              {t(locale, 'boutique.pseudo-label-sr')}
             </label>
             <input
               id="pseudo-minecraft"
@@ -78,7 +78,7 @@ export function ChampPseudo({
                   valider()
                 }
               }}
-              placeholder="Ton pseudo Minecraft"
+              placeholder={t(locale, 'boutique.pseudo-placeholder')}
               maxLength={16}
               autoComplete="off"
               spellCheck={false}
@@ -112,7 +112,7 @@ export function ChampPseudo({
               {pseudo}
             </span>
             <span className="mt-0.5 block text-[12.5px] text-gris">
-              recevra la livraison en jeu
+              {t(locale, 'boutique.recevra')}
             </span>
           </p>
 
@@ -124,7 +124,7 @@ export function ChampPseudo({
             }}
             className="-my-2 flex min-h-11 shrink-0 items-center font-mono text-[11.5px] tracking-[.08em] text-gris underline underline-offset-2 transition-colors hover:text-creme"
           >
-            Changer
+            {t(locale, 'boutique.changer')}
           </button>
         </div>
       )}

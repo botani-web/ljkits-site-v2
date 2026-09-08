@@ -14,10 +14,19 @@ import { prisma } from '@/lib/prisma'
 import { lireReglages } from '@/lib/reglages'
 import { estLocale, LANGUE_DEFAUT, lien, t, champ, champOptionnel, type Locale } from '@/lib/i18n'
 
-export const metadata: Metadata = {
-  title: 'Ta commande',
-  // Une page de commande n'a rien à faire dans un moteur de recherche.
-  robots: { index: false, follow: false },
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>
+}): Promise<Metadata> {
+  const { locale: brut } = await params
+  const locale: Locale = estLocale(brut) ? brut : LANGUE_DEFAUT
+
+  return {
+    title: t(locale, 'commande.meta-titre'),
+    // Une page de commande n'a rien à faire dans un moteur de recherche.
+    robots: { index: false, follow: false },
+  }
 }
 
 /**
@@ -57,16 +66,16 @@ export default async function PageCommande({
           <div className="mx-auto max-w-lecture">
             <div className="text-center">
               <Etiquette className="text-vert">
-                Commande {formaterNumeroCommande(commande.numero)}
+                {t(locale, 'commande.etiquette')} {formaterNumeroCommande(commande.numero)}
               </Etiquette>
 
               <h1 className="text-h1 mt-4 font-titre">
-                Merci <span className="text-or">{commande.pseudoMinecraft}</span>
+                {t(locale, 'commande.merci')}{' '}
+                <span className="text-or">{commande.pseudoMinecraft}</span>
               </h1>
 
               <p className="mx-auto mt-4.5 max-w-[52ch] text-gris">
-                Garde ce numéro : c’est lui qu’on te demandera sur le Discord en cas de
-                souci.
+                {t(locale, 'commande.garde-numero')}
               </p>
             </div>
 
@@ -78,12 +87,12 @@ export default async function PageCommande({
             */}
             {(commande.statut === 'PAYEE' || commande.statut === 'LIVREE') && <ViderPanier />}
 
-            <EtatDeLaCommande statut={commande.statut} discord={discord} />
+            <EtatDeLaCommande statut={commande.statut} discord={discord} locale={locale} />
 
-            <Panneau titre="Le détail" className="mt-3.5">
+            <Panneau titre={t(locale, 'commande.detail')} className="mt-3.5">
               <SectionPanneau>
                 <p className="font-mono text-[10.5px] font-bold tracking-[.18em] text-gris uppercase">
-                  Pseudo de livraison
+                  {t(locale, 'boutique.pseudo-livraison')}
                 </p>
                 <p className="mt-2 truncate font-mono text-[17px] font-bold text-creme">
                   {commande.pseudoMinecraft}
@@ -101,7 +110,7 @@ export default async function PageCommande({
 
                 <div className="mt-3 flex items-baseline justify-between gap-3 border-t border-bord pt-3">
                   <span className="font-mono text-[11px] tracking-[.1em] text-gris uppercase">
-                    Total
+                    {t(locale, 'panier.total')}
                   </span>
                   <span className="font-mono text-[22px] leading-none font-bold text-or">
                     {formaterEuros(commande.montantTotalCentimes)}
@@ -111,8 +120,8 @@ export default async function PageCommande({
             </Panneau>
 
             <div className="mt-6 flex flex-wrap justify-center gap-2.75">
-              <LienBouton href="/boutique" variante="vide">
-                Retour à la boutique
+              <LienBouton href={lien(locale, '/boutique')} variante="vide">
+                {t(locale, 'commande.retour-boutique')}
               </LienBouton>
               <a
                 href={discord}
@@ -120,7 +129,7 @@ export default async function PageCommande({
                 rel="noopener noreferrer"
                 className={classesBouton({ variante: 'plein' })}
               >
-                Rejoindre le Discord
+                {t(locale, 'commande.rejoindre-discord')}
               </a>
             </div>
           </div>
@@ -143,53 +152,49 @@ export default async function PageCommande({
 function EtatDeLaCommande({
   statut,
   discord,
+  locale,
 }: {
   statut: StatutCommande
   discord: string
+  locale: Locale
 }) {
   const etats: Record<
     StatutCommande,
     { titre: string; texte: string; bordure: string; accent: string }
   > = {
     EN_ATTENTE: {
-      titre: 'Paiement en cours de confirmation',
-      texte:
-        'Si tu viens de payer, la confirmation arrive en général en quelques secondes — recharge la page. Si tu n’as pas terminé le paiement, ta commande reste en attente et rien ne t’a été débité.',
+      titre: t(locale, 'commande.en-attente-titre'),
+      texte: t(locale, 'commande.en-attente-texte'),
       bordure: 'border-soupe/40 border-l-soupe',
       accent: 'text-soupe',
     },
     PAYEE: {
-      titre: 'Paiement confirmé, livraison en cours',
-      texte:
-        'Ton contenu part vers le serveur, en général sous une minute. Reconnecte-toi si tu étais déjà en ligne.',
+      titre: t(locale, 'commande.payee-titre'),
+      texte: t(locale, 'commande.payee-texte'),
       bordure: 'border-or/40 border-l-or',
       accent: 'text-or',
     },
     LIVREE: {
-      titre: 'Livré',
-      texte:
-        'Tout est activé en jeu. Reconnecte-toi si tu étais déjà en ligne pendant la livraison.',
+      titre: t(locale, 'commande.livree-titre'),
+      texte: t(locale, 'commande.livree-texte'),
       bordure: 'border-vert/40 border-l-vert',
       accent: 'text-vert',
     },
     ECHOUEE: {
-      titre: 'Commande annulée',
-      texte:
-        'Cette commande n’a pas abouti et rien ne t’a été débité. Tu peux en repasser une depuis la boutique.',
+      titre: t(locale, 'commande.annulee-titre'),
+      texte: t(locale, 'commande.annulee-texte'),
       bordure: 'border-rouge/40 border-l-rouge',
       accent: 'text-rouge',
     },
     REMBOURSEE: {
-      titre: 'Commande remboursée',
-      texte:
-        'Le paiement a été remboursé et le contenu correspondant a été retiré en jeu.',
+      titre: t(locale, 'commande.remboursee-titre'),
+      texte: t(locale, 'commande.remboursee-texte'),
       bordure: 'border-bord border-l-gris',
       accent: 'text-gris',
     },
     LITIGE: {
-      titre: 'Paiement contesté',
-      texte:
-        'Un litige est ouvert sur ce paiement. Passe sur le Discord avec ton numéro de commande, on regarde ça avec toi.',
+      titre: t(locale, 'commande.contestee-titre'),
+      texte: t(locale, 'commande.contestee-texte'),
       bordure: 'border-oni/40 border-l-oni',
       accent: 'text-oni',
     },

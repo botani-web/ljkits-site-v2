@@ -5,11 +5,13 @@ import { useFormStatus } from 'react-dom'
 
 import { soumettreCandidature, type EtatCandidature } from '@/actions/candidature'
 import { classesBouton } from '@/components/ui/Bouton'
+import { useLocale } from '@/hooks/useLocale'
+import { t, type Locale } from '@/lib/i18n'
 import {
   AGE_MAXIMUM,
   AGE_MINIMUM,
   CHAMP_HONEYPOT,
-  TEXTE_CONSENTEMENT,
+  CONSERVATION_MOIS,
   champDeQuestion,
   plafondDe,
   type QuestionPubliee,
@@ -38,12 +40,14 @@ function Erreurs({ erreurs, id }: { erreurs?: string[]; id: string }) {
 
 /** L'étoile des champs obligatoires, annoncée aux lecteurs d'écran. */
 function Obligatoire() {
+  const locale = useLocale()
+
   return (
     <>
       <span aria-hidden="true" className="ml-1 text-soupe">
         *
       </span>
-      <span className="sr-only"> (obligatoire)</span>
+      <span className="sr-only">{t(locale, 'form.obligatoire-sr')}</span>
     </>
   )
 }
@@ -71,6 +75,7 @@ function Question({
   question: QuestionPubliee
   erreurs?: string[]
 }) {
+  const locale = useLocale()
   const champ = champDeQuestion(question.id)
   const idAide = `${champ}-aide`
   const idErreur = `${champ}-erreur`
@@ -145,7 +150,7 @@ function Question({
               className="flex min-h-11 cursor-pointer items-center gap-2 rounded-controle border border-bord bg-nuit px-4 text-[15px] text-creme transition-colors has-checked:border-soupe has-checked:text-soupe hover:border-gris"
             >
               <input type="radio" name={champ} value={option} className="accent-soupe" />
-              {option === 'oui' ? 'Oui' : 'Non'}
+              {t(locale, option === 'oui' ? 'recrutement.oui' : 'recrutement.non')}
             </label>
           ))}
         </fieldset>
@@ -154,7 +159,7 @@ function Question({
       {question.type === 'CHOIX_UNIQUE' && (
         <select {...communs} defaultValue="">
           <option value="" disabled>
-            Choisis une réponse…
+            {t(locale, 'form.choisis')}
           </option>
           {question.options.map((option) => (
             <option key={option} value={option}>
@@ -184,7 +189,7 @@ function Question({
 /* Le bouton d'envoi                                                          */
 /* -------------------------------------------------------------------------- */
 
-function BoutonEnvoi() {
+function BoutonEnvoi({ locale }: { locale: Locale }) {
   const { pending } = useFormStatus()
 
   return (
@@ -198,7 +203,7 @@ function BoutonEnvoi() {
           'w-full disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:bg-soupe disabled:hover:shadow-none sm:w-auto',
       })}
     >
-      {pending ? 'Envoi en cours…' : 'Envoyer ma candidature'}
+      {t(locale, pending ? 'form.envoi' : 'form.envoyer')}
     </button>
   )
 }
@@ -276,57 +281,61 @@ function champsDe(etape: Etape, derniere: boolean): string[] {
 const REGEX_PSEUDO_MINECRAFT = /^[A-Za-z0-9_]{3,16}$/
 const REGEX_PSEUDO_DISCORD = /^[A-Za-z0-9._-]{2,32}(#\d{4})?$/
 
-function validerIdentite(lire: (nom: string) => string) {
+function validerIdentite(lire: (nom: string) => string, locale: Locale) {
   const erreurs: Record<string, string[]> = {}
 
   if (!REGEX_PSEUDO_MINECRAFT.test(lire('pseudoMinecraft'))) {
-    erreurs.pseudoMinecraft = [
-      'Pseudo Minecraft invalide : 3 à 16 caractères, lettres, chiffres et _ uniquement.',
-    ]
+    erreurs.pseudoMinecraft = [t(locale, 'form.err-pseudo-mc')]
   }
 
   if (!REGEX_PSEUDO_DISCORD.test(lire('pseudoDiscord'))) {
-    erreurs.pseudoDiscord = ['Pseudo Discord invalide : 2 à 32 caractères, sans espace.']
+    erreurs.pseudoDiscord = [t(locale, 'form.err-pseudo-dc')]
   }
 
   const age = lire('age')
   if (!/^\d{1,3}$/.test(age)) {
-    erreurs.age = ['Indique ton âge en chiffres.']
+    erreurs.age = [t(locale, 'form.err-age-chiffres')]
   } else if (Number(age) < AGE_MINIMUM) {
-    erreurs.age = [`Il faut avoir ${AGE_MINIMUM} ans ou plus pour rejoindre le staff.`]
+    erreurs.age = [t(locale, 'form.err-age-min').replace('{a}', String(AGE_MINIMUM))]
   } else if (Number(age) > AGE_MAXIMUM) {
-    erreurs.age = ['Cet âge ne semble pas sérieux.']
+    erreurs.age = [t(locale, 'form.err-age-max')]
   }
 
   return erreurs
 }
 
-function validerQuestion(question: QuestionPubliee, valeur: string): string[] {
+function validerQuestion(
+  question: QuestionPubliee,
+  valeur: string,
+  locale: Locale,
+): string[] {
   const choix = question.type === 'OUI_NON' || question.type === 'CHOIX_UNIQUE'
 
   // Le vide se traite d'abord, comme côté serveur : une question facultative
   // laissée vide est valide et s'arrête là.
   if (valeur === '') {
     if (!question.obligatoire) return []
-    return [choix ? 'Choisis une réponse.' : 'Cette question est obligatoire.']
+    return [t(locale, choix ? 'form.err-choix' : 'form.err-obligatoire')]
   }
 
   if (question.type === 'TEXTE_COURT' || question.type === 'TEXTE_LONG') {
     if (question.minimum !== null && valeur.length < question.minimum) {
       return [
-        `Réponse trop courte : ${question.minimum} caractères minimum (tu en as écrit ${valeur.length}).`,
+        t(locale, 'form.err-trop-court')
+          .replace('{m}', String(question.minimum))
+          .replace('{n}', String(valeur.length)),
       ]
     }
   }
 
   if (question.type === 'NOMBRE') {
-    if (!/^-?\d+$/.test(valeur)) return ['Indique un nombre entier.']
+    if (!/^-?\d+$/.test(valeur)) return [t(locale, 'form.err-entier')]
     const nombre = Number(valeur)
     if (question.minimum !== null && nombre < question.minimum) {
-      return [`La valeur minimale est ${question.minimum}.`]
+      return [t(locale, 'form.err-min').replace('{m}', String(question.minimum))]
     }
     if (question.maximum !== null && nombre > question.maximum) {
-      return [`La valeur maximale est ${question.maximum}.`]
+      return [t(locale, 'form.err-max').replace('{m}', String(question.maximum))]
     }
   }
 
@@ -341,10 +350,12 @@ function BarreProgression({
   index,
   total,
   nom,
+  locale,
 }: {
   index: number
   total: number
   nom: string
+  locale: Locale
 }) {
   const numero = index + 1
 
@@ -352,7 +363,9 @@ function BarreProgression({
     <div className="sticky top-nav z-40 -mx-gouttiere border-y border-bord bg-nuit/95 px-gouttiere py-3.5 backdrop-blur-xl">
       <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
         <span className="font-mono text-[10.5px] font-bold tracking-[.18em] text-soupe uppercase">
-          Étape {numero} sur {total}
+          {t(locale, 'form.etape')
+            .replace('{n}', String(numero))
+            .replace('{t}', String(total))}
         </span>
         <span className="font-titre text-[15px]">{nom}</span>
       </div>
@@ -416,6 +429,7 @@ export function FormulaireCandidature({
   questions: QuestionPubliee[]
   apercu?: boolean
 }) {
+  const locale = useLocale()
   const [etat, action] = useActionState<EtatCandidature, FormData>(soumettreCandidature, {})
   const idConsentement = useId()
 
@@ -443,7 +457,7 @@ export function FormulaireCandidature({
     // bien s'afficher quelque part. Cas de bord atteignable depuis l'aperçu de
     // l'admin ; la page publique, elle, n'affiche pas le formulaire du tout.
     if (blocs.length === 0) {
-      return [{ cle: 'identite', nom: 'Identité', questions: [], identite: true }]
+      return [{ cle: 'identite', nom: t(locale, 'form.identite'), questions: [], identite: true }]
     }
 
     return blocs.map((bloc, index) => ({
@@ -453,7 +467,7 @@ export function FormulaireCandidature({
       // Les champs système ouvrent la première étape, quel que soit son nom.
       identite: index === 0,
     }))
-  }, [questions])
+  }, [questions, locale])
 
   const derniere = etapes.length - 1
 
@@ -513,18 +527,18 @@ export function FormulaireCandidature({
     const lire = (nom: string) => String(donnees.get(nom) ?? '').trim()
 
     const etape = etapes[etapeCourante]
-    const erreurs: Record<string, string[]> = etape.identite ? validerIdentite(lire) : {}
+    const erreurs: Record<string, string[]> = etape.identite
+      ? validerIdentite(lire, locale)
+      : {}
 
     for (const question of etape.questions) {
       const champ = champDeQuestion(question.id)
-      const messages = validerQuestion(question, lire(champ))
+      const messages = validerQuestion(question, lire(champ), locale)
       if (messages.length) erreurs[champ] = messages
     }
 
     if (etapeCourante === derniere && donnees.get('consentement') !== 'on') {
-      erreurs.consentement = [
-        'Tu dois accepter la conservation de tes réponses pour candidater.',
-      ]
+      erreurs.consentement = [t(locale, 'form.err-consentement')]
     }
 
     return erreurs
@@ -588,19 +602,18 @@ export function FormulaireCandidature({
         role="status"
         className="rounded-carte border border-vert/40 bg-charbon px-6 py-10 text-center"
       >
-        <p className="font-titre text-xl text-vert uppercase">Candidature envoyée</p>
+        <p className="font-titre text-xl text-vert uppercase">{t(locale, 'form.envoyee')}</p>
         <p className="mx-auto mt-3 max-w-lg text-[15px] text-gris">{etat.succes}</p>
 
         {etat.numero !== undefined && (
           <p className="mt-5 font-mono text-sm text-creme">
-            Ton numéro de dossier :{' '}
+            {t(locale, 'form.numero')}{' '}
             <span className="text-soupe">#{String(etat.numero).padStart(6, '0')}</span>
           </p>
         )}
 
         <p className="mx-auto mt-5 max-w-lg text-[13px] text-gris">
-          Inutile d’en renvoyer une : elle est enregistrée. Reste joignable sur Discord,
-          c’est là que le staff te répondra.
+          {t(locale, 'form.inutile')}
         </p>
       </div>
     )
@@ -639,7 +652,7 @@ export function FormulaireCandidature({
             `aria-hidden` et `tabIndex` le retirent du clavier et des lecteurs
             d'écran, donc aucun humain ne peut le remplir par accident. */}
         <div aria-hidden="true" className="absolute left-[-9999px] h-0 w-0 overflow-hidden">
-          <label htmlFor={CHAMP_HONEYPOT}>Ne remplis pas ce champ</label>
+          <label htmlFor={CHAMP_HONEYPOT}>{t(locale, 'form.honeypot')}</label>
           <input
             id={CHAMP_HONEYPOT}
             name={CHAMP_HONEYPOT}
@@ -654,6 +667,7 @@ export function FormulaireCandidature({
             index={etapeCourante}
             total={etapes.length}
             nom={etapes[etapeCourante].nom}
+            locale={locale}
           />
         )}
 
@@ -683,7 +697,7 @@ export function FormulaireCandidature({
                       htmlFor="pseudoMinecraft"
                       className="mb-1.5 block text-[15px] font-semibold text-creme"
                     >
-                      Pseudo Minecraft
+                      {t(locale, 'form.pseudo-minecraft')}
                       <Obligatoire />
                     </label>
                     <input
@@ -708,7 +722,7 @@ export function FormulaireCandidature({
                       htmlFor="pseudoDiscord"
                       className="mb-1.5 block text-[15px] font-semibold text-creme"
                     >
-                      Pseudo Discord
+                      {t(locale, 'form.pseudo-discord')}
                       <Obligatoire />
                     </label>
                     <input
@@ -723,7 +737,7 @@ export function FormulaireCandidature({
                       className={`${CLASSES_CHAMP} font-mono`}
                     />
                     <p id="pseudoDiscord-aide" className="mt-1.5 text-[13px] text-gris">
-                      C’est là que le staff te répondra. Vérifie-le deux fois.
+                      {t(locale, 'form.discord-aide')}
                     </p>
                     <Erreurs
                       erreurs={erreursDe('pseudoDiscord')}
@@ -736,7 +750,7 @@ export function FormulaireCandidature({
                       htmlFor="age"
                       className="mb-1.5 block text-[15px] font-semibold text-creme"
                     >
-                      Âge
+                      {t(locale, 'form.age')}
                       <Obligatoire />
                     </label>
                     <input
@@ -751,7 +765,7 @@ export function FormulaireCandidature({
                       className={`${CLASSES_CHAMP} max-w-40`}
                     />
                     <p id="age-aide" className="mt-1.5 text-[13px] text-gris">
-                      {AGE_MINIMUM} ans minimum.
+                      {AGE_MINIMUM} {t(locale, 'recrutement.age-gras')}
                     </p>
                     <Erreurs erreurs={erreursDe('age')} id="age-erreur" />
                   </div>
@@ -782,7 +796,10 @@ export function FormulaireCandidature({
                       className="mt-1 size-5 shrink-0 accent-soupe"
                     />
                     <span className="text-[14px] text-gris">
-                      {TEXTE_CONSENTEMENT}
+                      {t(locale, 'form.consentement-complet').replace(
+                        '{m}',
+                        String(CONSERVATION_MOIS),
+                      )}
                       <Obligatoire />
                     </span>
                   </label>
@@ -806,7 +823,7 @@ export function FormulaireCandidature({
 
           {apercu ? (
             <p className="rounded-controle border border-bord bg-braise px-4 py-3 text-[13px] text-gris">
-              Aperçu — l’envoi est désactivé.
+              {t(locale, 'form.apercu')}
             </p>
           ) : (
             <div className="flex flex-wrap gap-3">
@@ -816,7 +833,7 @@ export function FormulaireCandidature({
                   onClick={reculer}
                   className={classesBouton({ variante: 'vide', taille: 'grande' })}
                 >
-                  Retour
+                  {t(locale, 'form.retour')}
                 </button>
               )}
 
@@ -834,18 +851,17 @@ export function FormulaireCandidature({
                     className: 'max-[560px]:w-full',
                   })}
                 >
-                  Suivant
+                  {t(locale, 'form.suivant')}
                 </button>
               ) : (
-                <BoutonEnvoi />
+                <BoutonEnvoi locale={locale} />
               )}
             </div>
           )}
 
           <p className="text-[13px] text-gris">
-            Une seule candidature à la fois. Prends le temps de te relire : tu ne pourras
-            pas la modifier après l’envoi.
-            {parcours && ' Un rechargement de la page efface tout : rien n’est enregistré tant que tu n’as pas envoyé.'}
+            {t(locale, 'form.une-seule')}
+            {parcours && t(locale, 'form.rechargement')}
           </p>
         </div>
       </fieldset>

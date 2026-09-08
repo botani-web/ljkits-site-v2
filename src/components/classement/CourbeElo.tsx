@@ -1,5 +1,3 @@
-import { useLocale } from '@/hooks/useLocale'
-import { t } from '@/lib/i18n'
 /**
  * La courbe d'Elo d'un joueur, en SVG pur.
  *
@@ -9,14 +7,17 @@ import { t } from '@/lib/i18n'
  *
  * Composant serveur : il n'a aucun état et se rend une fois.
  */
+import { t, type Locale } from '@/lib/i18n'
+
 export function CourbeElo({
   points,
   className = '',
+  locale,
 }: {
   points: number[]
   className?: string
+  locale: Locale
 }) {
-  const locale = useLocale()
   if (points.length < 2) return null
 
   const LARGEUR = 600
@@ -50,7 +51,10 @@ export function CourbeElo({
         viewBox={`0 0 ${LARGEUR} ${HAUTEUR}`}
         className="h-auto w-full"
         role="img"
-        aria-label={`Progression de ${premier} à ${dernier} Elo sur ${points.length} combats`}
+        aria-label={t(locale, 'courbe.aria')
+          .replace('{a}', String(premier))
+          .replace('{b}', String(dernier))
+          .replace('{n}', String(points.length))}
       >
         <defs>
           <linearGradient id="degradeElo" x1="0" y1="0" x2="0" y2="1">

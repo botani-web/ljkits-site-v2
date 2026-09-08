@@ -34,9 +34,14 @@ export function centimesVersEuros(centimes: number | null): string {
   return Number.isInteger(euros) ? String(euros) : euros.toFixed(2).replace('.', ',')
 }
 
-/** Date → "12 mars 2026". */
-export function formaterDate(date: Date): string {
-  return date.toLocaleDateString('fr-FR', {
+/**
+ * Date → "12 mars 2026" ou "12 March 2026".
+ *
+ * Le français reste le défaut : l'admin, les e-mails et tout ce qui n'a pas
+ * de langue de page continuent d'appeler sans second argument.
+ */
+export function formaterDate(date: Date, locale: 'en' | 'fr' = 'fr'): string {
+  return date.toLocaleDateString(locale === 'en' ? 'en-GB' : 'fr-FR', {
     day: 'numeric',
     month: 'long',
     year: 'numeric',
@@ -94,9 +99,9 @@ export function formaterNumeroCommande(numero: number): string {
   return `LJK-${String(numero).padStart(6, '0')}`
 }
 
-/** Date + heure : "12 mars 2026 à 14:32". Utilisé dans l'admin. */
-export function formaterDateHeure(date: Date): string {
-  return date.toLocaleString('fr-FR', {
+/** Date + heure : "12 mars 2026 à 14:32", ou l'équivalent anglais. */
+export function formaterDateHeure(date: Date, locale: 'en' | 'fr' = 'fr'): string {
+  return date.toLocaleString(locale === 'en' ? 'en-GB' : 'fr-FR', {
     day: 'numeric',
     month: 'long',
     year: 'numeric',

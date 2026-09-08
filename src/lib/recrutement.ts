@@ -26,6 +26,7 @@ import { z } from 'zod'
 import type { TypeQuestion } from '@prisma/client'
 
 import { prisma } from '@/lib/prisma'
+import { champ, champOptionnel, LANGUE_DEFAUT, type Locale } from '@/lib/i18n'
 import {
   AGE_MAXIMUM,
   AGE_MINIMUM,
@@ -51,7 +52,8 @@ export * from '@/lib/recrutement-partage'
  * `cache()` déduplique l'appel dans un même rendu — la page et l'aperçu de
  * l'admin la demandent tous les deux.
  */
-export const lireQuestionsActives = cache(async (): Promise<QuestionPubliee[]> => {
+export const lireQuestionsActives = cache(
+  async (locale: Locale = LANGUE_DEFAUT): Promise<QuestionPubliee[]> => {
   const sections = await prisma.sectionRecrutement.findMany({
     where: { actif: true },
     orderBy: [{ ordre: 'asc' }, { id: 'asc' }],
@@ -69,14 +71,14 @@ export const lireQuestionsActives = cache(async (): Promise<QuestionPubliee[]> =
     for (const question of section.questions) {
       publiees.push({
         id: question.id,
-        libelle: question.libelle,
-        aide: question.aide,
+        libelle: champ(locale, question.libelle, question.libelleEn),
+        aide: champOptionnel(locale, question.aide, question.aideEn),
         type: question.type,
         options: question.options,
         obligatoire: question.obligatoire,
         minimum: question.minimum,
         maximum: question.maximum,
-        section: section.nom,
+        section: champ(locale, section.nom, section.nomEn),
         // Le rang est attribué ICI, à la lecture, et non stocké : il découle de
         // l'ordre des sections et des questions, qui bougent tous les deux.
         rang: publiees.length,
@@ -84,8 +86,9 @@ export const lireQuestionsActives = cache(async (): Promise<QuestionPubliee[]> =
     }
   }
 
-  return publiees
-})
+    return publiees
+  },
+)
 
 /* -------------------------------------------------------------------------- */
 /* Le schéma zod, construit depuis la base                                    */

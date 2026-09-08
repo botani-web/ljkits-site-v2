@@ -11,17 +11,54 @@ import { prisma } from '@/lib/prisma'
 
 /** Les paliers, repris à l'identique de Palier.java côté serveur. */
 export const PALIERS = [
-  { nom: 'Fer', minimum: 0, couleur: '#9e93ac' },
-  { nom: 'Bronze', minimum: 850, couleur: '#c07a3e' },
-  { nom: 'Argent', minimum: 1000, couleur: '#f2e8d9' },
-  { nom: 'Or', minimum: 1150, couleur: '#fdc003' },
-  { nom: 'Platine', minimum: 1300, couleur: '#5b8dd9' },
-  { nom: 'Diamant', minimum: 1450, couleur: '#4fd6e0' },
-  { nom: 'Maître', minimum: 1600, couleur: '#d977d9' },
-  { nom: 'Légende', minimum: 1800, couleur: '#e92813' },
+  { nom: 'Fer', nomEn: 'Iron', minimum: 0, couleur: '#9e93ac' },
+  { nom: 'Bronze', nomEn: 'Bronze', minimum: 850, couleur: '#c07a3e' },
+  { nom: 'Argent', nomEn: 'Silver', minimum: 1000, couleur: '#f2e8d9' },
+  { nom: 'Or', nomEn: 'Gold', minimum: 1150, couleur: '#fdc003' },
+  { nom: 'Platine', nomEn: 'Platinum', minimum: 1300, couleur: '#5b8dd9' },
+  { nom: 'Diamant', nomEn: 'Diamond', minimum: 1450, couleur: '#4fd6e0' },
+  { nom: 'Maître', nomEn: 'Master', minimum: 1600, couleur: '#d977d9' },
+  { nom: 'Légende', nomEn: 'Legend', minimum: 1800, couleur: '#e92813' },
 ] as const
 
 export type Palier = (typeof PALIERS)[number]
+
+/**
+ * Le nom d'une saison dans la langue demandée.
+ *
+ * Le nom vient du PLUGIN (`elo_saison.nom`), qui l'écrit en français sous la
+ * forme « septembre 2026 ». Il n'y a pas de colonne anglaise à remplir côté
+ * serveur : on traduit donc le mois à l'affichage, et tout nom qui ne suit pas
+ * cette forme ressort tel quel.
+ */
+const MOIS_EN: Record<string, string> = {
+  janvier: 'January',
+  février: 'February',
+  mars: 'March',
+  avril: 'April',
+  mai: 'May',
+  juin: 'June',
+  juillet: 'July',
+  août: 'August',
+  septembre: 'September',
+  octobre: 'October',
+  novembre: 'November',
+  décembre: 'December',
+}
+
+export function nomSaison(nom: string, locale: 'en' | 'fr'): string {
+  if (locale === 'fr') return nom
+  return nom.replace(
+    /[A-Za-zÀ-ÿ]+/g,
+    (mot) => MOIS_EN[mot.toLowerCase()] ?? mot,
+  )
+}
+
+
+/** Le nom du palier dans la langue demandée. Mêmes noms que Palier.java. */
+export function nomPalier(palier: Palier, locale: 'en' | 'fr'): string {
+  return locale === 'en' ? palier.nomEn : palier.nom
+}
 
 /** Le palier d'un Elo. Le tableau est trié, on prend le dernier atteint. */
 export function palierDe(elo: number): Palier {

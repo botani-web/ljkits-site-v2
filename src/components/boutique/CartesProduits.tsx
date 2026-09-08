@@ -70,7 +70,7 @@ export function CarteGradeProduit({
           : 'border-bord hover:border-soupe/60',
       ].join(' ')}
     >
-      {recommande && <Ruban>Le plus choisi</Ruban>}
+      {recommande && <Ruban>{t(locale, 'boutique.plus-choisi')}</Ruban>}
 
       {/* ------------------------------ tête ------------------------------ */}
       <div
@@ -105,7 +105,7 @@ export function CarteGradeProduit({
           {formaterEuros(grade.prixEurosCentimes)}
         </p>
         <p className="pb-1 text-right font-mono text-[10.5px] leading-tight tracking-[.12em] text-gris uppercase">
-          Un achat
+          {t(locale, 'boutique.un-achat')}
           <br />
           <span className="text-vert">{t(locale, 'boutique.a-vie')}</span>
         </p>
@@ -114,7 +114,7 @@ export function CarteGradeProduit({
       {/* --------------------------- l'argument --------------------------- */}
       {argument && (
         <p className="mx-5.5 mt-4 rounded-controle border border-or/30 bg-nuit px-4 py-3 text-center font-mono text-[13px] font-bold tracking-[.04em] text-or">
-          {argument} <span className="font-normal text-gris">sur chaque kill</span>
+          {argument} <span className="font-normal text-gris">{t(locale, 'boutique.sur-kill')}</span>
         </p>
       )}
 
@@ -126,7 +126,13 @@ export function CarteGradeProduit({
               ↳
             </span>
             <span>
-              Tout ce que donne le <b className="font-semibold">{grade.heriteDe}</b>
+              {t(locale, 'boutique.tout-ce-que-donne')
+                .split('{g}')
+                .flatMap((morceau, index) =>
+                  index === 0
+                    ? [morceau]
+                    : [<b key="g" className="font-semibold">{grade.heriteDe}</b>, morceau],
+                )}
             </span>
           </li>
         )}
@@ -146,7 +152,7 @@ export function CarteGradeProduit({
           dansLePanier={dansLePanier}
           indisponible={vente.indisponible}
           libelleIndisponible={vente.libelle}
-          libelle={`Prendre le ${grade.nom}`}
+          libelle={`${t(locale, 'boutique.prendre-le')} ${grade.nom}`}
           variante={recommande ? 'or' : 'plein'}
           onClick={onBasculer}
         />
@@ -171,6 +177,7 @@ export function CarteGradeProduit({
  * Masqué sous 1024px : les cartes portent déjà tout.
  */
 export function TableauComparatif({ grades }: { grades: GradeBoutique[] }) {
+  const locale = useLocale()
   if (grades.length !== 3) return null
   const [ronin, samourai, shogun] = grades
   const oui = (
@@ -185,7 +192,7 @@ export function TableauComparatif({ grades }: { grades: GradeBoutique[] }) {
   )
   const lignes: { libelle: string; valeurs: React.ReactNode[] }[] = [
     {
-      libelle: 'Prix, une fois',
+      libelle: t(locale, 'boutique.prix-une-fois'),
       valeurs: [ronin, samourai, shogun].map((g) => (
         <b key={g.slug} className="font-mono text-creme">
           {formaterEuros(g.prixEurosCentimes)}
@@ -193,7 +200,7 @@ export function TableauComparatif({ grades }: { grades: GradeBoutique[] }) {
       )),
     },
     {
-      libelle: 'Bonus de coins sur chaque kill',
+      libelle: t(locale, 'boutique.bonus-coins'),
       valeurs: [ronin, samourai, shogun].map((g) => (
         <b key={g.slug} className="font-mono text-or">
           {g.etiquette ?? '—'}
@@ -201,17 +208,17 @@ export function TableauComparatif({ grades }: { grades: GradeBoutique[] }) {
       )),
     },
     {
-      libelle: 'Couleur du pseudo',
+      libelle: t(locale, 'boutique.couleur-pseudo'),
       valeurs: [
-        <span key="r" className="text-creme">Blanc</span>,
-        <span key="s" className="text-or">Or</span>,
-        <span key="sh" className="text-violet">Violet</span>,
+        <span key="r" className="text-creme">{t(locale, 'boutique.blanc')}</span>,
+        <span key="s" className="text-or">{t(locale, 'boutique.or')}</span>,
+        <span key="sh" className="text-violet">{t(locale, 'boutique.violet')}</span>,
       ],
     },
-    { libelle: 'Symbole ❀ dans le chat et le tab', valeurs: [oui, oui, oui] },
-    { libelle: 'Rôle et salon réservés sur le Discord', valeurs: [oui, oui, oui] },
-    { libelle: 'Nom sur l’hologramme des soutiens', valeurs: [oui, oui, oui] },
-    { libelle: 'Le multiplicateur le plus élevé du serveur', valeurs: [non, non, oui] },
+    { libelle: t(locale, 'boutique.symbole'), valeurs: [oui, oui, oui] },
+    { libelle: t(locale, 'boutique.role-discord'), valeurs: [oui, oui, oui] },
+    { libelle: t(locale, 'boutique.nom-holo'), valeurs: [oui, oui, oui] },
+    { libelle: t(locale, 'boutique.multiplicateur'), valeurs: [non, non, oui] },
   ]
 
   return (
@@ -220,7 +227,7 @@ export function TableauComparatif({ grades }: { grades: GradeBoutique[] }) {
         <thead>
           <tr className="border-b border-bord bg-charbon">
             <th className="px-5 py-3.5 text-left font-mono text-[10.5px] font-bold tracking-[.18em] text-gris uppercase">
-              Ce que tu obtiens
+              {t(locale, 'boutique.ce-que-tu-obtiens')}
             </th>
             {[ronin, samourai, shogun].map((g, i) => (
               <th
@@ -275,6 +282,7 @@ export function CartePackCoinsProduit({
   dansLePanier: boolean
   onBasculer: () => void
 }) {
+  const locale = useLocale()
   const vente = etatDeVente(pack)
   const coins = pack.coins ?? 0
   const image = pack.slug.startsWith('coins-') ? `/coins/${pack.slug.slice(6)}.webp` : null
@@ -289,7 +297,7 @@ export function CartePackCoinsProduit({
         meilleureValeur ? 'border-or' : 'border-bord hover:border-soupe/60',
       ].join(' ')}
     >
-      {meilleureValeur && <Ruban>Meilleure valeur</Ruban>}
+      {meilleureValeur && <Ruban>{t(locale, 'boutique.meilleure-valeur')}</Ruban>}
 
       {/* ---------------------------- image ---------------------------- */}
       <div className="flex items-center justify-center border-b border-bord bg-[radial-gradient(ellipse_at_center,rgba(253,192,3,.10),transparent_70%)] px-4 pt-6 pb-4">

@@ -17,9 +17,9 @@ import { t } from '@/lib/i18n'
  * qui reçoit la livraison.
  */
 const RAYONS = [
-  { href: '#grades', nom: 'Grades' },
-  { href: '#coins', nom: 'Coins' },
-  { href: '#aide', nom: 'Aide' },
+  { href: '#grades', cle: 'barre.grades' as const },
+  { href: '#coins', cle: 'barre.coins' as const },
+  { href: '#aide', cle: 'barre.aide' as const },
 ]
 
 export function BarreBoutique({
@@ -37,14 +37,14 @@ export function BarreBoutique({
   return (
     <div className="sticky top-nav z-50 border-y border-bord bg-nuit/95 py-2.5 backdrop-blur-xl">
       <div className="mx-auto flex w-full max-w-contenu items-center gap-3 px-gouttiere">
-        <nav aria-label="Rayons" className="hidden shrink-0 items-center gap-1 lg:flex">
+        <nav aria-label={t(locale, 'barre.rayons')} className="hidden shrink-0 items-center gap-1 lg:flex">
           {RAYONS.map((rayon) => (
             <a
               key={rayon.href}
               href={rayon.href}
               className="rounded-controle px-3 py-2 font-mono text-[11.5px] font-bold tracking-[.1em] text-gris uppercase transition-colors hover:bg-braise hover:text-creme"
             >
-              {rayon.nom}
+              {t(locale, rayon.cle)}
             </a>
           ))}
         </nav>
@@ -69,7 +69,7 @@ export function BarreBoutique({
           </svg>
           {pseudo === null ? (
             <span className="truncate font-mono text-[11.5px] tracking-[.08em] text-soupe uppercase">
-              Choisir mon pseudo
+              {t(locale, 'barre.choisir-pseudo')}
             </span>
           ) : (
             <span className="min-w-0 truncate font-mono text-[11.5px] tracking-[.04em]">
@@ -78,7 +78,7 @@ export function BarreBoutique({
             </span>
           )}
           <span className="ml-auto hidden shrink-0 font-mono text-[10.5px] text-gris underline underline-offset-2 min-[560px]:inline">
-            {pseudo === null ? 'Renseigner' : 'Changer'}
+            {t(locale, pseudo === null ? 'barre.renseigner' : 'barre.changer')}
           </span>
         </button>
 
@@ -100,7 +100,7 @@ export function BarreBoutique({
             <path d="M4.5 8h15l-1.2 11.4a1.6 1.6 0 0 1-1.6 1.4H7.3a1.6 1.6 0 0 1-1.6-1.4Z" />
             <path d="M8.8 10.5V7a3.2 3.2 0 0 1 6.4 0v3.5" />
           </svg>
-          <span className="max-[400px]:hidden">Panier</span>
+          <span className="max-[400px]:hidden">{t(locale, 'barre.panier')}</span>
           <span>({nombreArticles})</span>
           {nombreArticles > 0 && (
             <span className="hidden border-l border-encre/25 pl-2.5 min-[560px]:inline">

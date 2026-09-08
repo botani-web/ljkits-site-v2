@@ -27,7 +27,7 @@ export async function Footer({ locale }: { locale: Locale }) {
             <div className="min-[560px]:col-span-2 lg:col-span-1">
               <Link
                 href={lien(locale, '/')}
-                aria-label="LJKITS — retour à l’accueil"
+                aria-label={t(locale, 'nav.retour-accueil')}
                 className="inline-flex items-center"
               >
                 <Image

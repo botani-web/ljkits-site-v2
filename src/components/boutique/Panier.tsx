@@ -6,6 +6,8 @@ import { ChampPseudo } from '@/components/boutique/ChampPseudo'
 import { classesBouton } from '@/components/ui/Bouton'
 import { formaterEuros } from '@/lib/format'
 import type { ArticleAffiche, ArticlePanier } from '@/lib/panier'
+import { useLocale } from '@/hooks/useLocale'
+import { t } from '@/lib/i18n'
 
 const LIBELLE_TYPE = {
   KIT: 'Kit',
@@ -51,6 +53,7 @@ export function Panier({
   onChangerPseudo: () => void
   onPayer: () => void
 }) {
+  const locale = useLocale()
   const dialogue = useRef<HTMLDialogElement>(null)
 
   useEffect(() => {
@@ -64,7 +67,7 @@ export function Panier({
   return (
     <dialog
       ref={dialogue}
-      aria-label="Ton panier"
+      aria-label={t(locale, 'panier.titre')}
       onClose={onFermer}
       // Un clic sur le fond a pour cible le <dialog> lui-même.
       onClick={(evenement) => {
@@ -87,12 +90,12 @@ export function Panier({
       <div className="flex h-full w-full max-w-[420px] flex-col border-l border-bord bg-charbon shadow-[0_0_80px_rgba(0,0,0,.8)]">
         <div className="flex items-center gap-3 border-b border-bord bg-braise px-5 py-4">
           <h2 className="font-mono text-[10.5px] font-bold tracking-[.2em] text-soupe uppercase">
-            Ton panier
+            {t(locale, 'panier.titre')}
           </h2>
           <button
             type="button"
             onClick={onFermer}
-            aria-label="Fermer le panier"
+            aria-label={t(locale, 'panier.fermer')}
             className="-my-2 ml-auto flex size-11 shrink-0 items-center justify-center rounded-controle border border-bord text-gris transition-colors hover:border-oni hover:text-oni"
           >
             <svg
@@ -122,9 +125,9 @@ export function Panier({
           <div className="mt-3.5 flex flex-col gap-2.5">
             {articles.length === 0 ? (
               <p className="rounded-carte border border-dashed border-bord px-4 py-9 text-center font-mono text-[13px] text-gris">
-                Ton panier est vide.
+                {t(locale, 'boutique.panier-vide')}
                 <br />
-                Ajoute un grade ou un kit.
+                {t(locale, 'boutique.ajoute-grade')}
               </p>
             ) : (
               articles.map((article) => (
@@ -162,13 +165,13 @@ export function Panier({
         <div className="border-t border-bord bg-nuit/50 p-5">
           <div className="flex items-baseline justify-between">
             <span className="font-mono text-[11px] tracking-[.1em] text-gris uppercase">
-              Total
+              {t(locale, 'panier.total')}
             </span>
             <p className="text-right">
               <span className="font-mono text-[26px] leading-none font-bold text-or">
                 {formaterEuros(total)}
               </span>
-              <span className="mt-1 block font-mono text-[10.5px] text-gris">TVA incluse</span>
+              <span className="mt-1 block font-mono text-[10.5px] text-gris">{t(locale, 'panier.tva')}</span>
             </p>
           </div>
 
@@ -183,15 +186,15 @@ export function Panier({
                 'mt-4 disabled:cursor-default disabled:opacity-50 disabled:hover:bg-soupe disabled:hover:shadow-none',
             })}
           >
-            Passer au paiement
+            {t(locale, 'panier.payer')}
           </button>
 
           <p className="mt-3 text-center font-mono text-[10.5px] leading-relaxed text-gris">
             {articles.length === 0
-              ? 'Ajoute un article pour continuer.'
+              ? t(locale, 'boutique.ajoute-article')
               : pseudo === null
-                ? 'Choisis ton pseudo pour commander.'
-                : `La livraison ira à ${pseudo}.`}
+                ? t(locale, 'panier.choisir-pseudo')
+                : t(locale, 'panier.livraison-ira').replace('{p}', pseudo)}
           </p>
         </div>
       </div>

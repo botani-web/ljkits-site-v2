@@ -66,7 +66,7 @@ export default async function PageRecrutement({
   const { recrutementOuvert, recrutementMessageFerme, discord } = await lireReglages()
 
   // Les questions ne sont même pas lues si c'est fermé.
-  const questions = recrutementOuvert ? await lireQuestionsActives() : []
+  const questions = recrutementOuvert ? await lireQuestionsActives(locale) : []
 
   return (
     <PagePublique locale={locale}>
@@ -107,7 +107,7 @@ export default async function PageRecrutement({
                     rel="noopener noreferrer"
                     className={classesBouton({ variante: 'plein', className: 'mt-6' })}
                   >
-                    Rejoindre le Discord
+                    {t(locale, 'commande.rejoindre-discord')}
                   </a>
                 )}
               </div>

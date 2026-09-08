@@ -74,14 +74,27 @@ export const IMAGE_OG = [{ url: '/og.png', width: 1080, height: 1080 }]
  * n'en tient que quatre (celle de la maquette d'origine).
  */
 export const REPERES_DE_JEU = [
-  { cle: 'soupe', valeur: '3,5 ❤', label: 'Une soupe' },
-  { cle: 'epee', valeur: '2 ❤', label: 'Épée en pierre' },
-  { cle: 'cooldown', valeur: '0', label: 'Cooldown d’attaque' },
-  { cle: 'armure', valeur: 'Aucune', label: 'Armure' },
-  { cle: 'knockback', valeur: '1.8', label: 'Knockback d’époque' },
+  { cle: 'soupe', valeur: '3,5 ❤', label: 'Une soupe', labelEn: 'One soup' },
+  { cle: 'epee', valeur: '2 ❤', label: 'Épée en pierre', labelEn: 'Stone sword' },
+  { cle: 'cooldown', valeur: '0', label: 'Cooldown d’attaque', labelEn: 'Attack cooldown' },
+  { cle: 'armure', valeur: 'Aucune', valeurEn: 'None', label: 'Armure', labelEn: 'Armour' },
+  { cle: 'knockback', valeur: '1.8', label: 'Knockback d’époque', labelEn: '1.8 knockback' },
 ] as const
 
-/** Renvoie les repères demandés, dans l'ordre des clés fournies. */
-export function reperes(...cles: string[]) {
-  return cles.map((cle) => REPERES_DE_JEU.find((repere) => repere.cle === cle)!)
+/**
+ * Renvoie les repères demandés, dans l'ordre des clés fournies et dans la
+ * langue demandée. `label` et `valeur` sortent déjà traduits : les pages qui
+ * les affichent n'ont rien à savoir de la langue.
+ */
+export function reperes(locale: 'en' | 'fr', ...cles: string[]) {
+  return cles
+    .map((cle) => REPERES_DE_JEU.find((repere) => repere.cle === cle)!)
+    .map((repere) => ({
+      cle: repere.cle,
+      valeur:
+        locale === 'en' && 'valeurEn' in repere && repere.valeurEn
+          ? repere.valeurEn
+          : repere.valeur,
+      label: locale === 'en' ? repere.labelEn : repere.label,
+    }))
 }

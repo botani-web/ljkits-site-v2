@@ -7,6 +7,8 @@ import { Enveloppe } from '@/components/ui/Enveloppe'
 import { EtatVide } from '@/components/ui/EtatVide'
 import { Section } from '@/components/ui/Section'
 import {
+  nomPalier,
+  nomSaison,
   PALIERS,
   lireChiffresSaison,
   lireClassementElo,
@@ -95,7 +97,7 @@ export default async function PageClassement({
         lignes={lignes}
         combats={combats}
         derniereMaj={chiffres.derniereMaj?.toISOString() ?? null}
-        saison={saison.nom}
+        saison={nomSaison(saison.nom, locale)}
         cashprize={CASHPRIZE}
       />
 
@@ -103,7 +105,7 @@ export default async function PageClassement({
       <Section
         fond="charbon"
         id="paliers"
-        etiquette="Les paliers"
+        etiquette={t(locale, 'classement.paliers')}
         titre={
           <>
             {t(locale, 'classement.paliers-titre')}{' '}
@@ -119,17 +121,19 @@ export default async function PageClassement({
                 className="font-titre text-[clamp(22px,2.8vw,28px)] leading-none"
                 style={{ color: palier.couleur }}
               >
-                {palier.nom}
+                {nomPalier(palier, locale)}
               </p>
               <p className="mt-3 font-mono text-[13px] text-creme">
-                {palier.minimum === 0 ? 'moins de 850' : `${palier.minimum} Elo et plus`}
+                {palier.minimum === 0
+                  ? t(locale, 'classement.moins-de')
+                  : `${palier.minimum} ${t(locale, 'classement.et-plus')}`}
               </p>
             </div>
           ))}
         </div>
 
         <div className="hachures mt-3.5 flex flex-wrap items-start gap-5 rounded-carte border border-oni/40 p-6">
-          <h3 className="shrink-0 font-titre text-base text-oni">Anti-farm</h3>
+          <h3 className="shrink-0 font-titre text-base text-oni">{t(locale, 'tableau.anti-farm')}</h3>
           <p className="flex-1 basis-[380px] text-[14.5px] text-gris">
             {t(locale, 'classement.antifarm-1')}{' '}
             <b className="font-semibold text-creme">{t(locale, 'classement.antifarm-gras1')}</b>

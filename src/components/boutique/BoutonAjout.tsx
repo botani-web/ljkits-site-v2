@@ -18,7 +18,7 @@ export function BoutonAjout({
   dansLePanier,
   indisponible = false,
   libelleIndisponible,
-  libelle = 'Ajouter au panier',
+  libelle,
   /** `or` pour l'article mis en avant : grade phare, pack. */
   variante = 'plein',
   pleineLargeur = true,
@@ -32,6 +32,8 @@ export function BoutonAjout({
   pleineLargeur?: boolean
   onClick: () => void
 }) {
+  const locale = useLocale()
+
   if (indisponible) {
     return (
       <span
@@ -58,7 +60,7 @@ export function BoutonAjout({
           className: 'border-vert bg-braise text-vert hover:border-vert hover:bg-braise',
         })}
       >
-        <span aria-hidden="true">✓</span> Dans le panier
+        <span aria-hidden="true">✓</span> {t(locale, 'boutique.dans-panier')}
       </button>
     )
   }
@@ -69,7 +71,7 @@ export function BoutonAjout({
       onClick={onClick}
       className={classesBouton({ variante, pleineLargeur })}
     >
-      {libelle}
+      {libelle ?? t(locale, 'boutique.ajouter-panier')}
     </button>
   )
 }

@@ -10,9 +10,16 @@ import { Enveloppe } from '@/components/ui/Enveloppe'
 import { EtatVide } from '@/components/ui/EtatVide'
 import { Etiquette } from '@/components/ui/TeteSection'
 import { useClassementDirect } from '@/hooks/useClassementDirect'
-import { COMBATS_MINIMUM, palierDe, resteAvantSuivant, type CombatRecent, type LigneElo } from '@/lib/elo'
+import {
+  COMBATS_MINIMUM,
+  nomPalier,
+  palierDe,
+  resteAvantSuivant,
+  type CombatRecent,
+  type LigneElo,
+} from '@/lib/elo'
 import { formaterRatio } from '@/lib/format'
-import { t, type Locale } from '@/lib/i18n'
+import { lien, t, type Locale } from '@/lib/i18n'
 
 /**
  * Le classement Elo : en-tête, podium et tableau.
@@ -102,7 +109,8 @@ export function TableauElo({
             {saison} · {t(locale, 'tableau.maj-direct')}
           </Etiquette>
               <h1 className="text-h1 mt-4 font-titre">
-                Le classement <span className="text-or">Elo</span>
+                {t(locale, 'tableau.le-classement')}{' '}
+                <span className="text-or">{t(locale, 'tableau.classement-accent')}</span>
               </h1>
               <p className="mt-4.5 max-w-[54ch] text-[clamp(16px,1.8vw,18px)] text-gris">
                 {t(locale, 'tableau.intro-1')}{' '}
@@ -160,8 +168,8 @@ export function TableauElo({
               setRecherche(valeur)
               setLimite(LIMITE_INITIALE)
             }}
-            etiquette="Chercher un joueur"
-            placeholder="Cherche ton pseudo"
+            etiquette={t(locale, 'classement.chercher')}
+            placeholder={t(locale, 'classement.placeholder-recherche')}
           />
         </BarreOutils>
 
@@ -192,7 +200,7 @@ export function TableauElo({
                       return (
                         <Link
                           key={ligne.uuid}
-                          href={`/joueur/${encodeURIComponent(ligne.pseudo)}`}
+                          href={lien(locale, `/joueur/${encodeURIComponent(ligne.pseudo)}`)}
                           className={`relative block overflow-hidden rounded-carte border p-6 transition-transform hover:-translate-y-0.5 ${marche.bordure} ${marche.fond}`}
                         >
                           <span
@@ -204,7 +212,7 @@ export function TableauElo({
 
                           <div className="relative">
                             <p className="font-mono text-[11px] tracking-[.12em] uppercase" style={{ color: palier.couleur }}>
-                              {palier.nom}
+                              {nomPalier(palier, locale)}
                             </p>
                             <div className="mt-2 flex items-center gap-2.5">
                               <Image
@@ -228,7 +236,7 @@ export function TableauElo({
 
                             <dl className="mt-4 grid grid-cols-3 gap-2 border-t border-bord pt-3.5 font-mono text-[11px]">
                               <div>
-                                <dt className="text-gris">Combats</dt>
+                                <dt className="text-gris">{t(locale, 'tableau.col-combats')}</dt>
                                 <dd className="mt-0.5 text-[13px] text-creme">{ligne.combats}</dd>
                               </div>
                               <div>
@@ -238,7 +246,7 @@ export function TableauElo({
                                 </dd>
                               </div>
                               <div>
-                                <dt className="text-gris">Record</dt>
+                                <dt className="text-gris">{t(locale, 'tableau.col-record')}</dt>
                                 <dd className="mt-0.5 text-[13px] text-creme">{ligne.recordSerie}</dd>
                               </div>
                             </dl>
@@ -263,7 +271,14 @@ export function TableauElo({
                     <div className="max-lg:hidden">
                       <EnteteTable
                         colonnes={colonnesEntete}
-                        libelles={['Rang', 'Joueur', 'Palier', 'Combats', 'K/D', 'Elo']}
+                        libelles={[
+                          t(locale, 'tableau.col-rang'),
+                          t(locale, 'tableau.col-joueur'),
+                          t(locale, 'tableau.col-palier'),
+                          t(locale, 'tableau.col-combats'),
+                          'K/D',
+                          'Elo',
+                        ]}
                         alignerADroite={[3, 4, 5]}
                       />
                     </div>
@@ -291,7 +306,7 @@ export function TableauElo({
                             </span>
 
                             <Link
-                              href={`/joueur/${encodeURIComponent(ligne.pseudo)}`}
+                              href={lien(locale, `/joueur/${encodeURIComponent(ligne.pseudo)}`)}
                               className="relative flex min-w-0 items-center gap-2.5"
                             >
                               <Image
@@ -313,7 +328,7 @@ export function TableauElo({
                                 ne dirait plus que « pseudo + Elo ».
                               */}
                               <span className="mt-0.5 block font-mono text-[11px] text-gris lg:hidden">
-                                <span style={{ color: palier.couleur }}>{palier.nom}</span> ·{' '}
+                                <span style={{ color: palier.couleur }}>{nomPalier(palier, locale)}</span> ·{' '}
                                 {ligne.combats} combats
                               </span>
                               </span>
@@ -323,7 +338,7 @@ export function TableauElo({
                               className="relative max-lg:hidden font-mono text-[12px]"
                               style={{ color: palier.couleur }}
                             >
-                              {palier.nom}
+                              {nomPalier(palier, locale)}
                             </span>
 
                             <span className="relative max-lg:hidden text-right font-mono text-[13px]">
@@ -347,7 +362,7 @@ export function TableauElo({
                               </span>
                               {suivant && (
                                 <span className="block font-mono text-[10px] text-gris max-lg:hidden">
-                                  +{suivant.reste} → {suivant.palier.nom}
+                                  +{suivant.reste} → {nomPalier(suivant.palier, locale)}
                                 </span>
                               )}
                             </span>

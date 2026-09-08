@@ -3,6 +3,8 @@
 import { useEffect, useMemo, useState } from 'react'
 
 import { useStatutServeur } from '@/components/public/StatutServeur'
+import { useLocale } from '@/hooks/useLocale'
+import { t } from '@/lib/i18n'
 import { SITE } from '@/lib/site'
 
 /**
@@ -88,6 +90,7 @@ export function EncartOuverture({
   dateOuverture: string
 }) {
   const { ouvert, restant } = useOuverture(ouvertAuRendu)
+  const locale = useLocale()
   const statut = useStatutServeur(ouvert)
 
   const valeur = ouvert
@@ -100,16 +103,16 @@ export function EncartOuverture({
 
   const mention = ouvert
     ? statut === null
-      ? 'Connexion…'
+      ? t(locale, 'ouverture.connexion')
       : statut.enLigne
-        ? 'Serveur en ligne'
-        : 'Serveur hors ligne'
+        ? t(locale, 'ouverture.en-ligne')
+        : t(locale, 'ouverture.hors-ligne')
     : dateOuverture
 
   return (
     <div className="mt-8.5 inline-flex w-full flex-col items-center justify-center gap-2 rounded-carte border border-or/35 bg-or/6 px-5 py-3.5 min-[560px]:w-auto min-[560px]:flex-row min-[560px]:flex-wrap min-[560px]:gap-3.5">
       <span className="font-mono text-[10.5px] font-bold tracking-[.18em] text-or uppercase">
-        {ouvert ? 'Joueurs en ligne' : 'Ouverture dans'}
+        {t(locale, ouvert ? 'ouverture.joueurs-en-ligne' : 'ouverture.dans')}
       </span>
 
       <span
@@ -146,6 +149,13 @@ export function PhraseOuverture({
   dateEnPhrase: string
 }) {
   const { ouvert } = useOuverture(ouvertAuRendu)
+  const locale = useLocale()
 
-  return <>{ouvert ? 'Copie l’adresse et sors du spawn.' : `Rendez-vous ${dateEnPhrase}.`}</>
+  return (
+    <>
+      {ouvert
+        ? t(locale, 'ouverture.copie-sors')
+        : t(locale, 'ouverture.rendez-vous').replace('{d}', dateEnPhrase)}
+    </>
+  )
 }
