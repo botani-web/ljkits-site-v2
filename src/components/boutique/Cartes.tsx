@@ -8,6 +8,8 @@ import type { GradeBoutique, KitBoutique, PackBoutique } from '@/components/bout
 import { Badge, Ruban } from '@/components/ui/Badge'
 import { KanjiFiligrane } from '@/components/ui/Carte'
 import { formaterCoins, formaterEuros } from '@/lib/format'
+import { useLocale } from '@/hooks/useLocale'
+import { t } from '@/lib/i18n'
 
 /**
  * Pourquoi un article peut ne pas être ajoutable, et ce qu'on écrit dessus.
@@ -30,9 +32,10 @@ function etatDeVente({
   paiementPret: boolean
   bientot?: boolean
 }) {
-  if (bientot) return { indisponible: true, libelle: 'Bientôt disponible' }
+  const locale = useLocale()
+  if (bientot) return { indisponible: true, libelle: t(locale, 'boutique.bientot-dispo') }
   if (!achetable) return { indisponible: true, libelle: 'Indisponible' }
-  if (!paiementPret) return { indisponible: true, libelle: 'Bientôt en boutique' }
+  if (!paiementPret) return { indisponible: true, libelle: t(locale, 'boutique.bientot-en-boutique') }
   return { indisponible: false, libelle: 'Ajouter au panier' }
 }
 
@@ -60,6 +63,7 @@ export function CarteGrade({
   dansLePanier: boolean
   onBasculer: () => void
 }) {
+  const locale = useLocale()
   /*
     LA MISE EN AVANT NE SUIT PLUS L'ÉTIQUETTE.
     ══════════════════════════════════════════════════════════════════════
@@ -126,7 +130,7 @@ export function CarteGrade({
         </p>
 
         <p className="mt-2.5 font-mono text-[10.5px] tracking-[.06em] text-vert">
-          Permanent · livré en 90 s
+          {t(locale, 'boutique.permanent')}
         </p>
       </div>
 
@@ -369,6 +373,7 @@ export function CartePack({
   dansLePanier: boolean
   onBasculer: () => void
 }) {
+  const locale = useLocale()
   const vente = etatDeVente(pack)
 
   const economie =
@@ -410,7 +415,7 @@ export function CartePack({
 
         {pack.prixBarreCentimes !== null && (
           <p className="mt-1.5 font-mono text-[13px] text-gris line-through">
-            {formaterEuros(pack.prixBarreCentimes)} à l’unité
+            {formaterEuros(pack.prixBarreCentimes)} {t(locale, 'boutique.a-lunite')}
           </p>
         )}
 

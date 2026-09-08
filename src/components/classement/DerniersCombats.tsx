@@ -6,6 +6,8 @@ import { Section } from '@/components/ui/Section'
 import { useCombatsDirect } from '@/hooks/useClassementDirect'
 import { COMBATS_MINIMUM, formaterKit, type CombatRecent } from '@/lib/elo'
 import { formaterDateHeure } from '@/lib/format'
+import { useLocale } from '@/hooks/useLocale'
+import { t } from '@/lib/i18n'
 
 /**
  * Les derniers combats de la saison, mis à jour en direct.
@@ -23,6 +25,7 @@ export function DerniersCombats({
   combatsInitiaux: CombatRecent[]
   joueurs: number
 }) {
+  const locale = useLocale()
   const combats = useCombatsDirect(combatsInitiaux)
 
   return (
@@ -33,10 +36,10 @@ export function DerniersCombats({
           Les derniers <span className="text-or">combats</span>
         </>
       }
-      chapeau="Chaque duel de la saison est enregistré : les deux kits, l’Elo échangé et les points de vie qui restaient au vainqueur."
+      chapeau={t(locale, 'combats.chapeau')}
     >
       {combats.length === 0 ? (
-        <EtatVide message="Aucun combat classé pour le moment." />
+        <EtatVide message={t(locale, 'combats.aucun')} />
       ) : (
         <CadreTable fond="braise">
           <div className="max-lg:hidden">

@@ -8,6 +8,8 @@ import { LignesLore } from '@/components/ui/LignesLore'
 import { Panneau, SectionPanneau } from '@/components/ui/Panneau'
 import { formaterEuros } from '@/lib/format'
 import type { ArticleAffiche } from '@/lib/panier'
+import { useLocale } from '@/hooks/useLocale'
+import { t } from '@/lib/i18n'
 
 /**
  * Récapitulatif avant paiement — le dernier écran avant de quitter le site.
@@ -40,6 +42,7 @@ export function ModaleRecapitulatif({
   action: (formData: FormData) => void
   onFermer: () => void
 }) {
+  const locale = useLocale()
   const dialogue = useRef<HTMLDialogElement>(null)
 
   useEffect(() => {
@@ -64,7 +67,7 @@ export function ModaleRecapitulatif({
     >
       <Panneau
         ombre
-        titre={<span id="titre-recapitulatif">Récapitulatif</span>}
+        titre={<span id="titre-recapitulatif">{t(locale, 'boutique.recapitulatif')}</span>}
         pied={
           <>
             {/*
@@ -97,7 +100,7 @@ export function ModaleRecapitulatif({
           </p>
           <p className="mt-2 truncate font-mono text-[17px] font-bold text-creme">{pseudo}</p>
           <p className="mt-1.5 text-[12.5px] text-gris">
-            Vérifie-le : c’est lui qui recevra la livraison en jeu.
+            {t(locale, 'boutique.verifie-pseudo')}
           </p>
         </SectionPanneau>
 
@@ -146,6 +149,7 @@ export function ModaleRecapitulatif({
 }
 
 function BoutonPaiement() {
+  const locale = useLocale()
   const { pending } = useFormStatus()
 
   return (
@@ -159,7 +163,7 @@ function BoutonPaiement() {
           'disabled:cursor-default disabled:opacity-60 disabled:hover:bg-soupe disabled:hover:shadow-none',
       })}
     >
-      {pending ? 'Création de la commande…' : 'Aller au paiement'}
+      {t(locale, pending ? 'boutique.creation' : 'boutique.aller-paiement')}
     </button>
   )
 }

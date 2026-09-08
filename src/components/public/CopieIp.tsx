@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react'
 
 import { useReglages } from '@/components/public/ContexteReglages'
+import { useLocale } from '@/hooks/useLocale'
+import { t } from '@/lib/i18n'
 
 /**
  * Copie de l'adresse du serveur dans le presse-papier.
@@ -81,6 +83,7 @@ export function BoutonIpGeant({ className = '' }: { className?: string }) {
 
 /** Le toast « Adresse copiée ». À monter une seule fois par page. */
 export function ToastCopie() {
+  const locale = useLocale()
   const { ip } = useReglages()
   const [visible, setVisible] = useState(false)
 
@@ -108,7 +111,7 @@ export function ToastCopie() {
         visible ? 'translate-y-0' : 'pointer-events-none translate-y-[150%]'
       }`}
     >
-      Adresse copiée : {ip}
+      {t(locale, 'commun.adresse-copiee')} {ip}
     </div>
   )
 }

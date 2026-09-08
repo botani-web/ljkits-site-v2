@@ -5,6 +5,8 @@ import { useEffect, useRef } from 'react'
 
 import { classesBouton } from '@/components/ui/Bouton'
 import { Panneau, SectionPanneau } from '@/components/ui/Panneau'
+import { useLocale } from '@/hooks/useLocale'
+import { t } from '@/lib/i18n'
 
 /**
  * Le passage au paiement, une fois la commande créée côté serveur.
@@ -39,6 +41,7 @@ export function PaiementTebex({
   /** Page de paiement hébergée par Tebex, pour ce panier. */
   urlCheckout: string
 }) {
+  const locale = useLocale()
   const dialogue = useRef<HTMLDialogElement>(null)
 
   // Ouverte dès le montage : le parent ne rend ce composant qu'une fois la
@@ -64,8 +67,7 @@ export function PaiementTebex({
       <Panneau ombre titre={<span id="titre-paiement">Paiement</span>}>
         <SectionPanneau dernier>
           <p className="text-[14.5px] text-creme">
-            Ta commande est enregistrée. Le paiement s’ouvre dans un onglet séparé, sur la
-            page sécurisée de Tebex.
+            {t(locale, 'boutique.tebex')}
           </p>
 
           <a

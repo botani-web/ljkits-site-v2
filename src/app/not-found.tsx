@@ -18,13 +18,12 @@ export default function PageIntrouvable() {
             </h1>
 
             <p className="mx-auto mt-4.5 max-w-[48ch] text-gris">
-              Cette page n’existe pas, ou plus. Le kit que tu cherchais a peut-être été
-              retiré.
+              {t(LANGUE_DEFAUT, 'erreur.404')}
             </p>
 
             <div className="mt-8 flex flex-wrap justify-center gap-2.75">
               <LienBouton href="/" variante="plein">
-                Retour à l’accueil
+                {t(LANGUE_DEFAUT, 'commun.retour-accueil')}
               </LienBouton>
               <LienBouton href="/kits" variante="vide">
                 Voir les kits

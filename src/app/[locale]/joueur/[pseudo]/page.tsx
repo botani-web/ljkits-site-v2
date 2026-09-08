@@ -136,13 +136,13 @@ export default async function PageJoueur({ params }: Params) {
               <div className="mt-4 flex flex-wrap gap-2">
                 <Pilule
                   vrai={fiche.lie}
-                  vraiTexte="Compte Discord lié"
-                  fauxTexte="Compte Discord non lié · hors classement"
+                  vraiTexte={t(locale, 'joueur.discord-lie')}
+                  fauxTexte={t(locale, 'joueur.discord-non-lie')}
                 />
                 <Pilule
                   vrai={fiche.eligible}
-                  vraiTexte={`${fiche.combats} combats · éligible au cashprize`}
-                  fauxTexte={`${fiche.combats}/${COMBATS_MINIMUM} combats · pas encore éligible`}
+                  vraiTexte={`${fiche.combats} ${t(locale, 'joueur.eligible')}`}
+                  fauxTexte={`${fiche.combats}/${COMBATS_MINIMUM} ${t(locale, 'joueur.pas-eligible')}`}
                 />
               </div>
             </div>
@@ -156,8 +156,8 @@ export default async function PageJoueur({ params }: Params) {
           <Chiffre valeur={fiche.kills} libelle="Kills" />
           <Chiffre valeur={fiche.morts} libelle="Morts" />
           <Chiffre valeur={formaterRatio(fiche.kills, fiche.morts)} libelle="Ratio K/D" />
-          <Chiffre valeur={fiche.serie} libelle="Série en cours" />
-          <Chiffre valeur={fiche.recordSerie} libelle="Record de série" />
+          <Chiffre valeur={fiche.serie} libelle={t(locale, 'joueur.serie-cours')} />
+          <Chiffre valeur={fiche.recordSerie} libelle={t(locale, 'joueur.record-serie')} />
           <Chiffre valeur={fiche.eloMax} libelle="Meilleur Elo" accent />
         </div>
 
@@ -181,7 +181,7 @@ export default async function PageJoueur({ params }: Params) {
               Avec quoi il <span className="text-or">gagne</span>
             </>
           }
-          chapeau="Les kits les plus joués cette saison, et ce qu’ils rapportent vraiment."
+          chapeau={t(locale, 'joueur.kits-chapeau')}
         >
           <div className="grid gap-3 min-[560px]:grid-cols-2 lg:grid-cols-4">
             {kits.map((kit) => (
@@ -211,13 +211,13 @@ export default async function PageJoueur({ params }: Params) {
       {/* ═══════════════════════ LES ADVERSAIRES ═══════════════════════ */}
       {adversaires.length > 0 && (
         <Section
-          etiquette="Face-à-face"
+          etiquette={t(locale, 'joueur.face-a-face')}
           titre={
             <>
               Ses <span className="text-or">adversaires</span>
             </>
           }
-          chapeau="Les joueurs qu’il croise le plus souvent, et qui mène."
+          chapeau={t(locale, 'joueur.face-chapeau')}
         >
           <div className="grid gap-3 min-[560px]:grid-cols-2 lg:grid-cols-5">
             {adversaires.map((adversaire) => {
@@ -250,7 +250,7 @@ export default async function PageJoueur({ params }: Params) {
                     <span className="font-bold text-oni">{adversaire.defaites}</span>
                   </p>
                   <p className="mt-1 font-mono text-[11px] text-gris">
-                    {egalite ? 'à égalité' : mene ? 'il mène' : 'il est mené'}
+                    {t(locale, egalite ? 'joueur.egalite' : mene ? 'joueur.mene' : 'joueur.est-mene')}
                   </p>
                 </Link>
               )
@@ -270,13 +270,20 @@ export default async function PageJoueur({ params }: Params) {
         }
       >
         {combats.length === 0 ? (
-          <EtatVide message="Aucun combat classé cette saison." />
+          <EtatVide message={t(locale, 'joueur.aucun-combat')} />
         ) : (
           <CadreTable fond="braise">
             <div className="max-lg:hidden">
               <EnteteTable
                 colonnes="90px minmax(0,1fr) 140px 140px 80px 92px"
-                libelles={['Issue', 'Adversaire', 'Son kit', 'Ton kit', 'Elo', 'Après']}
+                libelles={[
+                  t(locale, 'joueur.col-issue'),
+                  t(locale, 'joueur.col-adversaire'),
+                  t(locale, 'joueur.col-son-kit'),
+                  t(locale, 'joueur.col-ton-kit'),
+                  'Elo',
+                  t(locale, 'joueur.col-apres'),
+                ]}
                 alignerADroite={[4, 5]}
               />
             </div>
@@ -289,7 +296,7 @@ export default async function PageJoueur({ params }: Params) {
                 >
                   <span className="max-lg:hidden font-mono text-[11px] font-bold tracking-[.1em] uppercase">
                     <span className={combat.victoire ? 'text-vert' : 'text-oni'}>
-                      {combat.victoire ? 'Victoire' : 'Défaite'}
+                      {t(locale, combat.victoire ? 'joueur.victoire' : 'joueur.defaite')}
                     </span>
                   </span>
 
@@ -336,7 +343,7 @@ export default async function PageJoueur({ params }: Params) {
         )}
 
         <p className="mt-3.5 font-mono text-[11px] text-gris">
-          Fiche à jour au {formaterDateHeure(fiche.derniereMaj)} · saison {saison.nom}
+          {t(locale, 'joueur.fiche-a-jour')} {formaterDateHeure(fiche.derniereMaj)} · {t(locale, 'joueur.saison')} {saison.nom}
         </p>
       </Section>
     </PagePublique>

@@ -27,6 +27,8 @@ import {
   type ArticleAffiche,
   type ArticlePanier,
 } from '@/lib/panier'
+import { useLocale } from '@/hooks/useLocale'
+import { t } from '@/lib/i18n'
 
 /**
  * L'îlot client de la boutique : la barre, les deux rayons, le panier, la
@@ -41,6 +43,7 @@ import {
  * la modale — les découper obligerait à un contexte React pour rien.
  */
 export function Boutique({ grades, packs }: { grades: GradeBoutique[]; packs: PackBoutique[] }) {
+  const locale = useLocale()
   const [panier, setPanier] = useState<ArticlePanier[]>([])
   const [pseudo, setPseudo] = useState<string | null>(null)
   const [modaleOuverte, setModaleOuverte] = useState(false)
@@ -126,7 +129,7 @@ export function Boutique({ grades, packs }: { grades: GradeBoutique[]; packs: Pa
         etiquette="Rayon 01 · Les grades"
         titre={
           <>
-            Un achat, <span className="text-or">à vie</span>
+            {t(locale, 'boutique.achat-vie-1')} <span className="text-or">{t(locale, 'boutique.achat-vie-2')}</span>
           </>
         }
         chapeau="Trois grades, cumulatifs : chaque grade contient tout ce que donne le précédent. Ils changent ce que tu gagnes et comment on te voit — jamais ce que tu fais en combat."

@@ -38,24 +38,26 @@ export const revalidate = 15
 /** Le montant annoncé. Il doit rester en accord avec LJElo/config.yml. */
 const CASHPRIZE = '150€'
 
-export const metadata: Metadata = {
-  title: 'Classement Elo',
-  description:
-    'Le classement Elo de LJKITS : paliers, combats, ratio K/D. Saison mensuelle avec cashprize à la clé.',
-  alternates: { canonical: '/classement' },
-  openGraph: {
-    type: 'website',
-    title: 'Classement Elo — LJKITS',
-    description: 'Qui domine la saison ? Elo, paliers et éligibilité au cashprize.',
-    url: '/classement',
-    images: IMAGE_OG,
-  },
-  twitter: {
-    card: 'summary',
-    title: 'Classement Elo — LJKITS',
-    description: 'Elo, paliers et cashprize mensuel.',
-    images: IMAGE_OG,
-  },
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>
+}): Promise<Metadata> {
+  const { locale: brut } = await params
+  const locale: Locale = estLocale(brut) ? brut : LANGUE_DEFAUT
+  const titre = t(locale, 'meta.classement-titre')
+  const description = t(locale, 'meta.classement-desc')
+
+  return {
+    title: titre,
+    description,
+    // hreflang : c'est ce qui dit aux moteurs que les deux adresses sont
+    // la même page dans deux langues, plutôt que du contenu dupliqué.
+    alternates: {
+      languages: { en: `/en/classement`, fr: `/fr/classement` },
+    },
+    openGraph: { title: `${titre} — LJKITS`, description, images: IMAGE_OG },
+  }
 }
 
 export default async function PageClassement({

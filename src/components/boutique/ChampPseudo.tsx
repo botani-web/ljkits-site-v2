@@ -4,6 +4,8 @@ import { useState } from 'react'
 
 import { classesBouton } from '@/components/ui/Bouton'
 import { pseudoValide } from '@/lib/panier'
+import { useLocale } from '@/hooks/useLocale'
+import { t } from '@/lib/i18n'
 
 /**
  * Saisie du pseudo Minecraft qui recevra la livraison.
@@ -35,6 +37,7 @@ export function ChampPseudo({
   onChanger: () => void
   autoFocus?: boolean
 }) {
+  const locale = useLocale()
   const [saisie, setSaisie] = useState('')
   const [erreur, setErreur] = useState(false)
 
@@ -94,11 +97,11 @@ export function ChampPseudo({
 
           {erreur ? (
             <p id="erreur-pseudo" role="alert" className="mt-2.5 text-[12.5px] text-oni">
-              Pseudo invalide : 3 à 16 caractères, lettres, chiffres et _ uniquement.
+              {t(locale, 'boutique.pseudo-invalide')}
             </p>
           ) : (
             <p id="aide-pseudo" className="mt-2.5 text-[12.5px] text-gris">
-              C’est ce pseudo qui recevra la livraison en jeu. Vérifie la casse.
+              {t(locale, 'boutique.pseudo-aide')}
             </p>
           )}
         </>

@@ -5,6 +5,7 @@ import Link from 'next/link'
 
 import { classesBouton } from '@/components/ui/Bouton'
 import { Enveloppe } from '@/components/ui/Enveloppe'
+import { LANGUE_DEFAUT, t } from '@/lib/i18n'
 
 /**
  * Page d'erreur des routes du site.
@@ -47,7 +48,7 @@ export default function ErreurDeRoute({
           </p>
 
           <h1 className="text-h1 mt-4 font-titre">
-            Le bol s’est <span className="text-or">renversé</span>
+            {t(LANGUE_DEFAUT, 'erreur.titre-1')} <span className="text-or">{t(LANGUE_DEFAUT, 'erreur.titre-2')}</span>
           </h1>
 
           <p className="mx-auto mt-4.5 max-w-[48ch] text-gris">
@@ -67,10 +68,10 @@ export default function ErreurDeRoute({
               onClick={reset}
               className={classesBouton({ variante: 'plein' })}
             >
-              Réessayer
+              {t(LANGUE_DEFAUT, 'commun.reessayer')}
             </button>
             <Link href="/" className={classesBouton({ variante: 'vide' })}>
-              Retour à l’accueil
+              {t(LANGUE_DEFAUT, 'commun.retour-accueil')}
             </Link>
           </div>
         </div>

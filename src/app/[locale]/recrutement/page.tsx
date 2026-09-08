@@ -24,9 +24,26 @@ import { estLocale, LANGUE_DEFAUT, lien, t, champ, champOptionnel, type Locale }
  * et une ligne Disallow ANNONCERAIT l'adresse au monde entier — exactement le
  * contraire du but recherché.
  */
-export const metadata: Metadata = {
-  title: 'Recrutement staff',
-  robots: { index: false, follow: false },
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>
+}): Promise<Metadata> {
+  const { locale: brut } = await params
+  const locale: Locale = estLocale(brut) ? brut : LANGUE_DEFAUT
+  const titre = t(locale, 'meta.recrutement-titre')
+  const description = t(locale, 'meta.recrutement-desc')
+
+  return {
+    title: titre,
+    description,
+    // hreflang : c'est ce qui dit aux moteurs que les deux adresses sont
+    // la même page dans deux langues, plutôt que du contenu dupliqué.
+    alternates: {
+      languages: { en: `/en/recrutement`, fr: `/fr/recrutement` },
+    },
+    openGraph: { title: `${titre} — LJKITS`, description },
+  }
 }
 
 /**
@@ -56,15 +73,15 @@ export default async function PageRecrutement({
       <header className="halo-hero border-b border-bord py-[clamp(48px,6vw,80px)] text-center">
         <Enveloppe>
           <div className="mx-auto max-w-lecture">
-            <Etiquette>LJKITS — équipe de modération</Etiquette>
+            <Etiquette>{t(locale, 'recrutement.etiquette')}</Etiquette>
 
             <h1 className="text-h1 mt-4 font-titre">
-              Rejoindre le <span className="text-or">staff</span>
+              {t(locale, 'recrutement.h1-1')}{' '}
+              <span className="text-or">{t(locale, 'recrutement.h1-2')}</span>
             </h1>
 
             <p className="mx-auto mt-4.5 max-w-[52ch] text-gris">
-              Modérer un serveur soup, ce n’est pas distribuer des sanctions : c’est arbitrer
-              vite, souvent sans preuve parfaite, et rester droit quand c’est un ami en face.
+              {t(locale, 'recrutement.chapo')}
             </p>
           </div>
         </Enveloppe>
@@ -78,7 +95,7 @@ export default async function PageRecrutement({
                  main, une page introuvable donnerait l'impression d'un site
                  cassé. */
               <div className="rounded-carte border border-bord bg-charbon px-6 py-12 text-center">
-                <p className="font-titre text-xl">Recrutement fermé</p>
+                <p className="font-titre text-xl">{t(locale, 'recrutement.ferme-titre')}</p>
                 <p className="mx-auto mt-3.5 max-w-lg text-[15px] text-gris">
                   {recrutementMessageFerme}
                 </p>
@@ -97,12 +114,12 @@ export default async function PageRecrutement({
             ) : questions.length === 0 ? (
               /* Cas de bord : recrutement ouvert mais questionnaire vide. Mieux
                  vaut le dire que d'afficher un formulaire à trois champs. */
-              <EtatVide message="Le questionnaire est en cours de préparation. Reviens d’ici peu." />
+              <EtatVide message={t(locale, 'recrutement.preparation')} />
             ) : (
               <>
                 <div className="mb-9 rounded-carte border border-bord bg-charbon p-5.5">
                   <h2 className="font-mono text-[10.5px] font-bold tracking-[.18em] text-soupe uppercase">
-                    Avant de commencer
+                    {t(locale, 'recrutement.avant')}
                   </h2>
 
                   <ul className="mt-3.5">
@@ -111,8 +128,10 @@ export default async function PageRecrutement({
                         ›
                       </span>
                       <span>
-                        <b className="font-semibold text-creme">{AGE_MINIMUM} ans minimum.</b>{' '}
-                        C’est une équipe, pas un grade cosmétique.
+                        <b className="font-semibold text-creme">
+                          {AGE_MINIMUM} {t(locale, 'recrutement.age-gras')}
+                        </b>{' '}
+                        {t(locale, 'recrutement.age-texte')}
                       </span>
                     </li>
                     <li className="flex gap-3 border-t border-bord py-2.5 text-sm text-gris">
@@ -121,10 +140,9 @@ export default async function PageRecrutement({
                       </span>
                       <span>
                         <b className="font-semibold text-creme">
-                          Compte une bonne demi-heure.
+                          {t(locale, 'recrutement.duree-gras')}
                         </b>{' '}
-                        Les mises en situation demandent des réponses développées — c’est
-                        précisément ce qu’on lit.
+                        {t(locale, 'recrutement.duree-texte')}
                       </span>
                     </li>
                     <li className="flex gap-3 border-t border-bord py-2.5 text-sm text-gris">
@@ -132,8 +150,10 @@ export default async function PageRecrutement({
                         ›
                       </span>
                       <span>
-                        <b className="font-semibold text-creme">Sois honnête.</b> Une réponse
-                        franche ne disqualifie pas. Un mensonge découvert, oui.
+                        <b className="font-semibold text-creme">
+                          {t(locale, 'recrutement.honnete-gras')}
+                        </b>{' '}
+                        {t(locale, 'recrutement.honnete-texte')}
                       </span>
                     </li>
                     <li className="flex gap-3 border-t border-bord py-2.5 text-sm text-gris">
@@ -141,8 +161,8 @@ export default async function PageRecrutement({
                         ›
                       </span>
                       <span>
-                        Tes réponses sont conservées {CONSERVATION_MOIS} mois, puis
-                        supprimées.
+                        {t(locale, 'recrutement.conservation-1')} {CONSERVATION_MOIS}{' '}
+                        {t(locale, 'recrutement.conservation-2')}
                       </span>
                     </li>
                   </ul>

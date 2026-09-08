@@ -29,23 +29,29 @@ const jetBrainsMono = JetBrains_Mono({
   display: 'swap',
 })
 
+/*
+  L'ANGLAIS EST LA LANGUE PAR DÉFAUT : ces valeurs servent de repli pour
+  /admin et /connexion, et pour tout ce qui ne vit pas sous [locale]. Les
+  pages publiques les remplacent avec generateMetadata, et le composant
+  LangueDuDocument corrige `lang` sur les pages françaises.
+*/
 export const metadata: Metadata = {
   // Sert de base aux URL relatives des métadonnées Open Graph des sous-pages.
   metadataBase: new URL(SITE.url),
   title: {
-    default: 'LJKITS — Le PvP Soup Compétitif',
+    default: 'LJKITS — Competitive Soup PvP',
     // Les pages filles n'ont qu'à définir leur titre court.
     template: '%s — LJKITS',
   },
   description:
-    'Serveur Minecraft PvP Soup 1.8. Kits, soupes, knockback d’époque. Sans pay-to-win.',
+    'Minecraft 1.8 soup PvP server. Kits, soups, period-accurate knockback. No pay-to-win.',
   icons: {
     icon: '/logo-icon.png',
     apple: '/logo-icon.png',
   },
   openGraph: {
     type: 'website',
-    locale: 'fr_FR',
+    locale: 'en_GB',
     siteName: 'LJKITS',
     url: SITE.url,
     images: [{ url: '/og.png', width: 1080, height: 1080 }],
@@ -62,7 +68,7 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html
-      lang="fr"
+      lang="en"
       className={`${bungee.variable} ${outfit.variable} ${jetBrainsMono.variable}`}
     >
       <body>

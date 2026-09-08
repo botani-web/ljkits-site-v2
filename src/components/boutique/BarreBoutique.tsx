@@ -1,6 +1,8 @@
 'use client'
 
 import { formaterEuros } from '@/lib/format'
+import { useLocale } from '@/hooks/useLocale'
+import { t } from '@/lib/i18n'
 
 /**
  * La barre de la boutique, collante sous la navigation : les rayons à gauche,
@@ -31,6 +33,7 @@ export function BarreBoutique({
   total: number
   onOuvrirPanier: () => void
 }) {
+  const locale = useLocale()
   return (
     <div className="sticky top-nav z-50 border-y border-bord bg-nuit/95 py-2.5 backdrop-blur-xl">
       <div className="mx-auto flex w-full max-w-contenu items-center gap-3 px-gouttiere">
@@ -70,7 +73,7 @@ export function BarreBoutique({
             </span>
           ) : (
             <span className="min-w-0 truncate font-mono text-[11.5px] tracking-[.04em]">
-              <span className="text-gris">Livraison à </span>
+              <span className="text-gris">{t(locale, 'boutique.livraison-a')}</span>
               <span className="font-bold text-creme">{pseudo}</span>
             </span>
           )}

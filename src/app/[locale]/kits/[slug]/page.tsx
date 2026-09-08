@@ -87,28 +87,37 @@ export async function generateMetadata({
 }: {
   params: Promise<{ slug: string; locale: string }>
 }): Promise<Metadata> {
-  const { slug } = await params
+  const { slug, locale: brut } = await params
+  const locale: Locale = estLocale(brut) ? brut : LANGUE_DEFAUT
   const kit = await lireKit(slug)
 
-  if (!kit) return { title: 'Kit introuvable' }
+  if (!kit) return { title: t(locale, 'kit.introuvable') }
 
-  const titre = `${kit.nom} — ${kit.role}`
+  const role = champ(locale, kit.role, kit.roleEn)
+  const description = champ(locale, kit.descriptionCourte, kit.descriptionCourteEn)
+  const titre = `${kit.nom} — ${role}`
+  const adresse = lien(locale, `/kits/${kit.slug}`)
 
   return {
     title: kit.nom,
-    description: kit.descriptionCourte,
-    alternates: { canonical: `/kits/${kit.slug}` },
+    description,
+    // La canonique porte la langue : sans elle, les deux versions se
+    // disputeraient la même adresse, qui redirige en plus.
+    alternates: {
+      canonical: adresse,
+      languages: { en: `/en/kits/${kit.slug}`, fr: `/fr/kits/${kit.slug}` },
+    },
     openGraph: {
       type: 'article',
       title: `${titre} — LJKITS`,
-      description: kit.descriptionCourte,
-      url: `/kits/${kit.slug}`,
+      description,
+      url: adresse,
       images: IMAGE_OG,
     },
     twitter: {
       card: 'summary',
       title: `${titre} — LJKITS`,
-      description: kit.descriptionCourte,
+      description,
       images: IMAGE_OG,
     },
   }

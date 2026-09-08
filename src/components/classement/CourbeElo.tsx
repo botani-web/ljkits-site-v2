@@ -1,3 +1,5 @@
+import { useLocale } from '@/hooks/useLocale'
+import { t } from '@/lib/i18n'
 /**
  * La courbe d'Elo d'un joueur, en SVG pur.
  *
@@ -14,6 +16,7 @@ export function CourbeElo({
   points: number[]
   className?: string
 }) {
+  const locale = useLocale()
   if (points.length < 2) return null
 
   const LARGEUR = 600
@@ -72,7 +75,7 @@ export function CourbeElo({
         <span>{premier} Elo</span>
         <span style={{ color: couleur }}>
           {progresse ? '+' : ''}
-          {dernier - premier} sur la période
+          {dernier - premier} {t(locale, 'courbe.periode')}
         </span>
         <span className="text-creme">{dernier} Elo</span>
       </div>

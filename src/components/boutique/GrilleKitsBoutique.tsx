@@ -10,6 +10,8 @@ import { Filtre } from '@/components/ui/Pilule'
 import { formaterEuros } from '@/lib/format'
 import type { ArticlePanier } from '@/lib/panier'
 import { contient } from '@/lib/panier'
+import { useLocale } from '@/hooks/useLocale'
+import { t } from '@/lib/i18n'
 
 /**
  * La grille des kits en vente, ses deux filtres et sa recherche.
@@ -29,6 +31,7 @@ export function GrilleKitsBoutique({
   panier: ArticlePanier[]
   onBasculer: (article: ArticlePanier) => void
 }) {
+  const locale = useLocale()
   const [filtre, setFiltre] = useState<CleFiltre>('tous')
   const [recherche, setRecherche] = useState('')
 
@@ -104,9 +107,9 @@ export function GrilleKitsBoutique({
       {kitsAffiches.length === 0 ? (
         <EtatVide
           className="mt-4"
-          message="Aucun kit ne correspond à cette recherche."
+          message={t(locale, 'boutique.aucun-kit')}
           action={{
-            libelle: 'Tout réafficher',
+            libelle: t(locale, 'boutique.tout-reafficher'),
             onClick: () => {
               setFiltre('tous')
               setRecherche('')

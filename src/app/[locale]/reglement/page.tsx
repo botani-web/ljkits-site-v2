@@ -12,18 +12,26 @@ import { estLocale, LANGUE_DEFAUT, lien, t, champ, champOptionnel, type Locale }
 
 export const revalidate = 3600 // une heure
 
-export const metadata: Metadata = {
-  title: 'Règlement',
-  description:
-    'Le règlement du serveur Minecraft PvP Soup LJKITS : triche, respect, stats, bugs, chat, sanctions.',
-  openGraph: {
-    type: 'article',
-    title: 'Règlement — LJKITS',
-    description:
-      'Le règlement du serveur Minecraft PvP Soup LJKITS : triche, respect, stats, bugs, chat, sanctions.',
-    url: '/reglement',
-    images: IMAGE_OG,
-  },
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>
+}): Promise<Metadata> {
+  const { locale: brut } = await params
+  const locale: Locale = estLocale(brut) ? brut : LANGUE_DEFAUT
+  const titre = t(locale, 'meta.reglement-titre')
+  const description = t(locale, 'meta.reglement-desc')
+
+  return {
+    title: titre,
+    description,
+    // hreflang : c'est ce qui dit aux moteurs que les deux adresses sont
+    // la même page dans deux langues, plutôt que du contenu dupliqué.
+    alternates: {
+      languages: { en: `/en/reglement`, fr: `/fr/reglement` },
+    },
+    openGraph: { title: `${titre} — LJKITS`, description, images: IMAGE_OG },
+  }
 }
 
 export default async function PageReglement({

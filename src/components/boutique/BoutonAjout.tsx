@@ -1,6 +1,8 @@
 'use client'
 
 import { classesBouton } from '@/components/ui/Bouton'
+import { useLocale } from '@/hooks/useLocale'
+import { t } from '@/lib/i18n'
 
 /**
  * Le bouton d'ajout au panier, commun aux grades, aux kits et aux packs.
@@ -15,7 +17,7 @@ import { classesBouton } from '@/components/ui/Bouton'
 export function BoutonAjout({
   dansLePanier,
   indisponible = false,
-  libelleIndisponible = 'Bientôt disponible',
+  libelleIndisponible,
   libelle = 'Ajouter au panier',
   /** `or` pour l'article mis en avant : grade phare, pack. */
   variante = 'plein',

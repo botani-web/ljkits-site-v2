@@ -16,17 +16,26 @@ import { estLocale, LANGUE_DEFAUT, lien, t, champ, champOptionnel, type Locale }
 
 export const revalidate = 3600 // une heure
 
-export const metadata: Metadata = {
-  title: 'Boutique',
-  description:
-    'Grades à vie et packs de coins pour soutenir LJKITS. Aucun kit en vente, aucun avantage en combat : tout le contenu reste obtenable en jouant.',
-  openGraph: {
-    type: 'website',
-    title: 'Boutique — LJKITS',
-    description: 'Grades à vie et packs de coins. Aucun avantage en combat, jamais.',
-    url: '/boutique',
-    images: IMAGE_OG,
-  },
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>
+}): Promise<Metadata> {
+  const { locale: brut } = await params
+  const locale: Locale = estLocale(brut) ? brut : LANGUE_DEFAUT
+  const titre = t(locale, 'meta.boutique-titre')
+  const description = t(locale, 'meta.boutique-desc')
+
+  return {
+    title: titre,
+    description,
+    // hreflang : c'est ce qui dit aux moteurs que les deux adresses sont
+    // la même page dans deux langues, plutôt que du contenu dupliqué.
+    alternates: {
+      languages: { en: `/en/boutique`, fr: `/fr/boutique` },
+    },
+    openGraph: { title: `${titre} — LJKITS`, description, images: IMAGE_OG },
+  }
 }
 
 /**
@@ -53,7 +62,9 @@ export default async function PageBoutique({
     prisma.grade.findMany({
       where: { visible: true },
       orderBy: [{ ordre: 'asc' }, { id: 'asc' }],
-      include: { avantages: { orderBy: { ordre: 'asc' }, select: { texte: true } } },
+      include: {
+        avantages: { orderBy: { ordre: 'asc' }, select: { texte: true, texteEn: true } },
+      },
     }),
     prisma.pack.findMany({
       where: { visible: true },
@@ -66,19 +77,19 @@ export default async function PageBoutique({
     slug: grade.slug,
     nom: grade.nom,
     kanji: grade.kanji,
-    sousTitre: grade.sousTitre,
-    etiquette: grade.etiquette,
+    sousTitre: champOptionnel(locale, grade.sousTitre, grade.sousTitreEn),
+    etiquette: champOptionnel(locale, grade.etiquette, grade.etiquetteEn),
     prixEurosCentimes: grade.prixEurosCentimes,
     achetable: grade.achetable,
     paiementPret: grade.tebexPackageId !== null,
-    avantages: grade.avantages.map((avantage) => avantage.texte),
+    avantages: grade.avantages.map((a) => champ(locale, a.texte, a.texteEn)),
     heriteDe: grade.heriteDuPrecedent && index > 0 ? gradesEnBase[index - 1].nom : null,
   }))
 
   const packs: PackBoutique[] = packsEnBase.map((pack) => ({
     slug: pack.slug,
-    nom: pack.nom,
-    description: pack.description,
+    nom: champ(locale, pack.nom, pack.nomEn),
+    description: champ(locale, pack.description, pack.descriptionEn),
     prixEurosCentimes: pack.prixEurosCentimes,
     prixBarreCentimes: pack.prixBarreCentimes,
     achetable: pack.achetable,
@@ -105,12 +116,12 @@ export default async function PageBoutique({
                 <span className="text-or">Pas plus fort</span>, jamais.
               </h1>
               <p className="mt-4 max-w-[54ch] text-[clamp(15.5px,1.7vw,17.5px)] text-balance text-gris">
-                Des grades à vie et des packs de coins. Aucun kit en vente, aucun avantage en
+                {t(locale, 'boutique.chapo')}
                 combat : tout ce qui se joue s’obtient en jouant.
               </p>
 
               <ul className="mt-5 flex flex-wrap gap-2">
-                {CONFIANCE.map((promesse) => (
+                {CONFIANCE[locale].map((promesse) => (
                   <li
                     key={promesse}
                     className="flex items-center gap-2 rounded-micro border border-bord bg-charbon px-3 py-1.5 font-mono text-[10.5px] tracking-[.1em] text-gris uppercase"
@@ -130,7 +141,7 @@ export default async function PageBoutique({
                 className="group relative overflow-hidden rounded-bloc border border-or/50 bg-charbon p-5.5 transition-colors hover:border-or"
               >
                 <p className="font-mono text-[10px] font-bold tracking-[.2em] text-or uppercase">
-                  Le plus choisi
+                  {t(locale, 'boutique.plus-choisi')}
                 </p>
                 <div className="mt-3 flex items-center gap-4">
                   <span
@@ -144,7 +155,8 @@ export default async function PageBoutique({
                       Grade {phare.nom}
                     </span>
                     <span className="mt-1.5 block font-mono text-[12px] text-gris">
-                      {phare.etiquette ?? ''} sur chaque kill, à vie
+                      {phare.etiquette ?? ''}{' '}
+                      {t(locale, 'boutique.sur-kill')}
                     </span>
                   </span>
                   <span className="ml-auto shrink-0 font-titre text-[26px] text-creme">
@@ -152,7 +164,7 @@ export default async function PageBoutique({
                   </span>
                 </div>
                 <span className="mt-4 block font-mono text-[11px] font-bold tracking-[.1em] text-soupe uppercase group-hover:text-or">
-                  Voir les grades →
+                  {t(locale, 'boutique.voir-grades')}
                 </span>
               </a>
             )}
@@ -166,12 +178,12 @@ export default async function PageBoutique({
       {/* ═══════════════════════════ L'AIDE ═══════════════════════════ */}
       <Section
         id="aide"
-        etiquette="De la commande au jeu"
-        titre="Comment ça se passe"
+        etiquette={t(locale, 'boutique.aide-etiquette')}
+        titre={t(locale, 'boutique.aide-titre')}
         className="scroll-mt-[calc(var(--spacing-nav)+64px)]"
       >
         <ol className="grid gap-3 min-[560px]:grid-cols-2 lg:grid-cols-4">
-          {ETAPES.map((etape, index) => (
+          {ETAPES[locale].map((etape, index) => (
             <li key={etape.titre} className="rounded-carte border border-bord bg-charbon p-5">
               <p className="font-mono text-[11px] font-bold tracking-[.2em] text-soupe">
                 {String(index + 1).padStart(2, '0')}
@@ -185,9 +197,9 @@ export default async function PageBoutique({
         {/* ---------------------- ce qui ne sera jamais en vente ---------------------- */}
         <div className="mt-3.5 grid gap-3 lg:grid-cols-2">
           <div className="rounded-bloc border border-vert/35 bg-charbon p-[clamp(22px,3vw,30px)]">
-            <Etiquette className="text-vert">Ce que tu achètes</Etiquette>
+            <Etiquette className="text-vert">{t(locale, 'boutique.tu-achetes')}</Etiquette>
             <ul className="mt-4 space-y-2.5 text-[14.5px]">
-              {EN_VENTE.map((ligne) => (
+              {EN_VENTE[locale].map((ligne) => (
                 <li key={ligne} className="flex gap-2.5 text-gris">
                   <span aria-hidden="true" className="shrink-0 font-mono font-bold text-vert">
                     ✓
@@ -198,9 +210,9 @@ export default async function PageBoutique({
             </ul>
           </div>
           <div className="rounded-bloc border border-oni/35 bg-charbon p-[clamp(22px,3vw,30px)]">
-            <Etiquette className="text-oni">Ce qui ne sera jamais en vente</Etiquette>
+            <Etiquette className="text-oni">{t(locale, 'boutique.jamais-vente')}</Etiquette>
             <ul className="mt-4 space-y-2.5 text-[14.5px]">
-              {JAMAIS_EN_VENTE.map((ligne) => (
+              {JAMAIS_EN_VENTE[locale].map((ligne) => (
                 <li key={ligne} className="flex gap-2.5 text-gris">
                   <span aria-hidden="true" className="shrink-0 font-mono font-bold text-oni">
                     ✗
@@ -210,17 +222,22 @@ export default async function PageBoutique({
               ))}
             </ul>
             <p className="mt-4 text-[13px] text-gris">
-              Les grades ne touchent ni aux dégâts, ni à la vie, ni au knockback.{' '}
-              <b className="font-semibold text-creme">Cette liste ne bougera pas.</b>
+              {t(locale, 'boutique.grades-touchent')}{' '}
+              <b className="font-semibold text-creme">{t(locale, 'boutique.liste-fixe')}</b>
             </p>
           </div>
         </div>
       </Section>
 
       {/* ═════════════════════════════ LA FAQ ═════════════════════════════ */}
-      <Section fond="charbon" centre etiquette="Avant d’acheter" titre="Les questions qui reviennent">
+      <Section
+        fond="charbon"
+        centre
+        etiquette={t(locale, 'boutique.faq-etiquette')}
+        titre={t(locale, 'boutique.faq-titre')}
+      >
         <Accordeon>
-          {QUESTIONS.map((entree) => (
+          {QUESTIONS[locale].map((entree) => (
             <Question key={entree.question} question={entree.question}>
               {entree.reponses.map((reponse) => (
                 <p key={reponse}>{reponse}</p>
@@ -232,17 +249,18 @@ export default async function PageBoutique({
 
       {/* ═════════════════════════════ APPEL ═════════════════════════════ */}
       <BlocFinal
-        etiquette="Livré en 90 secondes"
+        etiquette={t(locale, 'boutique.livre-90')}
         titre={
           <>
-            Le prochain kill peut être <span className="text-or">le tien</span>.
+            {t(locale, 'boutique.final-1')}{' '}
+            <span className="text-or">{t(locale, 'boutique.final-2')}</span>.
           </>
         }
         chapeau="Un grade se prend une fois et se garde à vie. Tu peux aussi tout débloquer en jouant — les deux chemins mènent au même endroit."
       >
         <div className="flex flex-wrap justify-center gap-2.75">
           <LienBouton href="#grades" variante="or" taille="grande">
-            Choisir un grade
+            {t(locale, 'boutique.choisir-grade')}
           </LienBouton>
           <BoutonIpGeant />
         </div>
@@ -255,90 +273,192 @@ export default async function PageBoutique({
 /* Contenu                                                                    */
 /* -------------------------------------------------------------------------- */
 
-const CONFIANCE = ['Livré en 90 s', 'Achat permanent', 'Paiement Tebex', 'Zéro pay-to-win']
+/*
+  Contenu de la page, dans les deux langues.
+ 
+  Ces textes sont commerciaux et parfois contractuels (remboursement,
+  rejet de paiement) : ils vivent ici, côte à côte, pour qu'une relecture
+  compare les deux versions d'un coup d'œil plutôt que d'aller chercher
+  une clé dans un dictionnaire.
+*/
 
-const ETAPES = [
-  {
-    titre: 'Ton pseudo',
-    texte:
-      'Tu renseignes ton pseudo Minecraft exact. C’est lui qui reçoit la livraison, vérifie la casse.',
-  },
-  {
-    titre: 'Le paiement',
-    texte: 'Chez Tebex, jamais sur ce site. Carte, PayPal, Apple Pay et Google Pay acceptés.',
-  },
-  {
-    titre: 'La livraison',
-    texte:
-      'Automatique en jeu sous 90 secondes. Hors ligne, ça t’attend à la prochaine connexion.',
-  },
-  {
-    titre: 'Le rôle Discord',
-    texte: 'Posé dans les 5 minutes, si ton compte est lié avec /discord en jeu.',
-  },
-]
+const CONFIANCE: Record<Locale, string[]> = {
+  fr: ['Livré en 90 s', 'Achat permanent', 'Paiement Tebex', 'Zéro pay-to-win'],
+  en: ['Delivered in 90 s', 'Permanent purchase', 'Tebex payment', 'Zero pay-to-win'],
+}
 
-const EN_VENTE = [
-  'Un grade, à vie : bonus de coins, couleur de pseudo, rôle Discord',
-  'Des coins, pour débloquer tout de suite un kit que tu aurais eu en jouant',
-]
+const ETAPES: Record<Locale, { titre: string; texte: string }[]> = {
+  fr: [
+    {
+      titre: 'Ton pseudo',
+      texte:
+        'Tu renseignes ton pseudo Minecraft exact. C’est lui qui reçoit la livraison, vérifie la casse.',
+    },
+    {
+      titre: 'Le paiement',
+      texte: 'Chez Tebex, jamais sur ce site. Carte, PayPal, Apple Pay et Google Pay acceptés.',
+    },
+    {
+      titre: 'La livraison',
+      texte:
+        'Automatique en jeu sous 90 secondes. Hors ligne, ça t’attend à la prochaine connexion.',
+    },
+    {
+      titre: 'Le rôle Discord',
+      texte: 'Posé dans les 5 minutes, si ton compte est lié avec /discord en jeu.',
+    },
+  ],
+  en: [
+    {
+      titre: 'Your username',
+      texte:
+        'You enter your exact Minecraft username. That is the account that receives the delivery — check the capitals.',
+    },
+    {
+      titre: 'The payment',
+      texte: 'On Tebex, never on this site. Card, PayPal, Apple Pay and Google Pay accepted.',
+    },
+    {
+      titre: 'The delivery',
+      texte:
+        'Automatic in game within 90 seconds. Offline, it waits for your next connection.',
+    },
+    {
+      titre: 'The Discord role',
+      texte: 'Given within 5 minutes, if your account is linked with /discord in game.',
+    },
+  ],
+}
 
-const JAMAIS_EN_VENTE = [
-  'Des kits : les trente-neuf s’obtiennent tous en jouant',
-  'Du stuff ou de l’armure',
-  'Des dégâts, de la vie ou du knockback',
-  'Des points de classement ou de l’Elo',
-  'Une place dans le staff',
-]
+const EN_VENTE: Record<Locale, string[]> = {
+  fr: [
+    'Un grade, à vie : bonus de coins, couleur de pseudo, rôle Discord',
+    'Des coins, pour débloquer tout de suite un kit que tu aurais eu en jouant',
+  ],
+  en: [
+    'A rank, for life: coin bonus, name colour, Discord role',
+    'Coins, to unlock right away a kit you would have earned by playing',
+  ],
+}
 
-const QUESTIONS = [
-  {
-    question: 'Combien de temps je garde mon grade ?',
-    reponses: [
-      'À vie. Pas d’abonnement, pas de renouvellement, rien qui expire. Les grades ne sont jamais repris, y compris aux resets de classement. Les seuls grades temporaires sont ceux gagnés au classement mensuel, qui durent 30 jours.',
-    ],
-  },
-  {
-    question: 'Le bonus de coins, ce n’est pas du pay-to-win ?',
-    reponses: [
-      'Le bonus fait débloquer les kits plus vite, il ne donne aucun avantage en combat. Les kits sont équilibrés entre eux et aucun n’est objectivement meilleur : arriver plus tôt au Kitsune ne fait gagner aucun duel. Si un kit devenait trop fort, c’est le kit qui serait corrigé — pas le grade.',
-    ],
-  },
-  {
-    question: 'À quoi servent les coins ?',
-    reponses: [
-      'À débloquer des kits, exactement comme ceux que tu gagnes à chaque kill. Un pack de coins ne donne rien qu’un joueur ne puisse obtenir en jouant : il fait juste gagner du temps.',
-    ],
-  },
-  {
-    question: 'Je n’ai rien reçu.',
-    reponses: [
-      'Reconnecte-toi d’abord : la livraison se fait en jeu, et si tu étais hors ligne au moment du paiement, elle t’attend à la connexion suivante. Si au bout de 10 minutes en ligne tu n’as toujours rien, ouvre un ticket sur le Discord avec ton numéro de commande Tebex. C’est traité dans la journée.',
-    ],
-  },
-  {
-    question: 'J’ai changé de pseudo Minecraft, je perds tout ?',
-    reponses: [
-      'Non, les achats sont rattachés à l’UUID du compte et pas au pseudo affiché. En revanche, si tu commandes en tapant un pseudo qui n’est pas le tien, c’est l’autre compte qui reçoit — et ce n’est pas réversible.',
-    ],
-  },
-  {
-    question: 'Comment se passe un remboursement ?',
-    reponses: [
-      'Tebex est le vendeur officiel : les demandes se font auprès d’eux et suivent leurs conditions. Un remboursement entraîne automatiquement le retrait de ce qui a été livré en jeu.',
-      'Un rejet de paiement bancaire après avoir reçu son achat entraîne un bannissement définitif de la boutique.',
-    ],
-  },
-  {
-    question: 'J’ai moins de 18 ans.',
-    reponses: [
-      'Demande l’accord de la personne qui possède le moyen de paiement avant d’acheter. La quasi-totalité des litiges sur les serveurs Minecraft viennent d’achats faits sans autorisation, et ça finit toujours mal pour le joueur.',
-    ],
-  },
-  {
-    question: 'Où part l’argent ?',
-    reponses: [
-      'Dans l’hébergement en premier lieu : le VPS et le nom de domaine coûtent une quarantaine d’euros par mois, et Tebex prélève environ 7,5 % en gérant la TVA, la fraude et les litiges. Le développement est bénévole. Ce qui dépasse sert à payer des créateurs pour faire venir du monde — un serveur PvP vide n’intéresse personne.',
-    ],
-  },
-]
+const JAMAIS_EN_VENTE: Record<Locale, string[]> = {
+  fr: [
+    'Des kits : les trente-neuf s’obtiennent tous en jouant',
+    'Du stuff ou de l’armure',
+    'Des dégâts, de la vie ou du knockback',
+    'Des points de classement ou de l’Elo',
+    'Une place dans le staff',
+  ],
+  en: [
+    'Kits: all thirty-nine are earned by playing',
+    'Gear or armour',
+    'Damage, health or knockback',
+    'Leaderboard points or Elo',
+    'A place in the staff',
+  ],
+}
+
+const QUESTIONS: Record<Locale, { question: string; reponses: string[] }[]> = {
+  fr: [
+    {
+      question: 'Combien de temps je garde mon grade ?',
+      reponses: [
+        'À vie. Pas d’abonnement, pas de renouvellement, rien qui expire. Les grades ne sont jamais repris, y compris aux resets de classement. Les seuls grades temporaires sont ceux gagnés au classement mensuel, qui durent 30 jours.',
+      ],
+    },
+    {
+      question: 'Le bonus de coins, ce n’est pas du pay-to-win ?',
+      reponses: [
+        'Le bonus fait débloquer les kits plus vite, il ne donne aucun avantage en combat. Les kits sont équilibrés entre eux et aucun n’est objectivement meilleur : arriver plus tôt au Kitsune ne fait gagner aucun duel. Si un kit devenait trop fort, c’est le kit qui serait corrigé — pas le grade.',
+      ],
+    },
+    {
+      question: 'À quoi servent les coins ?',
+      reponses: [
+        'À débloquer des kits, exactement comme ceux que tu gagnes à chaque kill. Un pack de coins ne donne rien qu’un joueur ne puisse obtenir en jouant : il fait juste gagner du temps.',
+      ],
+    },
+    {
+      question: 'Je n’ai rien reçu.',
+      reponses: [
+        'Reconnecte-toi d’abord : la livraison se fait en jeu, et si tu étais hors ligne au moment du paiement, elle t’attend à la connexion suivante. Si au bout de 10 minutes en ligne tu n’as toujours rien, ouvre un ticket sur le Discord avec ton numéro de commande Tebex. C’est traité dans la journée.',
+      ],
+    },
+    {
+      question: 'J’ai changé de pseudo Minecraft, je perds tout ?',
+      reponses: [
+        'Non, les achats sont rattachés à l’UUID du compte et pas au pseudo affiché. En revanche, si tu commandes en tapant un pseudo qui n’est pas le tien, c’est l’autre compte qui reçoit — et ce n’est pas réversible.',
+      ],
+    },
+    {
+      question: 'Comment se passe un remboursement ?',
+      reponses: [
+        'Tebex est le vendeur officiel : les demandes se font auprès d’eux et suivent leurs conditions. Un remboursement entraîne automatiquement le retrait de ce qui a été livré en jeu.',
+        'Un rejet de paiement bancaire après avoir reçu son achat entraîne un bannissement définitif de la boutique.',
+      ],
+    },
+    {
+      question: 'J’ai moins de 18 ans.',
+      reponses: [
+        'Demande l’accord de la personne qui possède le moyen de paiement avant d’acheter. La quasi-totalité des litiges sur les serveurs Minecraft viennent d’achats faits sans autorisation, et ça finit toujours mal pour le joueur.',
+      ],
+    },
+    {
+      question: 'Où part l’argent ?',
+      reponses: [
+        'Dans l’hébergement en premier lieu : le VPS et le nom de domaine coûtent une quarantaine d’euros par mois, et Tebex prélève environ 7,5 % en gérant la TVA, la fraude et les litiges. Le développement est bénévole. Ce qui dépasse sert à payer des créateurs pour faire venir du monde — un serveur PvP vide n’intéresse personne.',
+      ],
+    },
+  ],
+  en: [
+    {
+      question: 'How long do I keep my rank?',
+      reponses: [
+        'For life. No subscription, no renewal, nothing that expires. Ranks are never taken back, including on leaderboard resets. The only temporary ranks are those won on the monthly leaderboard, which last 30 days.',
+      ],
+    },
+    {
+      question: 'Is the coin bonus not pay-to-win?',
+      reponses: [
+        'The bonus unlocks kits faster, it gives no advantage in combat. Kits are balanced against each other and none is objectively better: reaching the Kitsune sooner wins you no duel. If a kit became too strong, the kit would be fixed — not the rank.',
+      ],
+    },
+    {
+      question: 'What are coins for?',
+      reponses: [
+        'For unlocking kits, exactly like the coins you earn on every kill. A coin pack gives nothing a player cannot obtain by playing: it only saves time.',
+      ],
+    },
+    {
+      question: 'I did not receive anything.',
+      reponses: [
+        'Log back in first: delivery happens in game, and if you were offline when you paid, it waits for your next connection. If after 10 minutes online you still have nothing, open a ticket on Discord with your Tebex order number. It is handled the same day.',
+      ],
+    },
+    {
+      question: 'I changed my Minecraft username, do I lose everything?',
+      reponses: [
+        'No, purchases are tied to the account UUID, not to the displayed username. However, if you order by typing a username that is not yours, that other account receives it — and it cannot be reversed.',
+      ],
+    },
+    {
+      question: 'How does a refund work?',
+      reponses: [
+        'Tebex is the official seller: requests go to them and follow their terms. A refund automatically removes whatever was delivered in game.',
+        'A chargeback after receiving your purchase leads to a permanent ban from the shop.',
+      ],
+    },
+    {
+      question: 'I am under 18.',
+      reponses: [
+        'Ask the owner of the payment method before buying. Almost every dispute on Minecraft servers comes from purchases made without permission, and it always ends badly for the player.',
+      ],
+    },
+    {
+      question: 'Where does the money go?',
+      reponses: [
+        'Hosting first: the VPS and the domain name cost around forty euros a month, and Tebex takes about 7.5 % while handling VAT, fraud and disputes. Development is unpaid. What is left pays creators to bring people in — an empty PvP server interests nobody.',
+      ],
+    },
+  ],
+}

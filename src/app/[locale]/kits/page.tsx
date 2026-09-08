@@ -14,15 +14,26 @@ import { estLocale, LANGUE_DEFAUT, lien, t, champ, champOptionnel, type Locale }
 
 export const revalidate = 3600 // une heure
 
-export const metadata: Metadata = {
-  title: 'Les kits',
-  description:
-    'Les kits de LJKITS : capacités, cooldowns, prix en coins. Aucune armure, que du skill.',
-  openGraph: {
-    title: 'Les kits — LJKITS',
-    description: 'Leurs capacités et leurs cooldowns. Tout se débloque en jouant.',
-    images: IMAGE_OG,
-  },
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>
+}): Promise<Metadata> {
+  const { locale: brut } = await params
+  const locale: Locale = estLocale(brut) ? brut : LANGUE_DEFAUT
+  const titre = t(locale, 'meta.kits-titre')
+  const description = t(locale, 'meta.kits-desc')
+
+  return {
+    title: titre,
+    description,
+    // hreflang : c'est ce qui dit aux moteurs que les deux adresses sont
+    // la même page dans deux langues, plutôt que du contenu dupliqué.
+    alternates: {
+      languages: { en: `/en/kits`, fr: `/fr/kits` },
+    },
+    openGraph: { title: `${titre} — LJKITS`, description, images: IMAGE_OG },
+  }
 }
 
 /** Les quatre repères de jeu affichés sous le titre. */

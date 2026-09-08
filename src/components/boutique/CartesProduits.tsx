@@ -6,6 +6,8 @@ import { BoutonAjout } from '@/components/boutique/BoutonAjout'
 import type { GradeBoutique, PackBoutique } from '@/components/boutique/types'
 import { Ruban } from '@/components/ui/Badge'
 import { formaterCoins, formaterEuros } from '@/lib/format'
+import { useLocale } from '@/hooks/useLocale'
+import { t } from '@/lib/i18n'
 
 /**
  * Les cartes PRODUIT de la boutique — refonte du 03/09/2026.
@@ -24,8 +26,9 @@ import { formaterCoins, formaterEuros } from '@/lib/format'
 
 /** Pourquoi un article peut ne pas être ajoutable, et ce qu'on écrit dessus. */
 function etatDeVente({ achetable, paiementPret }: { achetable: boolean; paiementPret: boolean }) {
+  const locale = useLocale()
   if (!achetable) return { indisponible: true, libelle: 'Indisponible' }
-  if (!paiementPret) return { indisponible: true, libelle: 'Bientôt en boutique' }
+  if (!paiementPret) return { indisponible: true, libelle: t(locale, 'boutique.bientot-en-boutique') }
   return { indisponible: false, libelle: 'Ajouter au panier' }
 }
 
@@ -49,6 +52,7 @@ export function CarteGradeProduit({
   dansLePanier: boolean
   onBasculer: () => void
 }) {
+  const locale = useLocale()
   const vente = etatDeVente(grade)
   // L'argument fort : « +30 % de coins » vient de l'étiquette en base.
   const argument = grade.etiquette
@@ -103,7 +107,7 @@ export function CarteGradeProduit({
         <p className="pb-1 text-right font-mono text-[10.5px] leading-tight tracking-[.12em] text-gris uppercase">
           Un achat
           <br />
-          <span className="text-vert">à vie</span>
+          <span className="text-vert">{t(locale, 'boutique.a-vie')}</span>
         </p>
       </div>
 
