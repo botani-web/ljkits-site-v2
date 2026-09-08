@@ -55,32 +55,50 @@ export function formaterDate(date: Date, locale: 'en' | 'fr' = 'fr'): string {
  * en UTC, et sans lui l'accueil annoncerait « 13h30 » à ses visiteurs.
  */
 
-/** Date → "Samedi 29 août · 15h30". Forme d'étiquette, autonome. */
-export function formaterOuverture(date: Date): string {
-  const jour = date.toLocaleDateString('fr-FR', {
+/** Date → "Vendredi 11 septembre · 18h00" / "Friday 11 September · 6:00 PM".
+ *  Forme d'étiquette, autonome. */
+export function formaterOuverture(date: Date, locale: 'en' | 'fr' = 'fr'): string {
+  const jour = date.toLocaleDateString(locale === 'en' ? 'en-GB' : 'fr-FR', {
     timeZone: 'Europe/Paris',
     weekday: 'long',
     day: 'numeric',
     month: 'long',
   })
 
-  return `${majusculeInitiale(jour)} · ${formaterHeureParis(date)}`
+  return `${majusculeInitiale(jour)} · ${formaterHeureParis(date, locale)}`
 }
 
-/** Date → "samedi 29 août à 15h30". Forme qui s'insère dans une phrase. */
-export function formaterOuvertureEnPhrase(date: Date): string {
-  const jour = date.toLocaleDateString('fr-FR', {
+/** Date → "vendredi 11 septembre à 18h00" / "Friday 11 September at 6:00 PM".
+ *  Forme qui s'insère dans une phrase. */
+export function formaterOuvertureEnPhrase(date: Date, locale: 'en' | 'fr' = 'fr'): string {
+  const jour = date.toLocaleDateString(locale === 'en' ? 'en-GB' : 'fr-FR', {
     timeZone: 'Europe/Paris',
     weekday: 'long',
     day: 'numeric',
     month: 'long',
   })
 
-  return `${jour} à ${formaterHeureParis(date)}`
+  const liaison = locale === 'en' ? 'at' : 'à'
+  return `${jour} ${liaison} ${formaterHeureParis(date, locale)}`
 }
 
-/** 15:30 en heure de Paris → "15h30", la notation française. */
-function formaterHeureParis(date: Date): string {
+/**
+ * 18:00 en heure de Paris → "18h00" en français, "6:00 PM" en anglais.
+ *
+ * L'heure du serveur est TOUJOURS celle de Paris — c'est là que le serveur
+ * ouvre. Seule sa NOTATION change de langue : un visiteur anglophone lit une
+ * heure sur douze heures, mais bien la même heure.
+ */
+function formaterHeureParis(date: Date, locale: 'en' | 'fr' = 'fr'): string {
+  if (locale === 'en') {
+    return date.toLocaleTimeString('en-GB', {
+      timeZone: 'Europe/Paris',
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true,
+    })
+  }
+
   return date
     .toLocaleTimeString('fr-FR', {
       timeZone: 'Europe/Paris',

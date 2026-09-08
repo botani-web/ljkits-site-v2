@@ -116,7 +116,7 @@ export default async function Accueil({
 
             <EncartOuverture
               ouvertAuRendu={ouvertAuRendu}
-              dateOuverture={formaterOuverture(ouverture)}
+              dateOuverture={formaterOuverture(ouverture, locale)}
             />
           </div>
         </Enveloppe>
@@ -268,7 +268,7 @@ export default async function Accueil({
         chapeau={
           <PhraseOuverture
             ouvertAuRendu={ouvertAuRendu}
-            dateEnPhrase={formaterOuvertureEnPhrase(ouverture)}
+            dateEnPhrase={formaterOuvertureEnPhrase(ouverture, locale)}
           />
         }
       >

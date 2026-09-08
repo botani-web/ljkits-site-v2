@@ -26,7 +26,8 @@ export const SITE = {
   url: process.env.NEXT_PUBLIC_SITE_URL ?? 'https://ljkits.eu',
 
   /**
-   * Ouverture du serveur : samedi 29 août 2026, 15h30, heure de Paris.
+   * Ouverture officielle de la SAISON 1 : vendredi 11 septembre 2026, 18h00,
+   * heure de Paris.
    *
    * Le décalage `+02:00` est écrit en toutes lettres exprès. Sans lui, la date
    * serait interprétée dans le fuseau de la machine — donc en UTC sur Vercel,
@@ -35,8 +36,13 @@ export const SITE = {
    * L'encart d'ouverture de l'accueil bascule tout seul sur cette date : avant,
    * c'est un décompte ; après, le nombre de joueurs en ligne. Rien à toucher
    * le jour J.
+   *
+   * ⚠ LA MÊME DATE VIT DANS LE BOT DISCORD (botljk/textes.js, `OUVERTURE`,
+   * sous forme d'horodatage Unix : 1789142400). Les deux doivent bouger
+   * ensemble — c'est le seul doublon assumé du projet, faute d'une source
+   * partageable entre un bot Node et un déploiement Vercel.
    */
-  ouverture: '2026-08-29T15:30:00+02:00',
+  ouverture: '2026-09-11T18:00:00+02:00',
 
   /** API publique de statut du serveur (joueurs en ligne). */
   apiStatut: 'https://api.mcstatus.io/v2/status/java/',
