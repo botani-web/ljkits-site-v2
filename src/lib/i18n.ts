@@ -99,7 +99,7 @@ const DICO = {
   'pied.colonne.communaute': { fr: 'Communauté', en: 'Community' },
   'pied.colonne.jouer': { fr: 'Jouer', en: 'Play' },
   'pied.les-kits': { fr: 'Les kits', en: 'The kits' },
-  'pied.versions': { fr: 'Java 1.8 → 1.21+', en: 'Java 1.8 → 1.21+' },
+  'pied.versions': { fr: 'Java 1.8 uniquement', en: 'Java 1.8 only' },
   'pied.hommage': {
     fr: 'Hommage indépendant, sans lien avec les anciens administrateurs de MJKits.',
     en: 'An independent tribute, unaffiliated with the former MJKits administrators.',
@@ -212,8 +212,8 @@ const DICO = {
   'accueil.final-1': { fr: 'Le bol est', en: 'The bowl is' },
   'accueil.final-2': { fr: 'plein', en: 'full' },
   'accueil.final-ip': {
-    fr: 'Clique pour copier · Minecraft Java 1.8 → 1.21+',
-    en: 'Click to copy · Minecraft Java 1.8 → 1.21+',
+    fr: 'Clique pour copier · Minecraft Java 1.8 uniquement',
+    en: 'Click to copy · Minecraft Java 1.8 only',
   },
   'accueil.regle.cooldown': {
     fr: 'Tu cliques, ça touche. Le combat 1.8 intégral.',
