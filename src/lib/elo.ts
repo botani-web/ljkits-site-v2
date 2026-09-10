@@ -1,3 +1,5 @@
+import { Prisma } from '@prisma/client'
+
 import { prisma } from '@/lib/prisma'
 
 /**
@@ -8,6 +10,32 @@ import { prisma } from '@/lib/prisma'
  * saison corrompue depuis le site serait invisible en jeu jusqu'au prochain
  * combat.
  */
+
+/**
+ * LE FILTRE DES EXCLUS, ÉCRIT UNE SEULE FOIS.
+ *
+ * Un joueur exclu du classement (`/rankedban` en jeu, ou banni du serveur)
+ * ne doit apparaître nulle part dans un classement, ni compter dans le rang
+ * de quelqu'un d'autre.
+ *
+ * LE SITE ET LE JEU DOIVENT DIRE LA MÊME CHOSE. Le plugin applique
+ * exactement ce NOT EXISTS (voir `EXCLUS` dans Base.java) : si les deux
+ * divergeaient, un joueur sanctionné resterait affiché en tête sur le site,
+ * et c'est précisément l'accusation de favoritisme qu'on cherche à rendre
+ * impossible.
+ *
+ * NOT EXISTS plutôt qu'une jointure : un joueur peut porter deux exclusions
+ * (décision du staff ET bannissement), ce qui dupliquerait ses lignes.
+ *
+ * `alias` est le nom de la table dans la requête appelante — souvent `j`,
+ * mais `mieux` dans le sous-calcul du rang.
+ */
+function sansExclus(alias: string) {
+  return Prisma.sql`AND NOT EXISTS (
+    SELECT 1 FROM elo_exclusion x
+     WHERE x.uuid = ${Prisma.raw(alias)}.uuid AND x.actif
+  )`
+}
 
 /** Les paliers, repris à l'identique de Palier.java côté serveur. */
 export const PALIERS = [
@@ -147,6 +175,7 @@ export async function lireClassementElo(saison: number): Promise<LigneElo[]> {
       FROM elo_joueur j
       JOIN elo_liaison l ON l.uuid = j.uuid
      WHERE j.saison = ${saison}
+       ${sansExclus('j')}
      ORDER BY j.elo DESC, j.combats DESC, j.pseudo ASC
      LIMIT ${TAILLE_CLASSEMENT}
   `
@@ -247,6 +276,8 @@ export type FicheJoueur = {
   recordSerie: number
   eligible: boolean
   lie: boolean
+  /** Écarté du classement : décision du staff, ou bannissement du serveur. */
+  exclu: boolean
   derniereMaj: Date
 }
 
@@ -279,16 +310,20 @@ export async function lireFicheJoueur(
       record_serie: number
       derniere_maj: Date
       lie: boolean
+      exclu: boolean
       rang: bigint
     }>
   >`
     SELECT j.uuid, j.pseudo, j.elo, j.elo_max, j.combats, j.kills, j.morts,
            j.serie, j.record_serie, j.derniere_maj,
            (l.uuid IS NOT NULL) AS lie,
+           EXISTS (SELECT 1 FROM elo_exclusion x
+                    WHERE x.uuid = j.uuid AND x.actif) AS exclu,
            (SELECT count(*) + 1
               FROM elo_joueur mieux
               JOIN elo_liaison ml ON ml.uuid = mieux.uuid
-             WHERE mieux.saison = j.saison AND mieux.elo > j.elo) AS rang
+             WHERE mieux.saison = j.saison AND mieux.elo > j.elo
+               ${sansExclus('mieux')}) AS rang
       FROM elo_joueur j
       LEFT JOIN elo_liaison l ON l.uuid = j.uuid
      WHERE j.saison = ${saison} AND lower(j.pseudo) = lower(${pseudo})
@@ -305,8 +340,11 @@ export async function lireFicheJoueur(
   return {
     uuid: ligne.uuid,
     pseudo: ligne.pseudo,
-    // Un joueur non lié n'a pas de rang : il ne figure pas au classement.
-    rang: ligne.lie ? Number(ligne.rang) : 0,
+    // Ni un non-lié ni un exclu n'ont de rang : ils ne figurent pas au
+    // classement. La fiche reste consultable — un lien partagé avant la
+    // sanction ne doit pas se transformer en 404 — mais elle DIT que le
+    // joueur est écarté, plutôt que d'afficher un rang qui n'existe plus.
+    rang: ligne.lie && !ligne.exclu ? Number(ligne.rang) : 0,
     elo: ligne.elo,
     eloMax: ligne.elo_max,
     combats: ligne.combats,
@@ -314,8 +352,9 @@ export async function lireFicheJoueur(
     morts: ligne.morts,
     serie: ligne.serie,
     recordSerie: ligne.record_serie,
-    eligible: ligne.combats >= COMBATS_MINIMUM,
+    eligible: ligne.combats >= COMBATS_MINIMUM && !ligne.exclu,
     lie: ligne.lie,
+    exclu: ligne.exclu,
     derniereMaj: ligne.derniere_maj,
   }
 }

@@ -13,6 +13,14 @@ import {
 import { formaterDate } from '@/lib/format'
 import { prisma } from '@/lib/prisma'
 import { classesBouton } from '@/components/ui/Bouton'
+import { t } from '@/lib/i18n'
+import { CATEGORIES_REGLEMENT, categorieValide } from '@/lib/reglement'
+
+/** L'entrée d'onglet correspondant à un slug, jamais undefined. */
+function categorieDe(slug: string) {
+  const valide = categorieValide(slug)
+  return CATEGORIES_REGLEMENT.find((c) => c.slug === valide) ?? CATEGORIES_REGLEMENT[0]
+}
 
 export const metadata = { title: 'Règlement' }
 
@@ -92,7 +100,15 @@ export default async function TableauDeBordReglement() {
                     {section.titre}
                   </h2>
                   <p className="font-mono text-[11px] text-gris">
-                    Modifiée le {formaterDate(section.updatedAt)} ·{' '}
+                    {/*
+                      L'onglet en premier : c'est ce qui décide de l'endroit
+                      où la section est lue, et donc l'information la plus
+                      utile quand on cherche pourquoi elle « n'y est pas ».
+                    */}
+                    <span className="text-soupe">
+                      {t('fr', categorieDe(section.categorie).cleTexte)}
+                    </span>{' '}
+                    · Modifiée le {formaterDate(section.updatedAt)} ·{' '}
                     {section.contenu.length} caractères
                   </p>
                 </div>

@@ -5,12 +5,20 @@ import { useActionState } from 'react'
 
 import { ETAT_VIDE, type EtatFormulaire } from '@/actions/etat'
 import { BoutonSoumettre } from '@/components/admin/BoutonSoumettre'
-import { ChampCase, ChampTexte, MessageErreurGlobale } from '@/components/admin/Champs'
+import {
+  ChampCase,
+  ChampSelection,
+  ChampTexte,
+  MessageErreurGlobale,
+} from '@/components/admin/Champs'
 import { EditeurMarkdown } from '@/components/admin/EditeurMarkdown'
+import { CATEGORIES_REGLEMENT, CATEGORIE_DEFAUT } from '@/lib/reglement'
+import { t } from '@/lib/i18n'
 
 export type SectionEnEdition = {
   titre: string
   contenu: string
+  categorie: string
   publie: boolean
 }
 
@@ -41,6 +49,23 @@ export function FormulaireSection({
           maxLength={120}
           placeholder="Triche — tolérance zéro"
           erreurs={etat.champs?.titre}
+        />
+
+        {/*
+          L'ONGLET DE GAUCHE. C'est le seul champ qui décide de l'endroit où
+          la section sera lue : une section bien écrite dans le mauvais onglet
+          ne sera trouvée par personne le jour d'une contestation.
+        */}
+        <ChampSelection
+          nom="categorie"
+          label="Onglet du règlement"
+          defaultValue={section?.categorie ?? CATEGORIE_DEFAUT}
+          options={CATEGORIES_REGLEMENT.map((categorie) => ({
+            valeur: categorie.slug,
+            // Le libellé français : l'admin n'existe qu'en français.
+            label: t('fr', categorie.cleTexte),
+          }))}
+          erreurs={etat.champs?.categorie}
         />
 
         <ChampCase

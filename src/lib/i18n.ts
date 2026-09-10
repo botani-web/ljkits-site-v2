@@ -532,6 +532,12 @@ const DICO = {
     en: 'By playing on LJKITS, you accept these rules. They exist for one reason only: to keep the server enjoyable for everyone.',
   },
   'reglement.maj': { fr: 'Dernière mise à jour :', en: 'Last updated:' },
+  // Les cinq onglets de gauche. Slugs et ordre dans src/lib/reglement.ts.
+  'reglement.cat.ranked': { fr: 'Ranked', en: 'Ranked' },
+  'reglement.cat.cashprize': { fr: 'Cashprize', en: 'Cashprize' },
+  'reglement.cat.integrite': { fr: 'Intégrité', en: 'Integrity' },
+  'reglement.cat.sanctions': { fr: 'Sanctions', en: 'Sanctions' },
+  'reglement.cat.serveur': { fr: 'Utilisation', en: 'Server use' },
   'reglement.esprit': {
     fr: 'L’esprit du règlement en une phrase',
     en: 'The spirit of the rules, in one sentence',
@@ -766,6 +772,14 @@ const DICO = {
   },
   'joueur.eligible': { fr: 'combats · éligible au cashprize', en: 'fights · eligible for the cashprize' },
   'joueur.pas-eligible': { fr: 'combats · pas encore éligible', en: 'fights · not eligible yet' },
+  'joueur.exclu-titre': {
+    fr: 'Écarté du classement.',
+    en: 'Removed from the leaderboard.',
+  },
+  'joueur.exclu-detail': {
+    fr: "Ce joueur ne concourt plus pour le cashprize de la saison, et ses combats ne font plus bouger l'Elo de personne. Il continue de jouer normalement.",
+    en: 'This player no longer competes for the season cashprize, and their fights no longer move anyone’s Elo. They still play normally.',
+  },
   'joueur.serie-cours': { fr: 'Série en cours', en: 'Current streak' },
   'joueur.record-serie': { fr: 'Record de série', en: 'Best streak' },
   'joueur.kits-chapeau': {

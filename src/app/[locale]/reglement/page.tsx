@@ -1,12 +1,17 @@
 import type { Metadata } from 'next'
 
 import { PagePublique } from '@/components/public/PagePublique'
+import {
+  ReglementOnglets,
+  type SectionRendue,
+} from '@/components/public/ReglementOnglets'
 import { Enveloppe } from '@/components/ui/Enveloppe'
 import { Etiquette } from '@/components/ui/TeteSection'
 import { formaterDate } from '@/lib/format'
 import { markdownVersHtml } from '@/lib/markdown'
 import { prisma } from '@/lib/prisma'
 import { lireReglages } from '@/lib/reglages'
+import { categorieValide } from '@/lib/reglement'
 import { IMAGE_OG } from '@/lib/site'
 import { estLocale, LANGUE_DEFAUT, lien, t, champ, champOptionnel, type Locale } from '@/lib/i18n'
 
@@ -50,6 +55,20 @@ export default async function PageReglement({
     orderBy: { ordre: 'asc' },
   })
 
+  /*
+    Le Markdown est converti ICI, sur le serveur, et pas dans le composant
+    d'onglets : le règlement doit exister dans le HTML de la page, lisible
+    par un moteur de recherche et par un navigateur sans JavaScript. Un
+    règlement qui n'apparaît qu'après exécution d'un script serait invocable
+    contre un joueur qui n'a jamais pu le lire.
+  */
+  const rendues: SectionRendue[] = sections.map((section) => ({
+    id: section.id,
+    titre: champ(locale, section.titre, section.titreEn),
+    categorie: categorieValide(section.categorie),
+    html: markdownVersHtml(champ(locale, section.contenu, section.contenuEn), { discord }),
+  }))
+
   // Date de dernière mise à jour = la plus récente des sections publiées.
   // Pas besoin de la stocker : elle se déduit.
   const derniereMaj = sections.reduce<Date | null>(
@@ -86,48 +105,15 @@ export default async function PageReglement({
 
       {/* ═══════════════════════════ LES SECTIONS ═══════════════════════════ */}
       <main className="pb-section">
-        <Enveloppe>
-          <div className="mx-auto flex max-w-lecture flex-col gap-3.5">
-            {sections.length === 0 ? (
-              <p className="rounded-carte border border-dashed border-bord px-6 py-12 text-center font-mono text-[13px] text-gris">
-                {t(locale, 'reglement.en-cours')}
-              </p>
-            ) : (
-              sections.map((section, index) => (
-                <section
-                  key={section.id}
-                  className="overflow-hidden rounded-carte border border-bord bg-charbon transition-colors duration-[.18s] hover:border-soupe"
-                >
-                  <div className="flex items-center gap-3.5 border-b border-bord bg-braise px-5.5 py-4">
-                    <span
-                      aria-hidden="true"
-                      className="shrink-0 font-mono text-[11px] font-bold tracking-[.18em] text-soupe"
-                    >
-                      {String(index + 1).padStart(2, '0')}
-                    </span>
-                    <h2 className="font-titre text-[clamp(17px,2.2vw,21px)] leading-tight tracking-[-.01em]">
-                      {champ(locale, section.titre, section.titreEn)}
-                    </h2>
-                  </div>
-
-                  {/*
-                    Le contenu vient de la base et n'est PAS retouché : les
-                    textes du règlement ne changent pas. Seul le style du HTML
-                    produit a bougé, dans la feuille .markdown de globals.css.
-                  */}
-                  <div
-                    className="markdown px-5.5 py-5"
-                    dangerouslySetInnerHTML={{
-                      __html: markdownVersHtml(champ(locale, section.contenu, section.contenuEn), {
-                        discord,
-                      }),
-                    }}
-                  />
-                </section>
-              ))
-            )}
-          </div>
-        </Enveloppe>
+        {rendues.length === 0 ? (
+          <Enveloppe>
+            <p className="mx-auto max-w-lecture rounded-carte border border-dashed border-bord px-6 py-12 text-center font-mono text-[13px] text-gris">
+              {t(locale, 'reglement.en-cours')}
+            </p>
+          </Enveloppe>
+        ) : (
+          <ReglementOnglets locale={locale} sections={rendues} />
+        )}
       </main>
 
       {/* ══════════════════ L'ESPRIT DU RÈGLEMENT ══════════════════ */}

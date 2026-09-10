@@ -6,6 +6,7 @@ import { redirect } from 'next/navigation'
 import { exigerAdmin } from '@/actions/garde'
 import type { EtatFormulaire } from '@/actions/etat'
 import { prisma } from '@/lib/prisma'
+import { CATEGORIE_DEFAUT } from '@/lib/reglement'
 import { schemaSection } from '@/lib/validations'
 
 /** Le règlement n'a qu'une seule page publique à rafraîchir. */
@@ -17,6 +18,7 @@ function lireFormulaireSection(formData: FormData) {
   return schemaSection.safeParse({
     titre: String(formData.get('titre') ?? ''),
     contenu: String(formData.get('contenu') ?? ''),
+    categorie: String(formData.get('categorie') ?? CATEGORIE_DEFAUT),
     publie: formData.get('publie') !== null,
   })
 }

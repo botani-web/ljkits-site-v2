@@ -116,13 +116,21 @@ model SectionReglement {
 
   titreEn   String?
   contenuEn String? @db.Text
+
+  /// L'onglet de gauche où la section apparaît : "ranked", "cashprize",
+  /// "triche", "sanctions" ou "serveur". Un slug et pas un libellé, parce
+  /// que la page est bilingue : les deux traductions vivent dans i18n.ts,
+  /// une seule valeur vit en base. Une valeur inconnue retombe sur le
+  /// premier onglet plutôt que de faire disparaître la section.
+  categorie String  @default("serveur")
+
   /// false = brouillon : la section reste invisible côté public.
   publie    Boolean @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@index([publie, ordre])
+  @@index([publie, categorie, ordre])
 }
 
 /// Un seul compte. Pas de champ "role" : être dans cette table suffit.
@@ -930,6 +938,35 @@ model EloMatch {
   @@index([tueur, instant(sort: Desc)], map: "idx_match_tueur")
   @@index([victime, instant(sort: Desc)], map: "idx_match_victime")
   @@map("elo_match")
+}
+
+/// Un joueur écarté du classement. Il joue normalement : il n'apparaît plus
+/// au classement et ses combats ne font bouger l'Elo de personne.
+///
+/// DEUX ORIGINES, d'où la clé composée : "ranked" est une décision du staff
+/// (/rankedban en jeu), "serveur" est le miroir d'un bannissement — posé et
+/// levé tout seul par le plugin, pour qu'un banni sorte du classement le
+/// temps de sa sanction et y revienne au déban. Un joueur peut porter les
+/// deux, et lever l'une ne lève pas l'autre.
+///
+/// Les lignes levées sont GARDÉES (actif = false) : l'historique d'une
+/// sanction liée à de l'argent ne se supprime pas.
+model EloExclusion {
+  uuid    String
+  origine String
+
+  pseudo String?
+  raison String?
+  staff  String?
+
+  creeLe   DateTime  @default(now()) @map("cree_le") @db.Timestamptz(6)
+  leveeLe  DateTime? @map("levee_le") @db.Timestamptz(6)
+  leveePar String?   @map("levee_par")
+  actif    Boolean   @default(true)
+
+  @@id([uuid, origine])
+  @@index([actif], map: "idx_exclusion_actif")
+  @@map("elo_exclusion")
 }
 
 /// La liaison Discord. C'est elle qui rend un joueur CLASSABLE : le plugin

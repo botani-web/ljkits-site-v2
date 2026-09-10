@@ -42,6 +42,7 @@ export default async function PageModifierSection({
         section={{
           titre: section.titre,
           contenu: section.contenu,
+          categorie: section.categorie,
           publie: section.publie,
         }}
         libelleBouton="Enregistrer les modifications"

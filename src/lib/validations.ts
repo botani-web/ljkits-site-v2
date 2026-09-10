@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { CATEGORIES_REGLEMENT } from '@/lib/reglement'
 
 /**
  * Schémas de validation zod.
@@ -87,6 +88,18 @@ export const schemaKit = z.object({
 
 export type DonneesKit = z.infer<typeof schemaKit>
 
+/**
+ * Les slugs d'onglet acceptés, tirés de la seule liste qui existe.
+ *
+ * `z.enum` veut un tuple de littéraux : on le construit à partir de
+ * CATEGORIES_REGLEMENT plutôt que de recopier les cinq valeurs, pour qu'un
+ * onglet ajouté là-bas soit accepté ici sans que personne ait à y penser.
+ */
+const SLUGS_REGLEMENT = CATEGORIES_REGLEMENT.map((c) => c.slug) as unknown as [
+  string,
+  ...string[],
+]
+
 export const schemaSection = z.object({
   titre: z
     .string()
@@ -94,6 +107,9 @@ export const schemaSection = z.object({
     .min(1, 'Le titre est obligatoire.')
     .max(120, 'Le titre dépasse 120 caractères.'),
   contenu: z.string().trim().min(1, 'Le contenu est obligatoire.'),
+  // L'onglet de la page publique. La liste fait autorité : une valeur hors
+  // liste ferait disparaître la section derrière un onglet qui n'existe pas.
+  categorie: z.enum(SLUGS_REGLEMENT, { message: 'Choisis une catégorie existante.' }),
   publie: z.boolean(),
 })
 

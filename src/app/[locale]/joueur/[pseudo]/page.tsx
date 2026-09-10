@@ -139,6 +139,22 @@ export default async function PageJoueur({ params }: Params) {
                 <p className="mt-2.5 text-sm text-or">{t(locale, 'joueur.palier-max')}</p>
               )}
 
+              {/*
+                L'EXCLUSION SE DIT, ELLE NE SE CACHE PAS.
+
+                La fiche reste consultable — un lien partagé avant la
+                sanction ne doit pas devenir un 404 — mais elle annonce
+                clairement que ce joueur ne concourt plus. Sans ce bandeau,
+                un visiteur verrait un Elo élevé sans rang et croirait à un
+                bug du site.
+              */}
+              {fiche.exclu && (
+                <p className="mt-4 rounded-carte border border-rouge/40 bg-rouge/10 px-4 py-3 text-sm text-creme">
+                  <b className="font-semibold">{t(locale, 'joueur.exclu-titre')}</b>{' '}
+                  {t(locale, 'joueur.exclu-detail')}
+                </p>
+              )}
+
               {/* Les deux conditions d'éligibilité, dites explicitement. */}
               <div className="mt-4 flex flex-wrap gap-2">
                 <Pilule
