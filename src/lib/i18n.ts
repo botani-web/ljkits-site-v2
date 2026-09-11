@@ -178,10 +178,13 @@ const DICO = {
     en: 'No attack cooldown, no armour, and a bowl of soup to heal.',
   },
   'accueil.chapo-kits': { fr: 'kits', en: 'kits' },
-  'accueil.chapo-2': { fr: 'à débloquer en jouant, un', en: 'to unlock by playing, a' },
+  'accueil.chapo-2': { fr: 'à débloquer en jouant, une', en: 'to unlock by playing, a' },
+  // Il était écrit « classement remis à zéro chaque lundi » : c'était
+  // l'ancien classement hebdomadaire. Le classement est une saison Elo d'un
+  // mois, ouverte le 11/09/2026 à 18h00.
   'accueil.chapo-classement': {
-    fr: 'classement remis à zéro chaque lundi',
-    en: 'leaderboard reset every Monday',
+    fr: 'saison classée d’un mois avec cashprize',
+    en: 'one-month ranked season with a cashprize',
   },
   'accueil.chapo-3': { fr: ', et zéro pay to win.', en: ', and zero pay-to-win.' },
   'accueil.piliers-etiquette': { fr: 'Ce qui t’attend', en: 'What awaits you' },

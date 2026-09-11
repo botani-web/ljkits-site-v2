@@ -49,22 +49,26 @@ const SECTIONS = [
     categorie: 'ranked',
     titre: 'La compétition',
     titreEn: 'The competition',
-    contenu: `Chaque mois, **150 € sont répartis entre les 5 premiers** du classement Elo.
+    contenu: `À chaque saison, **150 € sont répartis entre les 5 premiers** du classement Elo.
 
 Tout le monde démarre à **1000 Elo**. Battre un joueur mieux classé rapporte beaucoup, battre un joueur moins bien classé rapporte peu — et l'inverse pour les défaites. Ce que tu gagnes, ton adversaire le perd : le total ne bouge jamais.
 
 > **Répartition :** 1ᵉʳ **60 €** · 2ᵉ **35 €** · 3ᵉ **25 €** · 4ᵉ **20 €** · 5ᵉ **10 €**
 
-La saison se termine le **1ᵉʳ de chaque mois à 00h00** (heure de Paris). Le classement est figé à cet instant précis, puis tout le monde repart à 1000 Elo.
+Une saison dure **un mois**. La **saison 1** s'ouvre le **vendredi 11 septembre 2026 à 18h00** et se clôture le **dimanche 11 octobre 2026 à 18h00** (heure de Paris). Chaque saison suivante s'ouvre à la clôture de la précédente, le 11 du mois à 18h00.
+
+Le classement est figé à l'instant précis de la clôture, puis tout le monde repart à 1000 Elo.
 
 Les kits, les cosmétiques et les coins **ne sont jamais remis à zéro**. Seul l'Elo l'est.`,
-    contenuEn: `Every month, **150 € are shared between the top 5** of the Elo leaderboard.
+    contenuEn: `Every season, **150 € are shared between the top 5** of the Elo leaderboard.
 
 Everyone starts at **1000 Elo**. Beating a higher-ranked player earns a lot, beating a lower-ranked one earns little — and the reverse for defeats. What you gain, your opponent loses: the total never moves.
 
 > **Split:** 1st **60 €** · 2nd **35 €** · 3rd **25 €** · 4th **20 €** · 5th **10 €**
 
-The season ends on the **1st of each month at 00:00** (Paris time). The leaderboard is frozen at that exact moment, then everyone restarts at 1000 Elo.
+A season lasts **one month**. **Season 1** opens on **Friday 11 September 2026 at 6:00 PM** and closes on **Sunday 11 October 2026 at 6:00 PM** (Paris time). Each following season opens when the previous one closes, on the 11th of the month at 6:00 PM.
+
+The leaderboard is frozen at the exact closing moment, then everyone restarts at 1000 Elo.
 
 Kits, cosmetics and coins are **never reset**. Only Elo is.`,
   },
@@ -97,6 +101,7 @@ In case of a **perfect Elo tie**, the player with the **most fights** comes firs
     titreEn: 'What counts as a ranked fight',
     contenu: `Un combat ne fait bouger l'Elo que si **toutes** ces conditions sont réunies :
 
+> **La saison est ouverte.** Aucun combat livré avant l'ouverture officielle ne compte.
 > **Les deux joueurs sont en mode ranked.** Si l'un des deux l'a coupé, le combat ne compte pour personne.
 > **Les deux joueurs ont un kit actif.** Tuer quelqu'un qui n'a pas encore pris son kit ne rapporte rien — et ne lui fait rien perdre.
 > **Aucun des deux n'est exclu du classement.** Un combat qui implique un joueur écarté est neutre des deux côtés.
@@ -108,6 +113,7 @@ Ces règles valent **dans les deux sens**. Un joueur désarmé ne peut pas deven
 L'action bar t'indique à chaque fois qu'un combat n'a pas compté, et pourquoi.`,
     contenuEn: `A fight only moves Elo if **all** of these conditions are met:
 
+> **The season is open.** No fight played before the official opening counts.
 > **Both players are in ranked mode.** If either has turned it off, the fight counts for nobody.
 > **Both players have an active kit.** Killing someone who has not taken their kit yet earns nothing — and costs them nothing.
 > **Neither is excluded from the leaderboard.** A fight involving an excluded player is neutral on both sides.
