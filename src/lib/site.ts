@@ -42,7 +42,7 @@ export const SITE = {
    * ensemble — c'est le seul doublon assumé du projet, faute d'une source
    * partageable entre un bot Node et un déploiement Vercel.
    */
-  ouverture: '2026-09-11T18:00:00+02:00',
+  ouverture: '2026-09-12T14:30:00+02:00',
 
   /** API publique de statut du serveur (joueurs en ligne). */
   apiStatut: 'https://api.mcstatus.io/v2/status/java/',
@@ -104,3 +104,14 @@ export function reperes(locale: 'en' | 'fr', ...cles: string[]) {
       label: locale === 'en' ? repere.labelEn : repere.label,
     }))
 }
+
+/**
+ * LE CLASSEMENT DU SITE EST FERMÉ (12/09/2026).
+ *
+ * Le serveur est passé du FFA classé au Practice 1v1 (Elo par mode + Elo
+ * global) : les tableaux du site décrivent encore l'ancien système. Tant que
+ * ce drapeau est faux, /classement affiche un message d'attente et l'accueil
+ * masque son aperçu du top. Le classement reste consultable en jeu
+ * (/leaderboard). Repasser à `true` quand la page aura été refaite.
+ */
+export const CLASSEMENT_OUVERT = false

@@ -27,6 +27,7 @@ import type { CleTexte } from '@/lib/i18n'
  */
 export const CATEGORIES_REGLEMENT = [
   { slug: 'ranked', cleTexte: 'reglement.cat.ranked' },
+  { slug: 'modes', cleTexte: 'reglement.cat.modes' },
   { slug: 'cashprize', cleTexte: 'reglement.cat.cashprize' },
   { slug: 'integrite', cleTexte: 'reglement.cat.integrite' },
   { slug: 'sanctions', cleTexte: 'reglement.cat.sanctions' },

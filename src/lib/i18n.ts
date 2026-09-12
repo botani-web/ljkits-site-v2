@@ -457,6 +457,10 @@ const DICO = {
   },
   'classement.moins-de': { fr: 'moins de 850', en: 'under 850' },
   'classement.et-plus': { fr: 'Elo et plus', en: 'Elo and above' },
+  'classement.ferme': {
+    fr: 'Le classement de la saison arrive très bientôt sur le site. En attendant, le top 100 (global, HG et Digger) est disponible en jeu avec /leaderboard.',
+    en: 'The season leaderboard is coming to the website very soon. Meanwhile, the top 100 (global, HG and Digger) is available in game with /leaderboard.',
+  },
   'classement.vide-page': {
     fr: 'Le classement Elo n’a pas encore démarré. Reviens à l’ouverture de la première saison.',
     en: 'The Elo leaderboard has not started yet. Come back when the first season opens.',
@@ -536,7 +540,8 @@ const DICO = {
   },
   'reglement.maj': { fr: 'Dernière mise à jour :', en: 'Last updated:' },
   // Les cinq onglets de gauche. Slugs et ordre dans src/lib/reglement.ts.
-  'reglement.cat.ranked': { fr: 'Ranked', en: 'Ranked' },
+  'reglement.cat.ranked': { fr: 'Ranked 1v1', en: 'Ranked 1v1' },
+  'reglement.cat.modes': { fr: 'Modes de jeu', en: 'Game modes' },
   'reglement.cat.cashprize': { fr: 'Cashprize', en: 'Cashprize' },
   'reglement.cat.integrite': { fr: 'Intégrité', en: 'Integrity' },
   'reglement.cat.sanctions': { fr: 'Sanctions', en: 'Sanctions' },

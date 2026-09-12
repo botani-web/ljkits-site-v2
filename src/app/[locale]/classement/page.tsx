@@ -15,7 +15,7 @@ import {
   lireDerniersCombats,
   lireSaisonCourante,
 } from '@/lib/elo'
-import { IMAGE_OG } from '@/lib/site'
+import { CLASSEMENT_OUVERT, IMAGE_OG } from '@/lib/site'
 import { estLocale, LANGUE_DEFAUT, lien, t, champ, champOptionnel, type Locale } from '@/lib/i18n'
 
 /**
@@ -69,6 +69,17 @@ export default async function PageClassement({
 }) {
   const { locale: brut } = await params
   const locale: Locale = estLocale(brut) ? brut : LANGUE_DEFAUT
+
+  // Fermé le temps de refaire la page pour le Practice 1v1 (voir site.ts).
+  if (!CLASSEMENT_OUVERT) {
+    return (
+      <PagePublique locale={locale}>
+        <Enveloppe className="py-[clamp(60px,8vw,120px)]">
+          <EtatVide message={t(locale, 'classement.ferme')} />
+        </Enveloppe>
+      </PagePublique>
+    )
+  }
 
   const saison = await lireSaisonCourante()
 

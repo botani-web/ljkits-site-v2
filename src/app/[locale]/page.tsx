@@ -14,7 +14,7 @@ import { lireClassementElo, lireSaisonCourante, nomPalier, palierDe } from '@/li
 import { formaterOuverture, formaterOuvertureEnPhrase } from '@/lib/format'
 import { prisma } from '@/lib/prisma'
 import { lireReglages } from '@/lib/reglages'
-import { SITE } from '@/lib/site'
+import { CLASSEMENT_OUVERT, SITE } from '@/lib/site'
 import { estLocale, LANGUE_DEFAUT, lien, t, champ, champOptionnel, type Locale } from '@/lib/i18n'
 
 // Page statique, régénérée au plus toutes les heures. Les Server Actions de
@@ -42,7 +42,8 @@ export default async function Accueil({
   ])
 
   // Hors saison ouverte, l'aperçu disparaît au lieu d'afficher un cadre vide.
-  const classementElo = saison ? await lireClassementElo(saison.id) : []
+  // Classement du site fermé (site.ts) : l'aperçu disparaît avec lui.
+  const classementElo = saison && CLASSEMENT_OUVERT ? await lireClassementElo(saison.id) : []
 
   const { discord } = reglages
 
