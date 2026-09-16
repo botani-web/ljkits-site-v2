@@ -979,3 +979,59 @@ model EloLiaison {
 
   @@map("elo_liaison")
 }
+
+/* ==========================================================================
+   LE RANKED PRACTICE (plugins LJPractice + LJElo, depuis le 11/09/2026)
+
+   Déclarées en miroir EXACT du SQL du plugin
+   (ljkits-dev/sql/20260911_practice_ranked.sql), pour la même raison que les
+   tables elo_* : une table absente du schéma, la prochaine migration propose
+   de la SUPPRIMER. Le site ne fait que lire (src/lib/practice.ts).
+   ========================================================================== */
+
+/// L'Elo d'un joueur dans un mode, pour une saison.
+model PracticeElo {
+  uuid        String
+  saison      Int
+  ladder      String
+  pseudo      String
+  elo         Int
+  eloMax      Int      @map("elo_max")
+  matchs      Int      @default(0)
+  victoires   Int      @default(0)
+  defaites    Int      @default(0)
+  serie       Int      @default(0)
+  recordSerie Int      @default(0) @map("record_serie")
+  derniereMaj DateTime @default(now()) @map("derniere_maj") @db.Timestamptz(6)
+
+  @@id([uuid, saison, ladder])
+  @@index([saison, ladder, elo(sort: Desc)], map: "idx_practice_classement")
+  @@map("practice_elo")
+}
+
+/// Un match ranked terminé : gagnant, perdant, Elo avant/après, durée, issue.
+model PracticeMatch {
+  id              BigInt   @id @default(autoincrement())
+  saison          Int
+  ladder          String
+  instant         DateTime @default(now()) @db.Timestamptz(6)
+  gagnant         String
+  gagnantPseudo   String   @map("gagnant_pseudo")
+  perdant         String
+  perdantPseudo   String   @map("perdant_pseudo")
+  eloGagnantAvant Int      @map("elo_gagnant_avant")
+  eloGagnantApres Int      @map("elo_gagnant_apres")
+  eloPerdantAvant Int      @map("elo_perdant_avant")
+  eloPerdantApres Int      @map("elo_perdant_apres")
+  gain            Int
+  perte           Int
+  dureeSecondes   Int      @default(0) @map("duree_secondes")
+  raison          String?
+  pvGagnant       Float?   @map("pv_gagnant")
+  facteurFarm     Float    @default(1) @map("facteur_farm")
+
+  @@index([saison, ladder, instant(sort: Desc)], map: "idx_practice_match_saison")
+  @@index([gagnant], map: "idx_practice_match_gagnant")
+  @@index([perdant], map: "idx_practice_match_perdant")
+  @@map("practice_match")
+}

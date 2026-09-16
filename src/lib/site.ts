@@ -114,4 +114,5 @@ export function reperes(locale: 'en' | 'fr', ...cles: string[]) {
  * masque son aperçu du top. Le classement reste consultable en jeu
  * (/leaderboard). Repasser à `true` quand la page aura été refaite.
  */
-export const CLASSEMENT_OUVERT = false
+// ROUVERT le 16/09/2026 : classement ranked practice (global + par mode), profils détaillés.
+export const CLASSEMENT_OUVERT = true

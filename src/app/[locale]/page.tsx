@@ -10,7 +10,8 @@ import { Enveloppe } from '@/components/ui/Enveloppe'
 import { CaseCloisonnee, GrilleCloisonnee } from '@/components/ui/GrilleCloisonnee'
 import { BlocFinal, Section } from '@/components/ui/Section'
 import { Etiquette } from '@/components/ui/TeteSection'
-import { lireClassementElo, lireSaisonCourante, nomPalier, palierDe } from '@/lib/elo'
+import { lireSaisonCourante, nomPalier, palierDe } from '@/lib/elo'
+import { lireClassement } from '@/lib/practice'
 import { formaterOuverture, formaterOuvertureEnPhrase } from '@/lib/format'
 import { prisma } from '@/lib/prisma'
 import { lireReglages } from '@/lib/reglages'
@@ -43,7 +44,8 @@ export default async function Accueil({
 
   // Hors saison ouverte, l'aperçu disparaît au lieu d'afficher un cadre vide.
   // Classement du site fermé (site.ts) : l'aperçu disparaît avec lui.
-  const classementElo = saison && CLASSEMENT_OUVERT ? await lireClassementElo(saison.id) : []
+  // Depuis le 16/09/2026 : l'Elo GLOBAL du ranked practice (moyenne des modes, le cashprize).
+  const classementElo = saison && CLASSEMENT_OUVERT ? await lireClassement(saison.id, 'global', TAILLE_APERCU) : []
 
   const { discord } = reglages
 
@@ -243,7 +245,10 @@ export default async function Accueil({
                       </span>
                     </span>
 
-                    <span className="relative font-mono text-sm font-bold text-soupe">
+                    <span
+                      className="relative font-mono text-sm font-bold"
+                      style={{ color: palierDe(ligne.elo).couleur }}
+                    >
                       {ligne.elo}
                     </span>
                   </li>
