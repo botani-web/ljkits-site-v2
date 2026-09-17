@@ -22,6 +22,14 @@ import { debutDuJourParis } from '@/lib/temps'
  * joueurs que tu as amenes », pas « les connexions passees par ton lien ».
  * La page le dit en une ligne au visiteur (cle i18n `part.attribution`).
  *
+ * ── LES JOUEURS DE PASSAGE ────────────────────────────────────────────────
+ * Un joueur deja connu — arrive avant le suivi (`hote = 'historique'`) ou
+ * amene par un autre partenaire — peut tres bien se connecter par l'adresse
+ * d'un partenaire. Il ne lui est PAS attribue et ne compte donc dans aucun
+ * de ses chiffres. Il apparait a part, dans « joueurs revenus par ton IP »
+ * (`lireVisiteursPartenaire`), pour information seulement : seuls les
+ * NOUVEAUX joueurs sont remuneres.
+ *
  * ── AUCUNE DONNEE PERSONNELLE ─────────────────────────────────────────────
  * Ni adresse IP, ni e-mail, ni UUID affiche : un pseudo, des dates, des
  * durees. C'est tout ce qui sort d'ici.
@@ -76,6 +84,11 @@ export type ChiffresPartenaire = {
   secondesParJoueur: number
   /** Joueurs attribues depuis toujours, periode ou pas — pour la note du tableau. */
   joueursDepuisToujours: number
+  /**
+   * Joueurs NON attribues au partenaire, mais passes par son hote sur la
+   * periode. Informatif : ils ne sont dans aucun des chiffres ci-dessus.
+   */
+  visiteurs: number
 }
 
 export type JourPartenaire = {
@@ -93,14 +106,32 @@ export type LigneJoueurPartenaire = {
   derniere: Date | null
 }
 
+/**
+ * Une ligne de « joueurs revenus par ton IP ».
+ *
+ * Attention au sens des colonnes : elles ne parlent QUE des sessions ouvertes
+ * par l'hote du partenaire. Le reste de la vie du joueur — ses autres
+ * connexions, son temps de jeu ailleurs — ne regarde pas ce partenaire.
+ */
+export type LigneVisiteurPartenaire = {
+  pseudo: string
+  sessions: number
+  secondes: number
+  derniere: Date
+}
+
 export type StatsPartenaire = {
   chiffres: ChiffresPartenaire
   jours: JourPartenaire[]
   joueurs: LigneJoueurPartenaire[]
+  visiteurs: LigneVisiteurPartenaire[]
 }
 
 /** Au plus autant de lignes dans le tableau des joueurs. */
 export const JOUEURS_AFFICHES = 100
+
+/** Au plus autant de lignes dans le tableau des joueurs de passage. */
+export const VISITEURS_AFFICHES = 50
 
 /** Le debut de la periode, minuit heure de Paris. `null` = depuis toujours. */
 function borneDe(periode: Periode): Date | null {
@@ -110,7 +141,24 @@ function borneDe(periode: Periode): Date | null {
 }
 
 /**
- * Tout ce qu'affiche la page, en quatre requetes lancees ensemble.
+ * LE FILTRE DES JOUEURS DE PASSAGE, ecrit une seule fois.
+ *
+ * Les sessions ouvertes PAR L'HOTE du partenaire (`session_joueur.hote`) par
+ * des joueurs qui ne lui sont PAS attribues : ceux d'avant le suivi
+ * (`joueur_source.hote = 'historique'`), ceux amenes par un autre partenaire,
+ * et le cas de bord d'une session sans ligne dans `joueur_source`.
+ *
+ * Le compte et le tableau partagent ce texte pour ne pas pouvoir diverger.
+ * `$1` = l'hote du partenaire, `$2` = le debut de la periode (ou null).
+ */
+const VISITEURS_DEPUIS = `from session_joueur s
+         left join joueur_source j on j.uuid = s.uuid
+        where s.hote = $1
+          and (j.hote is null or j.hote <> $1)
+          and ($2::timestamptz is null or s.debut >= $2)`
+
+/**
+ * Tout ce qu'affiche la page, en six requetes lancees ensemble.
  *
  * Les comptages sont castes en `int` et les sommes en `bigint` : sans cast,
  * Postgres rend des `numeric` que Prisma remonte en objets Decimal, et les
@@ -121,7 +169,7 @@ export async function lireStatsPartenaire(hote: string, periode: Periode): Promi
   const nombreDeJours = joursDuGraphique(periode)
   const borneGraphique = debutDuJourParis(new Date(), nombreDeJours - 1)
 
-  const [brut, sessionsParJour, nouveauxParJour, joueurs] = await Promise.all([
+  const [brut, sessionsParJour, nouveauxParJour, joueurs, visiteursCompte, visiteurs] = await Promise.all([
     prisma.$queryRawUnsafe<
       { joueurs: number; nouveaux: number; revenus: number; sessions: number; secondes: bigint; total: number }[]
     >(
@@ -196,6 +244,31 @@ export async function lireStatsPartenaire(hote: string, periode: Periode): Promi
       borne,
       JOUEURS_AFFICHES,
     ),
+
+    // Le compte total des joueurs de passage : il doit rester juste meme
+    // quand le tableau, lui, s'arrete a VISITEURS_AFFICHES lignes.
+    prisma.$queryRawUnsafe<{ joueurs: number }[]>(
+      `select count(distinct s.uuid)::int as joueurs
+         ${VISITEURS_DEPUIS}`,
+      hote,
+      borne,
+    ),
+
+    prisma.$queryRawUnsafe<{ pseudo: string; sessions: number; secondes: bigint; derniere: Date }[]>(
+      // coalesce(j.pseudo, max(s.pseudo)) : le pseudo connu du joueur, ou a
+      // defaut celui de sa derniere session s'il n'a aucune ligne de source.
+      `select coalesce(j.pseudo, max(s.pseudo)) as pseudo,
+              count(*)::int as sessions,
+              coalesce(sum(coalesce(s.secondes, 0)), 0)::bigint as secondes,
+              max(s.debut) as derniere
+         ${VISITEURS_DEPUIS}
+        group by s.uuid, j.pseudo
+        order by sessions desc, secondes desc, pseudo asc
+        limit $3`,
+      hote,
+      borne,
+      VISITEURS_AFFICHES,
+    ),
   ])
 
   const compte = brut[0] ?? {
@@ -217,11 +290,18 @@ export async function lireStatsPartenaire(hote: string, periode: Periode): Promi
       secondes,
       secondesParJoueur: compte.joueurs > 0 ? Math.round(secondes / compte.joueurs) : 0,
       joueursDepuisToujours: compte.total,
+      visiteurs: visiteursCompte[0]?.joueurs ?? 0,
     },
     jours: assemblerJours(nombreDeJours, sessionsParJour, nouveauxParJour),
     joueurs: joueurs.map((l) => ({
       pseudo: l.pseudo,
       premiere: l.premiere,
+      sessions: l.sessions,
+      secondes: Number(l.secondes),
+      derniere: l.derniere,
+    })),
+    visiteurs: visiteurs.map((l) => ({
+      pseudo: l.pseudo,
       sessions: l.sessions,
       secondes: Number(l.secondes),
       derniere: l.derniere,

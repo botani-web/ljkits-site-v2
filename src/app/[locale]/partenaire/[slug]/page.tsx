@@ -14,7 +14,12 @@ import { Section } from '@/components/ui/Section'
 import { Etiquette } from '@/components/ui/TeteSection'
 import { formaterDate } from '@/lib/format'
 import { type CleTexte, estLocale, LANGUE_DEFAUT, lien, t, type Locale } from '@/lib/i18n'
-import { JOUEURS_AFFICHES, lirePartenaire, lireStatsPartenaire } from '@/lib/partenaire'
+import {
+  JOUEURS_AFFICHES,
+  lirePartenaire,
+  lireStatsPartenaire,
+  VISITEURS_AFFICHES,
+} from '@/lib/partenaire'
 import {
   formaterTempsJeu,
   joursDuGraphique,
@@ -30,7 +35,13 @@ import { urlTete } from '@/lib/practice-commun'
  *
  * Combien de joueurs son hote a amenes, combien sont revenus, combien de
  * temps ils ont joue. Rien d'autre : ni adresse IP, ni donnee personnelle,
- * ni chiffre d'affaires. La page est protegee par un mot de passe a lui
+ * ni chiffre d'affaires.
+ *
+ * DEUX TABLEAUX, DEUX SENS. Le premier — « joueur par joueur » — ne contient
+ * que les joueurs ATTRIBUES au partenaire : c'est lui qui paie. Le second —
+ * « joueurs revenus par ton IP » — montre les joueurs deja connus du serveur
+ * qui se sont connectes par son adresse, pour information seulement ; aucun
+ * de leurs chiffres n'entre dans les grands nombres du haut. La page est protegee par un mot de passe a lui
  * (cf. src/lib/partenaire-session.ts), et chaque chiffre se recalcule en
  * direct depuis les tables du plugin.
  *
@@ -172,7 +183,14 @@ export default async function PagePartenaire({ params, searchParams }: Props) {
             <TuileStat
               libelle={t(locale, 'part.joueurs')}
               valeur={String(chiffres.joueurs)}
-              detail={t(locale, 'part.joueurs-aide')}
+              detail={
+                <>
+                  {t(locale, 'part.joueurs-aide')}
+                  <span className="mt-1.5 block font-mono text-[10px] tracking-[.12em] text-or/85 uppercase">
+                    {t(locale, 'part.joueurs-payes')}
+                  </span>
+                </>
+              }
               couleur="var(--color-or)"
             />
             <TuileStat
@@ -198,6 +216,11 @@ export default async function PagePartenaire({ params, searchParams }: Props) {
               libelle={t(locale, 'part.sessions')}
               valeur={String(chiffres.sessions)}
               detail={t(locale, 'part.sessions-aide')}
+            />
+            <TuileStat
+              libelle={t(locale, 'part.visiteurs')}
+              valeur={String(chiffres.visiteurs)}
+              detail={t(locale, 'part.visiteurs-aide')}
             />
           </div>
 
@@ -294,6 +317,88 @@ export default async function PagePartenaire({ params, searchParams }: Props) {
             </p>
           </>
         )}
+      </Section>
+
+      {/* ══════════════════════════ LES JOUEURS DE PASSAGE ══════════════════════════ */}
+      <Section
+        fond="charbon"
+        etiquette={t(locale, 'part.visiteurs-etiquette')}
+        titre={t(locale, 'part.visiteurs-titre')}
+      >
+        {stats.visiteurs.length === 0 ? (
+          <p className="rounded-carte border border-dashed border-bord px-6 py-12 text-center font-mono text-[13px] text-gris">
+            {t(locale, 'part.visiteurs-vide')}
+          </p>
+        ) : (
+          <>
+            <CadreTable fond="braise">
+              <EnteteTable
+                colonnes="minmax(0,1fr) 92px 110px 118px"
+                libelles={[
+                  t(locale, 'part.col-joueur'),
+                  t(locale, 'part.col-sessions'),
+                  t(locale, 'part.col-temps'),
+                  t(locale, 'part.col-derniere'),
+                ]}
+                alignerADroite={[1, 2, 3]}
+                className="hidden sm:grid"
+              />
+
+              <ul>
+                {stats.visiteurs.map((joueur, index) => (
+                  <li
+                    // Deux comptes peuvent porter le meme pseudo : l'index
+                    // garantit une cle unique, la ligne ne bouge jamais.
+                    key={`${joueur.pseudo}-${index}`}
+                    className="grid grid-cols-1 gap-2 border-b border-bord px-4.5 py-3.5 last:border-b-0 sm:grid-cols-[minmax(0,1fr)_92px_110px_118px] sm:gap-3"
+                  >
+                    <span className="flex min-w-0 items-center gap-2.5">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={urlTete(joueur.pseudo, 32)}
+                        alt=""
+                        width={22}
+                        height={22}
+                        loading="lazy"
+                        className="size-[22px] shrink-0 rounded-micro"
+                      />
+                      <span className="min-w-0 truncate text-[14.5px] text-creme">{joueur.pseudo}</span>
+                    </span>
+
+                    <span className="font-mono text-[13px] tabular-nums text-gris sm:text-right">
+                      <span className="sm:hidden">{t(locale, 'part.col-sessions')} · </span>
+                      {joueur.sessions}
+                    </span>
+
+                    <span className="font-mono text-[13px] tabular-nums text-creme sm:text-right">
+                      <span className="sm:hidden text-gris">{t(locale, 'part.col-temps')} · </span>
+                      {formaterTempsJeu(joueur.secondes, locale)}
+                    </span>
+
+                    <span className="font-mono text-[12px] text-gris sm:text-right">
+                      <span className="sm:hidden">{t(locale, 'part.col-derniere')} · </span>
+                      {formaterDate(joueur.derniere, locale)}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </CadreTable>
+
+            {stats.visiteurs.length >= VISITEURS_AFFICHES && (
+              <p className="mt-3 font-mono text-[11.5px] text-gris">
+                {t(locale, 'part.visiteurs-limite').replace('{n}', String(VISITEURS_AFFICHES))}
+              </p>
+            )}
+          </>
+        )}
+
+        {/* La regle de remuneration, dite noir sur blanc sous le tableau. */}
+        <div className="mt-3.5 rounded-carte border border-bord bg-braise p-5">
+          <p className="text-[14px] leading-relaxed text-gris">{t(locale, 'part.visiteurs-note')}</p>
+          <p className="mt-2 text-[13px] leading-relaxed text-gris/85">
+            {t(locale, 'part.visiteurs-colonnes').replace('{h}', partenaire.hote)}
+          </p>
+        </div>
       </Section>
     </PagePublique>
   )

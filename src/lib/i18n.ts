@@ -1152,6 +1152,7 @@ const DICO = {
 
   'part.joueurs': { fr: 'Joueurs amenés', en: 'Players brought in' },
   'part.joueurs-aide': { fr: 'Ils ont joué au moins une fois sur la période.', en: 'They played at least once in the period.' },
+  'part.joueurs-payes': { fr: 'Comptés pour ta rémunération', en: 'Counted for your payout' },
   'part.nouveaux': { fr: 'Nouveaux joueurs', en: 'New players' },
   'part.nouveaux-aide': { fr: 'Leur toute première venue est passée par toi.', en: 'Their very first visit came through you.' },
   'part.revenus': { fr: 'Joueurs revenus', en: 'Returning players' },
@@ -1190,6 +1191,34 @@ const DICO = {
     fr: 'Les joueurs déjà présents avant la mise en service du suivi ne sont attribués à personne : ils n’apparaissent chez aucun partenaire.',
     en: 'Players who were already here before this tracking went live are credited to nobody: they show up for no partner.',
   },
+  /* ---------- les joueurs de passage (non attribues) ---------- */
+  'part.visiteurs': { fr: 'Revenus par ton IP', en: 'Returning via your IP' },
+  'part.visiteurs-aide': {
+    fr: 'Déjà connus du serveur : hors rémunération.',
+    en: 'Already known to the server: not part of your payout.',
+  },
+  'part.visiteurs-etiquette': { fr: 'Pour information', en: 'For information' },
+  'part.visiteurs-titre': {
+    fr: 'Joueurs revenus par ton IP',
+    en: 'Players returning through your IP',
+  },
+  'part.visiteurs-vide': {
+    fr: 'Personne d’autre n’est passé par ton adresse sur cette période.',
+    en: 'Nobody else came through your address in this period.',
+  },
+  'part.visiteurs-limite': {
+    fr: 'Les {n} premiers, du plus grand nombre de connexions au plus petit.',
+    en: 'The top {n}, from the most joins down.',
+  },
+  'part.visiteurs-note': {
+    fr: 'Seuls les NOUVEAUX joueurs sont rémunérés : ceux qui découvrent le serveur par ton adresse. Ceux qui étaient déjà là avant, ou qui sont déjà venus par une autre adresse, apparaissent ici pour information mais ne comptent pas dans ta rémunération.',
+    en: 'Only NEW players are paid: the ones who discover the server through your address. Those who were already here, or who first came through another address, are shown here for information only and do not count towards your payout.',
+  },
+  'part.visiteurs-colonnes': {
+    fr: 'Connexions et temps de jeu ne comptent ici que leurs passages par {h}.',
+    en: 'Joins and playtime here only count their visits through {h}.',
+  },
+
   'part.confidentialite': {
     fr: 'Aucune adresse IP, aucune donnée personnelle : des pseudos, des dates et des durées.',
     en: 'No IP address, no personal data: usernames, dates and durations only.',
