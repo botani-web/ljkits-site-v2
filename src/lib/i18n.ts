@@ -1110,6 +1110,91 @@ const DICO = {
   'pr.raison.sortie': { fr: 'Sortie d’arène', en: 'Left the arena' },
   'pr.raison.sortie-haut': { fr: 'Sorti par le haut', en: 'Left over the top' },
   'pr.raison.autre': { fr: 'Autre', en: 'Other' },
+  /* ---------- espace partenaire (/partenaire/<slug>) ---------- */
+  'part.meta-titre': { fr: 'Espace partenaire', en: 'Partner area' },
+  'part.meta-desc': {
+    fr: 'Les joueurs amenés sur LJKITS par un partenaire, et leur temps de jeu.',
+    en: 'The players a partner brings to LJKITS, and how long they play.',
+  },
+
+  'part.acces-titre': { fr: 'Espace partenaire', en: 'Partner area' },
+  'part.acces-chapeau': {
+    fr: 'Tes chiffres sont réservés : entre ton identifiant et ton mot de passe.',
+    en: 'Your numbers are private: enter your name and password.',
+  },
+  'part.champ-identifiant': { fr: 'Identifiant', en: 'Name' },
+  'part.champ-mot-de-passe': { fr: 'Mot de passe', en: 'Password' },
+  'part.entrer': { fr: 'Entrer', en: 'Enter' },
+  'part.entrer-en-cours': { fr: 'Vérification…', en: 'Checking…' },
+  'part.acces-aide': {
+    fr: 'Identifiant et mot de passe sont donnés par le staff LJKITS. Perdu ? Demande-nous un nouveau mot de passe.',
+    en: 'The staff gives you both. Lost them? Ask us for a new password.',
+  },
+
+  'part.etiquette': { fr: 'Partenaire', en: 'Partner' },
+  'part.titre-avant': { fr: 'Les joueurs que tu', en: 'The players you' },
+  'part.titre-accent': { fr: 'amènes', en: 'bring in' },
+  'part.chapeau': {
+    fr: 'Tout ce qui passe par {h}. Les chiffres se mettent à jour à chaque connexion.',
+    en: 'Everything coming through {h}. The numbers update on every join.',
+  },
+  'part.deconnexion': { fr: 'Se déconnecter', en: 'Log out' },
+  'part.ferme': {
+    fr: 'Cet espace est fermé pour le moment. Contacte le staff LJKITS.',
+    en: 'This area is closed for now. Get in touch with the LJKITS staff.',
+  },
+
+  'part.periode': { fr: 'Période', en: 'Period' },
+  'part.periode-7': { fr: '7 jours', en: '7 days' },
+  'part.periode-30': { fr: '30 jours', en: '30 days' },
+  'part.periode-90': { fr: '90 jours', en: '90 days' },
+  'part.periode-tout': { fr: 'Tout', en: 'All time' },
+
+  'part.joueurs': { fr: 'Joueurs amenés', en: 'Players brought in' },
+  'part.joueurs-aide': { fr: 'Ils ont joué au moins une fois sur la période.', en: 'They played at least once in the period.' },
+  'part.nouveaux': { fr: 'Nouveaux joueurs', en: 'New players' },
+  'part.nouveaux-aide': { fr: 'Leur toute première venue est passée par toi.', en: 'Their very first visit came through you.' },
+  'part.revenus': { fr: 'Joueurs revenus', en: 'Returning players' },
+  'part.revenus-aide': { fr: 'Venus jouer au moins deux jours différents.', en: 'Played on at least two different days.' },
+  'part.temps': { fr: 'Temps de jeu total', en: 'Total playtime' },
+  'part.temps-aide': { fr: 'Tous tes joueurs additionnés.', en: 'All your players added up.' },
+  'part.temps-moyen': { fr: 'Temps moyen par joueur', en: 'Average per player' },
+  'part.sessions': { fr: 'Connexions', en: 'Sessions' },
+  'part.sessions-aide': { fr: 'Une par passage sur le serveur.', en: 'One per visit to the server.' },
+
+  'part.graphe-etiquette': { fr: 'Jour par jour', en: 'Day by day' },
+  'part.graphe-titre': { fr: 'Les {n} derniers jours', en: 'The last {n} days' },
+  'part.graphe-sessions': { fr: 'Connexions', en: 'Sessions' },
+  'part.graphe-nouveaux': { fr: 'Nouveaux joueurs', en: 'New players' },
+  'part.graphe-vide': { fr: 'Aucune connexion sur ces jours-là.', en: 'No joins on those days.' },
+  'part.graphe-jour': { fr: '{d} : {s} connexion(s), {n} nouveau(x)', en: '{d}: {s} session(s), {n} new' },
+
+  'part.table-etiquette': { fr: 'Le détail', en: 'The detail' },
+  'part.table-titre': { fr: 'Joueur par joueur', en: 'Player by player' },
+  'part.col-joueur': { fr: 'Joueur', en: 'Player' },
+  'part.col-premiere': { fr: 'Première venue', en: 'First join' },
+  'part.col-sessions': { fr: 'Connexions', en: 'Sessions' },
+  'part.col-temps': { fr: 'Temps de jeu', en: 'Playtime' },
+  'part.col-derniere': { fr: 'Dernière venue', en: 'Last seen' },
+  'part.table-vide': { fr: 'Aucun joueur sur cette période.', en: 'No player in this period.' },
+  'part.table-limite': {
+    fr: 'Les {n} premiers, du plus gros temps de jeu au plus petit. Tu as amené {t} joueur(s) depuis le début.',
+    en: 'The top {n}, from the most playtime down. You have brought in {t} player(s) since day one.',
+  },
+
+  'part.attribution': {
+    fr: 'Un joueur est compté pour toi s’il est arrivé la PREMIÈRE fois par {h} ; ensuite, tout son temps de jeu t’est attribué, même quand il se reconnecte par l’adresse principale.',
+    en: 'A player counts as yours if their FIRST ever join came through {h}; after that all their playtime is credited to you, even when they reconnect through the main address.',
+  },
+  'part.historique': {
+    fr: 'Les joueurs déjà présents avant la mise en service du suivi ne sont attribués à personne : ils n’apparaissent chez aucun partenaire.',
+    en: 'Players who were already here before this tracking went live are credited to nobody: they show up for no partner.',
+  },
+  'part.confidentialite': {
+    fr: 'Aucune adresse IP, aucune donnée personnelle : des pseudos, des dates et des durées.',
+    en: 'No IP address, no personal data: usernames, dates and durations only.',
+  },
+
 } as const satisfies Record<string, Entree>
 
 export type CleTexte = keyof typeof DICO

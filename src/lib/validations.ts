@@ -345,3 +345,19 @@ export const schemaNoteAdmin = z.object({
     z.string().max(2_000, 'Note trop longue (2000 caractères maximum).').nullable(),
   ),
 })
+
+/* -------------------------------------------------------------------------- */
+/* ESPACE PARTENAIRE                                                          */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * L'accès d'un partenaire à ses chiffres.
+ *
+ * Les messages restent volontairement neutres et ne sont d'ailleurs pas
+ * affichés tels quels : la page ne renvoie qu'une seule phrase, la même pour
+ * un slug inconnu et pour un mot de passe faux (cf. src/actions/partenaire.ts).
+ */
+export const schemaAccesPartenaire = z.object({
+  slug,
+  motDePasse: z.string().min(1, 'Le mot de passe est obligatoire.').max(200),
+})

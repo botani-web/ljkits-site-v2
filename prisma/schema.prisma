@@ -122,10 +122,10 @@ model SectionReglement {
   /// que la page est bilingue : les deux traductions vivent dans i18n.ts,
   /// une seule valeur vit en base. Une valeur inconnue retombe sur le
   /// premier onglet plutôt que de faire disparaître la section.
-  categorie String  @default("serveur")
+  categorie String @default("serveur")
 
   /// false = brouillon : la section reste invisible côté public.
-  publie    Boolean @default(false)
+  publie Boolean @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -980,14 +980,15 @@ model EloLiaison {
   @@map("elo_liaison")
 }
 
-/* ==========================================================================
-   LE RANKED PRACTICE (plugins LJPractice + LJElo, depuis le 11/09/2026)
-
-   Déclarées en miroir EXACT du SQL du plugin
-   (ljkits-dev/sql/20260911_practice_ranked.sql), pour la même raison que les
-   tables elo_* : une table absente du schéma, la prochaine migration propose
-   de la SUPPRIMER. Le site ne fait que lire (src/lib/practice.ts).
-   ========================================================================== */
+/**
+ * ==========================================================================
+ * LE RANKED PRACTICE (plugins LJPractice + LJElo, depuis le 11/09/2026)
+ * Déclarées en miroir EXACT du SQL du plugin
+ * (ljkits-dev/sql/20260911_practice_ranked.sql), pour la même raison que les
+ * tables elo_* : une table absente du schéma, la prochaine migration propose
+ * de la SUPPRIMER. Le site ne fait que lire (src/lib/practice.ts).
+ * ==========================================================================
+ */
 
 /// L'Elo d'un joueur dans un mode, pour une saison.
 model PracticeElo {
@@ -1034,4 +1035,86 @@ model PracticeMatch {
   @@index([gagnant], map: "idx_practice_match_gagnant")
   @@index([perdant], map: "idx_practice_match_perdant")
   @@map("practice_match")
+}
+
+/**
+ * ==========================================================================
+ * LE SUIVI DES PARTENAIRES / STREAMEURS (17/09/2026)
+ * Un partenaire recoit son propre hote — « sixela.ljkits.eu » — qui pointe
+ * sur le serveur. Le plugin lit l'adresse tapee par le joueur a la connexion
+ * et ecrit ici : a qui il doit sa premiere venue (`joueur_source`) et chacun
+ * de ses passages (`session_joueur`).
+ * QUI ECRIT QUOI. Le site ne fait que LIRE `joueur_source` et
+ * `session_joueur` : c'est le plugin Minecraft (role `ljrank_serveur`) qui
+ * les remplit. Seule `partenaire` est tenue depuis le site / les scripts.
+ * AUCUNE DONNEE PERSONNELLE : pas d'adresse IP, pas d'e-mail. L'hote est
+ * celui du serveur, pas celui du joueur.
+ * ==========================================================================
+ */
+
+/// Un partenaire : un streameur, un hote a lui, un mot de passe pour lire ses
+/// chiffres sur /partenaire/<slug>.
+model Partenaire {
+  /// Identifiant dans l'URL : /partenaire/sixela.
+  slug String @id
+
+  nom  String
+  /// L'adresse que le joueur tape en jeu : « sixela.ljkits.eu ». Unique :
+  /// c'est elle qui attribue un joueur, deux partenaires ne peuvent pas la
+  /// partager.
+  hote String @unique
+
+  motDePasseHash String @map("mot_de_passe_hash")
+
+  /// false = l'acces a la page est ferme, les chiffres restent en base.
+  actif Boolean @default(true)
+
+  creeLe DateTime @default(now()) @map("cree_le") @db.Timestamptz(6)
+
+  @@map("partenaire")
+}
+
+/// A qui un joueur doit sa venue. Une ligne par joueur, ECRITE UNE FOIS, a sa
+/// toute premiere connexion : c'est la regle du « premier contact ». Revenir
+/// plus tard par l'IP principale ne change pas son parrain.
+model JoueurSource {
+  uuid   String @id
+  pseudo String
+  /// L'hote tape a la premiere connexion. Rapproche de `partenaire.hote`.
+  hote   String
+
+  premiereConnexion DateTime @map("premiere_connexion") @db.Timestamptz(6)
+
+  @@index([hote], map: "idx_joueur_source_hote")
+  @@map("joueur_source")
+}
+
+/// Un passage sur le serveur. `fin` et `secondes` sont nuls tant que le joueur
+/// est connecte — un crash du serveur peut donc laisser une session ouverte,
+/// et le site la compte pour zero seconde plutot que d'inventer une duree.
+model SessionJoueur {
+  id     BigInt @id @default(autoincrement())
+  uuid   String
+  pseudo String
+  /// L'hote de CETTE connexion. Garde pour l'analyse, mais l'attribution des
+  /// sessions se fait par le joueur (`joueur_source`), pas par cette colonne.
+  hote   String
+
+  debut    DateTime  @db.Timestamptz(6)
+  fin      DateTime? @db.Timestamptz(6)
+  secondes Int?
+
+  /// Vrai si cette session est la toute premiere du joueur.
+  nouveau Boolean @default(false)
+
+  // ⚠ UN TROISIEME INDEX EXISTE EN BASE, INVISIBLE ICI :
+  //   idx_session_joueur_ouverte  ON session_joueur (uuid) WHERE fin IS NULL
+  // Il sert au repli du plugin, qui cherche la derniere session encore
+  // ouverte d'un joueur pour la fermer. Prisma ne sait pas decrire un index
+  // PARTIEL : une prochaine `db:migrate:new` proposera donc de le SUPPRIMER.
+  // Le garde-fou anti-destruction du script l'arretera — retirer ce DROP
+  // INDEX de la migration proposee, et garder l'index.
+  @@index([hote, debut], map: "idx_session_joueur_hote_debut")
+  @@index([uuid], map: "idx_session_joueur_uuid")
+  @@map("session_joueur")
 }
