@@ -69,3 +69,15 @@ export function libelleJour(cle: string, locale: Locale): string {
     timeZone: 'Europe/Paris',
   })
 }
+
+/**
+ * 575 centimes → « 5,75 € » / « €5.75 ».
+ *
+ * TOUJOURS deux decimales, meme pour un compte rond : dans un tableau de
+ * paie, « 6 € » au milieu de « 5,75 € » se lit comme une coquille. Et le
+ * calcul reste entier jusqu'au bout — on ne divise qu'ici, a l'affichage.
+ */
+export function formaterMontant(centimes: number, locale: Locale): string {
+  const euros = (Math.round(centimes) / 100).toFixed(2)
+  return locale === 'fr' ? `${euros.replace('.', ',')} €` : `€${euros}`
+}

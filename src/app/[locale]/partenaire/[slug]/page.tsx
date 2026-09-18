@@ -3,6 +3,7 @@ import Link from 'next/link'
 
 import { sortirPartenaire } from '@/actions/partenaire'
 import { BarresJours } from '@/components/partenaire/BarresJours'
+import { BoutonPaye } from '@/components/partenaire/BoutonPaye'
 import { FormulaireAcces } from '@/components/partenaire/FormulaireAcces'
 import { TuileStat } from '@/components/practice/Petits'
 import { PagePublique } from '@/components/public/PagePublique'
@@ -21,12 +22,21 @@ import {
   VISITEURS_AFFICHES,
 } from '@/lib/partenaire'
 import {
+  cleJourParis,
+  formaterMontant,
   formaterTempsJeu,
   joursDuGraphique,
+  libelleJour,
   lirePeriode,
   PERIODES,
   type Periode,
 } from '@/lib/partenaire-commun'
+import {
+  lireRemuneration,
+  lireSemaines,
+  SEMAINES_AFFICHEES,
+  type SemainePartenaire,
+} from '@/lib/partenaire-paie'
 import { sessionOuvertePour } from '@/lib/partenaire-session'
 import { urlTete } from '@/lib/practice-commun'
 
@@ -110,6 +120,22 @@ export default async function PagePartenaire({ params, searchParams }: Props) {
   const periode = lirePeriode(periodeBrute)
   const stats = await lireStatsPartenaire(partenaire.hote, periode)
   const { chiffres } = stats
+
+  // La rémunération ne dépend PAS de la période choisie en haut de page :
+  // elle court d'un versement au suivant. Mélanger les deux ferait afficher
+  // « à encaisser » un montant qui ne correspond à aucun virement.
+  const paie = await lireRemuneration(partenaire)
+  const semaines = await lireSemaines(
+    partenaire.hote,
+    partenaire.tauxCentimes,
+    paie.dernier ? paie.dernier.fin : null,
+  )
+
+  const ETATS: Record<SemainePartenaire['etat'], { cle: CleTexte; classe: string }> = {
+    reglee: { cle: 'part.etat-reglee', classe: 'border-vert/40 bg-vert/10 text-vert' },
+    partielle: { cle: 'part.etat-partielle', classe: 'border-or/40 bg-or/10 text-or' },
+    'en-cours': { cle: 'part.etat-en-cours', classe: 'border-bord bg-braise text-gris' },
+  }
 
   // Une table explicite plutôt qu'une clé construite : le dictionnaire reste
   // grep-able, et TypeScript vérifie que les quatre clés existent vraiment.
@@ -236,6 +262,209 @@ export default async function PagePartenaire({ params, searchParams }: Props) {
           </div>
         </Enveloppe>
       </section>
+
+      {/* ══════════════════════════ LA RÉMUNÉRATION ══════════════════════════ */}
+      {/* Volontairement AVANT les courbes : c'est le premier chiffre qu'un
+          partenaire vient lire, et il ne doit pas avoir à le chercher. */}
+      <Section
+        fond="charbon"
+        etiquette={t(locale, 'part.paie-etiquette')}
+        titre={t(locale, 'part.paie-titre')}
+        chapeau={t(locale, 'part.paie-chapeau').replace(
+          '{p}',
+          formaterMontant(partenaire.tauxCentimes, locale),
+        )}
+      >
+        <div className="grid gap-3.5 lg:grid-cols-[minmax(0,1fr)_minmax(280px,340px)]">
+          <div className="grid gap-3 sm:grid-cols-2">
+            <TuileStat
+              libelle={t(locale, 'part.paie-joueurs')}
+              valeur={String(paie.joueurs)}
+              detail={t(locale, 'part.paie-joueurs-aide')}
+              className="bg-charbon"
+            />
+            <TuileStat
+              libelle={t(locale, 'part.paie-taux')}
+              valeur={formaterMontant(paie.tauxCentimes, locale)}
+              detail={t(locale, 'part.paie-taux-aide')}
+              className="bg-charbon"
+            />
+            <TuileStat
+              libelle={t(locale, 'part.paie-depuis')}
+              valeur={libelleJour(cleJourParis(paie.depuis), locale)}
+              detail={t(locale, 'part.paie-depuis-aide').replace('{d}', formaterDate(paie.depuis, locale))}
+              className="bg-charbon"
+            />
+            <TuileStat
+              libelle={t(locale, 'part.paie-total')}
+              valeur={formaterMontant(paie.totalCentimesRegles, locale)}
+              detail={t(locale, 'part.paie-total-aide').replace('{n}', String(paie.totalJoueursRegles))}
+              className="bg-charbon"
+            />
+          </div>
+
+          {/* Le montant dû, seul cadre doré de la page : impossible à rater. */}
+          <div className="flex flex-col justify-between gap-5 rounded-carte border border-or/45 bg-braise p-6">
+            <div>
+              <p className="font-mono text-[10.5px] tracking-[.16em] text-or/85 uppercase">
+                {t(locale, 'part.paie-a-encaisser')}
+              </p>
+              <p className="mt-2.5 font-titre text-[clamp(34px,5vw,46px)] leading-none text-or">
+                {formaterMontant(paie.montantCentimes, locale)}
+              </p>
+              <p className="mt-2.5 font-mono text-[12px] tabular-nums text-gris">
+                {t(locale, 'part.paie-calcul')
+                  .replace('{n}', String(paie.joueurs))
+                  .replace('{p}', formaterMontant(paie.tauxCentimes, locale))
+                  .replace('{m}', formaterMontant(paie.montantCentimes, locale))}
+              </p>
+              <p className="mt-1.5 text-[12.5px] leading-snug text-gris">
+                {t(locale, 'part.paie-a-encaisser-aide')}
+              </p>
+            </div>
+
+            <BoutonPaye
+              slug={partenaire.slug}
+              locale={locale}
+              joueurs={paie.joueurs}
+              montantCentimes={paie.montantCentimes}
+            />
+          </div>
+        </div>
+
+        {/* Ce que le bouton fait — et surtout ce qu'il ne fait pas. */}
+        <p className="mt-3.5 rounded-carte border border-bord bg-braise p-5 text-[13.5px] leading-relaxed text-gris">
+          {t(locale, 'part.paie-note')}
+        </p>
+      </Section>
+
+      {/* ══════════════════════════ SEMAINE PAR SEMAINE ══════════════════════════ */}
+      <Section
+        etiquette={t(locale, 'part.semaines-etiquette')}
+        titre={t(locale, 'part.semaines-titre').replace('{n}', String(SEMAINES_AFFICHEES))}
+      >
+        <CadreTable>
+          <EnteteTable
+            colonnes="minmax(0,1fr) 120px 110px 130px"
+            libelles={[
+              t(locale, 'part.col-semaine'),
+              t(locale, 'part.col-nouveaux'),
+              t(locale, 'part.col-montant'),
+              t(locale, 'part.col-etat'),
+            ]}
+            alignerADroite={[1, 2, 3]}
+            className="hidden sm:grid"
+          />
+
+          <ul>
+            {semaines.map((semaine) => (
+              <li
+                key={semaine.debut}
+                className={`grid grid-cols-1 gap-2 border-b border-bord px-4.5 py-3.5 last:border-b-0 sm:grid-cols-[minmax(0,1fr)_120px_110px_130px] sm:gap-3 ${
+                  semaine.nouveaux === 0 ? 'opacity-70' : ''
+                }`}
+              >
+                <span className="text-[14.5px] text-creme">
+                  {t(locale, 'part.semaine-du')
+                    .replace('{a}', libelleJour(semaine.debut, locale))
+                    .replace('{b}', libelleJour(semaine.fin, locale))}
+                </span>
+
+                <span className="font-mono text-[13px] tabular-nums text-creme sm:text-right">
+                  <span className="text-gris sm:hidden">{t(locale, 'part.col-nouveaux')} · </span>
+                  {semaine.nouveaux}
+                </span>
+
+                <span
+                  className={`font-mono text-[13px] tabular-nums sm:text-right ${
+                    semaine.nouveaux > 0 ? 'text-or' : 'text-gris'
+                  }`}
+                >
+                  <span className="text-gris sm:hidden">{t(locale, 'part.col-montant')} · </span>
+                  {formaterMontant(semaine.montantCentimes, locale)}
+                </span>
+
+                <span className="sm:text-right">
+                  <span
+                    className={`inline-flex items-center rounded-micro border px-2 py-0.5 font-mono text-[10.5px] tracking-[.1em] uppercase ${
+                      ETATS[semaine.etat].classe
+                    }`}
+                  >
+                    {t(locale, ETATS[semaine.etat].cle)}
+                  </span>
+                </span>
+              </li>
+            ))}
+          </ul>
+        </CadreTable>
+
+        <p className="mt-3 text-[13px] leading-relaxed text-gris">{t(locale, 'part.semaines-note')}</p>
+      </Section>
+
+      {/* ══════════════════════════ LES VERSEMENTS ══════════════════════════ */}
+      <Section
+        fond="charbon"
+        etiquette={t(locale, 'part.paiements-etiquette')}
+        titre={t(locale, 'part.paiements-titre')}
+      >
+        {paie.paiements.length === 0 ? (
+          <p className="rounded-carte border border-dashed border-bord px-6 py-12 text-center font-mono text-[13px] text-gris">
+            {t(locale, 'part.paiements-vide')}
+          </p>
+        ) : (
+          <>
+            <CadreTable fond="braise">
+              <EnteteTable
+                colonnes="minmax(0,1fr) 90px 110px 150px"
+                libelles={[
+                  t(locale, 'part.col-periode'),
+                  t(locale, 'part.col-nouveaux'),
+                  t(locale, 'part.col-montant'),
+                  t(locale, 'part.col-confirme'),
+                ]}
+                alignerADroite={[1, 2, 3]}
+                className="hidden sm:grid"
+              />
+
+              <ul>
+                {paie.paiements.map((paiement) => (
+                  <li
+                    key={paiement.id}
+                    className="grid grid-cols-1 gap-2 border-b border-bord px-4.5 py-3.5 last:border-b-0 sm:grid-cols-[minmax(0,1fr)_90px_110px_150px] sm:gap-3"
+                  >
+                    <span className="text-[14.5px] text-creme">
+                      {t(locale, 'part.semaine-du')
+                        .replace('{a}', libelleJour(cleJourParis(paiement.debut), locale))
+                        .replace('{b}', libelleJour(cleJourParis(paiement.fin), locale))}
+                    </span>
+
+                    <span className="font-mono text-[13px] tabular-nums text-creme sm:text-right">
+                      <span className="text-gris sm:hidden">{t(locale, 'part.col-nouveaux')} · </span>
+                      {paiement.joueurs}
+                    </span>
+
+                    <span className="font-mono text-[13px] tabular-nums text-or sm:text-right">
+                      <span className="text-gris sm:hidden">{t(locale, 'part.col-montant')} · </span>
+                      {formaterMontant(paiement.montantCentimes, locale)}
+                    </span>
+
+                    <span className="font-mono text-[12px] text-gris sm:text-right">
+                      <span className="sm:hidden">{t(locale, 'part.col-confirme')} · </span>
+                      {formaterDate(paiement.confirmeLe, locale)}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </CadreTable>
+
+            <p className="mt-3 font-mono text-[11.5px] text-gris">
+              {t(locale, 'part.paiements-total')
+                .replace('{m}', formaterMontant(paie.totalCentimesRegles, locale))
+                .replace('{n}', String(paie.totalJoueursRegles))}
+            </p>
+          </>
+        )}
+      </Section>
 
       {/* ══════════════════════════ JOUR PAR JOUR ══════════════════════════ */}
       <Section

@@ -40,12 +40,17 @@ export type Partenaire = {
   nom: string
   hote: string
   actif: boolean
+  /** Ce qu'il touche par NOUVEAU joueur amene, en centimes (25 = 0,25 €). */
+  tauxCentimes: number
+  creeLe: Date
 }
 
 /** Le partenaire tel qu'affiche. Le hash du mot de passe ne sort JAMAIS d'ici. */
 export async function lirePartenaire(slug: string): Promise<Partenaire | null> {
   const lignes = await prisma.$queryRawUnsafe<Partenaire[]>(
-    `select slug, nom, hote, actif from partenaire where slug = $1`,
+    `select slug, nom, hote, actif,
+            taux_centimes as "tauxCentimes", cree_le as "creeLe"
+       from partenaire where slug = $1`,
     slug,
   )
   return lignes[0] ?? null
@@ -60,7 +65,9 @@ export async function lirePartenairePourConnexion(
   slug: string,
 ): Promise<(Partenaire & { motDePasseHash: string }) | null> {
   const lignes = await prisma.$queryRawUnsafe<(Partenaire & { motDePasseHash: string })[]>(
-    `select slug, nom, hote, actif, mot_de_passe_hash as "motDePasseHash"
+    `select slug, nom, hote, actif,
+            taux_centimes as "tauxCentimes", cree_le as "creeLe",
+            mot_de_passe_hash as "motDePasseHash"
        from partenaire where slug = $1`,
     slug,
   )

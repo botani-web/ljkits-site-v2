@@ -1069,9 +1069,55 @@ model Partenaire {
   /// false = l'acces a la page est ferme, les chiffres restent en base.
   actif Boolean @default(true)
 
+  /// Ce qu'on lui verse par NOUVEAU joueur amene, en centimes. 25 = 0,25 EUR.
+  /// En centimes et jamais en flottant : 0.1 + 0.2 ne fait pas 0.3 en binaire,
+  /// et un decompte de paie ne peut pas se permettre d'arrondi silencieux.
+  tauxCentimes Int @default(25) @map("taux_centimes")
+
   creeLe DateTime @default(now()) @map("cree_le") @db.Timestamptz(6)
 
+  paiements PaiementPartenaire[]
+
   @@map("partenaire")
+}
+
+/// UN VERSEMENT DEJA REGLE — et la borne qui remet le compteur a zero.
+///
+/// Rien n'est efface quand le partenaire clique sur « j'ai ete paye » : on
+/// ecrit une ligne ici, et le compteur affiche desormais les joueurs amenes
+/// APRES `fin`. Les joueurs, eux, restent tous dans `joueur_source`.
+///
+/// C'est donc un journal, pas un solde : deux personnes peuvent relire la
+/// meme histoire des mois plus tard et retomber sur les memes chiffres.
+model PaiementPartenaire {
+  id   Int    @id @default(autoincrement())
+  slug String
+
+  /// La periode reglee : `debut` = la fin du versement precedent (ou la
+  /// creation du partenaire pour le tout premier), `fin` = le clic.
+  debut DateTime @db.Timestamptz(6)
+  fin   DateTime @db.Timestamptz(6)
+
+  /// Le decompte FIGE au moment du clic. On ne le recalcule jamais : un
+  /// joueur supprime de la base plus tard ne doit pas reecrire une paie
+  /// deja versee.
+  joueurs Int
+
+  /// Le taux applique ce jour-la, recopie exprès : changer le tarif ne doit
+  /// pas reecrire l'historique.
+  tauxCentimes    Int @map("taux_centimes")
+  montantCentimes Int @map("montant_centimes")
+
+  confirmeLe DateTime @default(now()) @map("confirme_le") @db.Timestamptz(6)
+
+  partenaire Partenaire @relation(fields: [slug], references: [slug], onDelete: Cascade)
+
+  /// DEUX CLICS NE FONT QU'UN VERSEMENT. Deux confirmations simultanees
+  /// calculent forcement le meme `debut` (la fin du versement precedent) :
+  /// la seconde est refusee par la base, pas par un verrou applicatif.
+  @@unique([slug, debut], map: "paiement_partenaire_slug_debut_key")
+  @@index([slug, fin], map: "idx_paiement_partenaire_slug_fin")
+  @@map("paiement_partenaire")
 }
 
 /// A qui un joueur doit sa venue. Une ligne par joueur, ECRITE UNE FOIS, a sa

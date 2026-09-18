@@ -1219,6 +1219,77 @@ const DICO = {
     en: 'Joins and playtime here only count their visits through {h}.',
   },
 
+  /* ---------- la remuneration (/partenaire/<slug>) ---------- */
+  'part.paie-etiquette': { fr: 'Ta rémunération', en: 'Your payout' },
+  'part.paie-titre': { fr: 'Ce qu’on te doit', en: 'What you are owed' },
+  'part.paie-chapeau': {
+    fr: 'Tu es payé {p} par nouveau joueur que tu amènes. Le décompte ci-dessous repart de zéro chaque fois que tu confirmes avoir été payé.',
+    en: 'You earn {p} for every new player you bring in. The count below restarts from zero each time you confirm a payment.',
+  },
+  'part.paie-a-encaisser': { fr: 'À encaisser', en: 'To be paid' },
+  'part.paie-a-encaisser-aide': { fr: 'Pour la période en cours.', en: 'For the current period.' },
+  'part.paie-joueurs': { fr: 'Nouveaux joueurs à payer', en: 'New players to pay' },
+  'part.paie-joueurs-aide': { fr: 'Depuis ton dernier versement.', en: 'Since your last payment.' },
+  'part.paie-taux': { fr: 'Tarif', en: 'Rate' },
+  'part.paie-taux-aide': { fr: 'Par nouveau joueur amené.', en: 'Per new player brought in.' },
+  'part.paie-depuis': { fr: 'Période en cours', en: 'Current period' },
+  'part.paie-depuis-aide': { fr: 'Ouverte depuis le {d}.', en: 'Open since {d}.' },
+  'part.paie-total': { fr: 'Déjà versé', en: 'Already paid' },
+  'part.paie-total-aide': { fr: '{n} joueur(s) réglé(s) depuis le début.', en: '{n} player(s) settled since day one.' },
+  'part.paie-calcul': {
+    fr: '{n} × {p} = {m}',
+    en: '{n} × {p} = {m}',
+  },
+
+  'part.paie-bouton': { fr: 'J’ai été payé cette semaine', en: 'I have been paid this week' },
+  'part.paie-confirmer': { fr: 'Oui, j’ai bien reçu {m}', en: 'Yes, I received {m}' },
+  'part.paie-annuler': { fr: 'Annuler', en: 'Cancel' },
+  'part.paie-en-cours': { fr: 'Enregistrement…', en: 'Saving…' },
+  'part.paie-question': {
+    fr: 'Confirmes-tu avoir reçu {m} pour {n} nouveau(x) joueur(s) ? Le compteur repartira de zéro.',
+    en: 'Do you confirm receiving {m} for {n} new player(s)? The counter will restart from zero.',
+  },
+  'part.paie-rien': {
+    fr: 'Aucun nouveau joueur depuis ton dernier versement : rien à confirmer pour le moment.',
+    en: 'No new player since your last payment: nothing to confirm right now.',
+  },
+  'part.paie-note': {
+    fr: 'Ce bouton n’efface AUCUN joueur. Il pose simplement une date : le compteur ne compte plus que les joueurs arrivés après. Tout reste visible dans les tableaux, et chaque versement est archivé ci-dessous.',
+    en: 'This button deletes NO player. It only sets a date: the counter then only counts players who arrive after it. Everything stays visible in the tables, and every payment is archived below.',
+  },
+  'part.paie-avertissement': {
+    fr: 'À cliquer une fois le virement reçu, pas avant.',
+    en: 'Click it once the money has arrived, not before.',
+  },
+
+  'part.semaines-etiquette': { fr: 'Semaine par semaine', en: 'Week by week' },
+  'part.semaines-titre': { fr: 'Tes {n} dernières semaines', en: 'Your last {n} weeks' },
+  'part.col-semaine': { fr: 'Semaine', en: 'Week' },
+  'part.col-nouveaux': { fr: 'Nouveaux joueurs', en: 'New players' },
+  'part.col-montant': { fr: 'Montant', en: 'Amount' },
+  'part.col-etat': { fr: 'État', en: 'Status' },
+  'part.etat-reglee': { fr: 'Payée', en: 'Paid' },
+  'part.etat-partielle': { fr: 'En partie payée', en: 'Partly paid' },
+  'part.etat-en-cours': { fr: 'À payer', en: 'To pay' },
+  'part.semaine-du': { fr: 'du {a} au {b}', en: '{a} → {b}' },
+  'part.semaines-note': {
+    fr: 'Les montants par semaine sont indicatifs : un versement court d’une confirmation à la suivante et peut tomber au milieu d’une semaine. Le tableau des versements, lui, fait foi.',
+    en: 'Weekly amounts are indicative: a payment runs from one confirmation to the next and can land mid-week. The payments table is what counts.',
+  },
+
+  'part.paiements-etiquette': { fr: 'L’historique', en: 'The history' },
+  'part.paiements-titre': { fr: 'Versements confirmés', en: 'Confirmed payments' },
+  'part.col-periode': { fr: 'Période réglée', en: 'Period settled' },
+  'part.col-confirme': { fr: 'Confirmé le', en: 'Confirmed on' },
+  'part.paiements-vide': {
+    fr: 'Aucun versement confirmé pour l’instant.',
+    en: 'No payment confirmed yet.',
+  },
+  'part.paiements-total': {
+    fr: 'Total versé : {m} pour {n} joueur(s).',
+    en: 'Total paid: {m} for {n} player(s).',
+  },
+
   'part.confidentialite': {
     fr: 'Aucune adresse IP, aucune donnée personnelle : des pseudos, des dates et des durées.',
     en: 'No IP address, no personal data: usernames, dates and durations only.',
