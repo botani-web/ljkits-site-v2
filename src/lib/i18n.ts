@@ -1241,6 +1241,73 @@ const DICO = {
     en: '{n} × {p} = {m}',
   },
 
+  // ── Téléchargement du screenshare (LJScan) ─────────────────────────────
+  'meta.telechargement-titre': { fr: 'Screenshare — télécharger LJScan', en: 'Screenshare — download LJScan' },
+  'meta.telechargement-desc': {
+    fr: "L'outil de vérification que le staff LJKITS demande pendant un screenshare : téléchargement, empreinte et marche à suivre.",
+    en: 'The verification tool the LJKITS staff asks for during a screenshare: download, checksum and how to use it.',
+  },
+  'dl.etiquette': { fr: 'Screenshare', en: 'Screenshare' },
+  'dl.h1-1': { fr: 'Télécharger', en: 'Download' },
+  'dl.h1-2': { fr: 'LJScan', en: 'LJScan' },
+  'dl.chapo': {
+    fr: "Un membre du staff t'a demandé un screenshare ? Télécharge l'outil, lance-le et entre le code qu'il t'a donné en jeu. Ça prend deux minutes.",
+    en: 'A staff member asked you for a screenshare? Download the tool, run it and enter the code they gave you in game. It takes two minutes.',
+  },
+  'dl.bouton': { fr: 'Télécharger LJScan', en: 'Download LJScan' },
+  'dl.windows': { fr: 'Windows uniquement', en: 'Windows only' },
+  'dl.etape1-titre': { fr: 'Télécharge', en: 'Download' },
+  'dl.etape1-texte': {
+    fr: "Un seul fichier, rien à installer. Garde-le où tu veux, tu peux le supprimer après.",
+    en: 'A single file, nothing to install. Keep it wherever you like, you can delete it afterwards.',
+  },
+  'dl.etape2-titre': { fr: 'Lance-le', en: 'Run it' },
+  'dl.etape2-texte': {
+    fr: "Windows demande l'autorisation administrateur : l'outil en a besoin pour lire les traces d'exécution du système.",
+    en: 'Windows asks for administrator rights: the tool needs them to read the system execution traces.',
+  },
+  'dl.etape3-titre': { fr: 'Entre ton code', en: 'Enter your code' },
+  'dl.etape3-texte': {
+    fr: 'Le code à 6 caractères donné en jeu. Le rapport part au staff, tu restes connecté pendant le scan.',
+    en: 'The 6-character code given in game. The report goes to the staff; stay connected during the scan.',
+  },
+  'dl.fait-titre': { fr: "Ce que l'outil regarde", en: 'What the tool looks at' },
+  'dl.fait-1': {
+    fr: "Les traces d'exécution laissées par Windows : ce qui a tourné sur la machine, et quand.",
+    en: 'The execution traces Windows keeps: what ran on the machine, and when.',
+  },
+  'dl.fait-2': {
+    fr: 'La mémoire du jeu, pour y retrouver la signature des clients de triche connus.',
+    en: "The game's memory, to find the signature of known cheat clients.",
+  },
+  'dl.fait-3': {
+    fr: "Les effacements suspects : un historique vidé juste avant un screenshare, ça se voit.",
+    en: 'Suspicious wipes: a history cleared right before a screenshare shows up.',
+  },
+  'dl.pasfait-titre': { fr: 'Ce qu\'il ne fait pas', en: 'What it does not do' },
+  'dl.pasfait-1': {
+    fr: "Il ne lit pas tes documents, tes photos, tes mots de passe ni tes conversations.",
+    en: 'It does not read your documents, photos, passwords or conversations.',
+  },
+  'dl.pasfait-2': {
+    fr: "Il ne filme pas ton écran, n'enregistre pas tes frappes et ne reste pas sur ta machine.",
+    en: 'It does not record your screen or keystrokes, and it does not stay on your machine.',
+  },
+  'dl.pasfait-3': {
+    fr: 'Il ne bannit personne : il produit un rapport, et ce sont des humains qui décident.',
+    en: 'It bans no one: it produces a report, and humans decide.',
+  },
+  'dl.verif-titre': { fr: 'Antivirus et vérification', en: 'Antivirus and verification' },
+  'dl.verif-texte': {
+    fr: "Le fichier n'est pas signé : Windows SmartScreen ou ton antivirus peuvent s'en méfier, c'est normal pour un outil distribué par un serveur. Tu n'es pas obligé de nous croire sur parole — compare l'empreinte de ce que tu as téléchargé avec celle affichée ici.",
+    en: 'The file is unsigned: Windows SmartScreen or your antivirus may complain, which is expected for a tool distributed by a server. You do not have to take our word for it — compare the checksum of your download with the one shown here.',
+  },
+  'dl.indisponible': {
+    fr: "Le téléchargement est momentanément indisponible. Préviens le staff sur Discord : il te donnera le fichier directement.",
+    en: 'The download is temporarily unavailable. Tell the staff on Discord: they will send you the file directly.',
+  },
+  'pied.telechargement': { fr: 'Screenshare', en: 'Screenshare' },
+
   'part.paie-doublons': {
     fr: '{n} compte(s) écarté(s) : une même personne revenue avec un autre compte.',
     en: '{n} account(s) set aside: the same person coming back on another account.',

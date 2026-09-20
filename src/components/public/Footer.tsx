@@ -63,6 +63,11 @@ export async function Footer({ locale }: { locale: Locale }) {
               <LienFooter href={lien(locale, '/reglement')}>
                 {t(locale, 'nav.reglement')}
               </LienFooter>
+              {/* Le staff donne cette adresse en jeu quand il demande un
+                  screenshare : elle doit être trouvable sans la connaître. */}
+              <LienFooter href={lien(locale, '/telechargement')}>
+                {t(locale, 'pied.telechargement')}
+              </LienFooter>
             </ColonneFooter>
 
             <ColonneFooter titre={t(locale, 'pied.colonne.jouer')}>
