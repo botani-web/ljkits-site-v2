@@ -1131,6 +1131,12 @@ model JoueurSource {
 
   premiereConnexion DateTime @map("premiere_connexion") @db.Timestamptz(6)
 
+  /// Un AUTRE compte de la même connexion est déjà venu : la ligne existe (les
+  /// sessions s'y rattachent), mais la rémunération du partenaire l'ignore —
+  /// on paie une personne, pas un compte. Posé par LJRank à la première
+  /// connexion, jamais recalculé après coup.
+  doublon Boolean @default(false)
+
   @@index([hote], map: "idx_joueur_source_hote")
   @@map("joueur_source")
 }

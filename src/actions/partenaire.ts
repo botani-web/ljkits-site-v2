@@ -178,6 +178,8 @@ export async function confirmerPaiementPartenaire(
          select (select count(*)::int
                    from joueur_source j
                   where j.hote = p.hote
+                    -- Un deuxieme compte de la meme connexion ne se paie pas.
+                    and not j.doublon
                     and j.premiere_connexion >= borne.debut
                     and j.premiere_connexion < now()) as n
            from p, borne

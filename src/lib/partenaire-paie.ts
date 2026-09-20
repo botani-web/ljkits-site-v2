@@ -48,6 +48,13 @@ export type Paiement = {
 export type Remuneration = {
   /** Les joueurs amenes depuis la derniere borne : ce qui reste a encaisser. */
   joueurs: number
+  /**
+   * Les comptes ecartes sur la meme periode : une MEME personne revenue avec un
+   * deuxieme ou un troisieme compte. Ils ne sont pas payes — on paie une
+   * personne, pas un compte — mais ils sont affiches, parce qu'un compteur qui
+   * baisse sans explication se lit comme une erreur.
+   */
+  doublons: number
   montantCentimes: number
   tauxCentimes: number
   /** Le debut de la periode en cours (fin du dernier versement, ou l'origine). */
@@ -88,12 +95,18 @@ const DEPUIS = `coalesce(
 /** Ce qui reste du, plus le total deja verse. */
 export async function lireRemuneration(partenaire: Partenaire): Promise<Remuneration> {
   const [enCours, paiements] = await Promise.all([
-    prisma.$queryRawUnsafe<{ joueurs: number; depuis: Date }[]>(
+    prisma.$queryRawUnsafe<{ joueurs: number; doublons: number; depuis: Date }[]>(
       `select ${DEPUIS} as depuis,
               (select count(*)::int
                  from joueur_source j
                 where j.hote = p.hote
-                  and j.premiere_connexion >= ${DEPUIS})::int as joueurs
+                  and not j.doublon
+                  and j.premiere_connexion >= ${DEPUIS})::int as joueurs,
+              (select count(*)::int
+                 from joueur_source j
+                where j.hote = p.hote
+                  and j.doublon
+                  and j.premiere_connexion >= ${DEPUIS})::int as doublons
          from partenaire p
         where p.slug = $1`,
       partenaire.slug,
@@ -102,6 +115,7 @@ export async function lireRemuneration(partenaire: Partenaire): Promise<Remunera
   ])
 
   const joueurs = enCours[0]?.joueurs ?? 0
+  const doublons = enCours[0]?.doublons ?? 0
   const regles = paiements.reduce(
     (total, paiement) => ({
       joueurs: total.joueurs + paiement.joueurs,
@@ -112,6 +126,7 @@ export async function lireRemuneration(partenaire: Partenaire): Promise<Remunera
 
   return {
     joueurs,
+    doublons,
     montantCentimes: joueurs * partenaire.tauxCentimes,
     tauxCentimes: partenaire.tauxCentimes,
     depuis: enCours[0]?.depuis ?? partenaire.creeLe,

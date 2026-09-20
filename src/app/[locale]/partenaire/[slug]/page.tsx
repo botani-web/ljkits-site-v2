@@ -321,6 +321,13 @@ export default async function PagePartenaire({ params, searchParams }: Props) {
               <p className="mt-1.5 text-[12.5px] leading-snug text-gris">
                 {t(locale, 'part.paie-a-encaisser-aide')}
               </p>
+              {/* Les doublons sont dits, jamais cachés : un compteur qui baisse
+                  sans explication se lit comme une erreur. */}
+              {paie.doublons > 0 && (
+                <p className="mt-1.5 text-[12.5px] leading-snug text-gris">
+                  {t(locale, 'part.paie-doublons').replace('{n}', String(paie.doublons))}
+                </p>
+              )}
             </div>
 
             <BoutonPaye

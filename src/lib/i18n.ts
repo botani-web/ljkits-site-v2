@@ -1241,6 +1241,11 @@ const DICO = {
     en: '{n} × {p} = {m}',
   },
 
+  'part.paie-doublons': {
+    fr: '{n} compte(s) écarté(s) : une même personne revenue avec un autre compte.',
+    en: '{n} account(s) set aside: the same person coming back on another account.',
+  },
+
   'part.paie-bouton': { fr: 'J’ai été payé cette semaine', en: 'I have been paid this week' },
   'part.paie-confirmer': { fr: 'Oui, j’ai bien reçu {m}', en: 'Yes, I received {m}' },
   'part.paie-annuler': { fr: 'Annuler', en: 'Cancel' },
