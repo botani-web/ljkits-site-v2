@@ -13,7 +13,19 @@ import { LANGUE_DEFAUT, LANGUES } from '@/lib/i18n'
  * Tout ce qui n'est pas public — /admin, /api, /connexion, les fichiers —
  * est laissé tranquille par le `matcher` en bas.
  */
-const PUBLIQUES = ['kits', 'classement', 'boutique', 'reglement', 'recrutement', 'joueur', 'partenaire']
+const PUBLIQUES = ['kits', 'classement', 'boutique', 'reglement', 'recrutement', 'joueur', 'partenaire', 'ljscan']
+
+/**
+ * /ljscan SUIT LA LANGUE DU NAVIGATEUR, contrairement au reste du site.
+ *
+ * C'est l'adresse que le staff donne EN JEU quand il demande un screenshare :
+ * la page doit rassurer quelqu'un qui ne nous fait pas encore confiance et qui
+ * s'apprête à lancer un .exe. Une page dans une langue qu'il ne lit pas fait
+ * exactement l'inverse. Le reste du site garde l'anglais par défaut.
+ */
+function langueDemandee(entete: string | null): string {
+  return entete?.toLowerCase().startsWith('fr') ? 'fr' : LANGUE_DEFAUT
+}
 
 export function middleware(requete: NextRequest) {
   const { pathname } = requete.nextUrl
@@ -30,7 +42,10 @@ export function middleware(requete: NextRequest) {
   }
 
   const url = requete.nextUrl.clone()
-  url.pathname = `/${LANGUE_DEFAUT}${pathname === '/' ? '' : pathname}`
+  const langue = premier === 'ljscan'
+    ? langueDemandee(requete.headers.get('accept-language'))
+    : LANGUE_DEFAUT
+  url.pathname = `/${langue}${pathname === '/' ? '' : pathname}`
   return NextResponse.redirect(url)
 }
 

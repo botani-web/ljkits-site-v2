@@ -1242,7 +1242,7 @@ const DICO = {
   },
 
   // ── Téléchargement du screenshare (LJScan) ─────────────────────────────
-  'meta.telechargement-titre': { fr: 'Screenshare — télécharger LJScan', en: 'Screenshare — download LJScan' },
+  'meta.telechargement-titre': { fr: 'LJScan — le screenshare de LJKITS', en: 'LJScan — the LJKITS screenshare tool' },
   'meta.telechargement-desc': {
     fr: "L'outil de vérification que le staff LJKITS demande pendant un screenshare : téléchargement, empreinte et marche à suivre.",
     en: 'The verification tool the LJKITS staff asks for during a screenshare: download, checksum and how to use it.',
@@ -1306,6 +1306,41 @@ const DICO = {
     fr: "Le téléchargement est momentanément indisponible. Préviens le staff sur Discord : il te donnera le fichier directement.",
     en: 'The download is temporarily unavailable. Tell the staff on Discord: they will send you the file directly.',
   },
+  'dl.clair-titre': { fr: 'En clair, ça fait quoi ?', en: 'In plain words, what does it do?' },
+  'dl.clair-1': {
+    fr: "Windows garde la trace de ce qui se lance sur ton PC — un peu comme un ticket de caisse. LJScan lit ces traces et les compare à une liste de logiciels de triche connus. Il regarde aussi la mémoire de ton Minecraft, parce que c'est là qu'un client de triche se voit vraiment.",
+    en: 'Windows keeps a record of what runs on your PC — a bit like a receipt. LJScan reads those records and compares them with a list of known cheat software. It also looks at your Minecraft memory, because that is where a cheat client really shows.',
+  },
+  'dl.clair-2': {
+    fr: "À la fin, il envoie un rapport au staff : ce qu'il a trouvé, où, et à quelle heure. Toi, tu gardes le fichier ou tu le supprimes, il n'installe rien et ne reste pas sur ta machine.",
+    en: 'At the end it sends a report to the staff: what it found, where, and at what time. You keep the file or delete it — it installs nothing and does not stay on your machine.',
+  },
+  'dl.clair-3': {
+    fr: "Et il peut jouer en ta faveur : un scan qui ne trouve rien, c'est écrit noir sur blanc dans le rapport que le staff lit.",
+    en: 'And it can work in your favour: a scan that finds nothing is written plainly in the report the staff reads.',
+  },
+  'dl.questions-titre': { fr: 'Les questions qu\'on nous pose', en: 'Questions we get asked' },
+  'dl.q1': { fr: 'Ça installe quelque chose ?', en: 'Does it install anything?' },
+  'dl.r1': {
+    fr: "Non. Un seul fichier, que tu lances et que tu peux supprimer juste après. Aucun service, aucun démarrage automatique, rien qui tourne une fois le scan terminé.",
+    en: 'No. A single file, which you run and can delete right after. No service, no autostart, nothing running once the scan is done.',
+  },
+  'dl.q2': { fr: 'Vous voyez mes fichiers personnels ?', en: 'Can you see my personal files?' },
+  'dl.r2': {
+    fr: "Non. L'outil cherche des noms de programmes et des traces d'exécution, pas le contenu de tes dossiers. Il ne lit ni tes documents, ni tes photos, ni tes messages, et il n'envoie aucun fichier à part son propre rapport.",
+    en: 'No. The tool looks for program names and execution traces, not the contents of your folders. It does not read your documents, photos or messages, and it uploads no file other than its own report.',
+  },
+  'dl.q3': { fr: 'Combien de temps ça prend ?', en: 'How long does it take?' },
+  'dl.r3': {
+    fr: 'Quelques minutes. Reste connecté au serveur pendant le scan : c\'est ce qui permet au staff de savoir que c\'est bien toi.',
+    en: 'A few minutes. Stay connected to the server during the scan: that is how the staff knows it is really you.',
+  },
+  'dl.q4': { fr: 'Je peux refuser ?', en: 'Can I refuse?' },
+  'dl.r4': {
+    fr: "Oui, personne ne lance rien sur ton PC sans que tu cliques. Mais un refus reste une réponse, et le staff en tire ses conclusions comme pour n'importe quelle vérification — le règlement s'applique.",
+    en: 'Yes — nothing runs on your PC unless you click. But a refusal is still an answer, and the staff draws its conclusions as with any other check: the rules apply.',
+  },
+
   'pied.telechargement': { fr: 'Screenshare', en: 'Screenshare' },
 
   'part.paie-doublons': {

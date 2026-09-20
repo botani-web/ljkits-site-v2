@@ -65,7 +65,7 @@ export async function Footer({ locale }: { locale: Locale }) {
               </LienFooter>
               {/* Le staff donne cette adresse en jeu quand il demande un
                   screenshare : elle doit être trouvable sans la connaître. */}
-              <LienFooter href={lien(locale, '/telechargement')}>
+              <LienFooter href={lien(locale, '/ljscan')}>
                 {t(locale, 'pied.telechargement')}
               </LienFooter>
             </ColonneFooter>

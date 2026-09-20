@@ -58,6 +58,13 @@ export default async function PageTelechargement({
   const locale: Locale = estLocale(brut) ? brut : LANGUE_DEFAUT
   const outil = await lireOutilScan()
 
+  const questions = [
+    { q: t(locale, 'dl.q1'), r: t(locale, 'dl.r1') },
+    { q: t(locale, 'dl.q2'), r: t(locale, 'dl.r2') },
+    { q: t(locale, 'dl.q3'), r: t(locale, 'dl.r3') },
+    { q: t(locale, 'dl.q4'), r: t(locale, 'dl.r4') },
+  ]
+
   const etapes = [
     { n: '1', titre: t(locale, 'dl.etape1-titre'), texte: t(locale, 'dl.etape1-texte') },
     { n: '2', titre: t(locale, 'dl.etape2-titre'), texte: t(locale, 'dl.etape2-texte') },
@@ -114,6 +121,23 @@ export default async function PageTelechargement({
               ))}
             </ol>
 
+            {/* ── EN CLAIR, CE QU'IL FAIT ──────────────────────────────────
+                Quelqu'un qui s'apprête à lancer un .exe qu'on lui a donné en
+                jeu mérite une explication en français courant, avant les
+                listes. C'est le bloc le plus important de la page. */}
+            <section className="mt-3.5 rounded-carte border border-bord bg-charbon p-5.5">
+              <h2 className="font-titre text-[17px]">{t(locale, 'dl.clair-titre')}</h2>
+              <p className="mt-3 text-[14px] leading-relaxed text-gris">
+                {t(locale, 'dl.clair-1')}
+              </p>
+              <p className="mt-2.5 text-[14px] leading-relaxed text-gris">
+                {t(locale, 'dl.clair-2')}
+              </p>
+              <p className="mt-2.5 text-[14px] leading-relaxed text-gris">
+                {t(locale, 'dl.clair-3')}
+              </p>
+            </section>
+
             {/* ── CE QUE L'OUTIL FAIT, ET CE QU'IL NE FAIT PAS ──────────── */}
             <section className="mt-9 grid gap-3.5 sm:grid-cols-2">
               <div className="rounded-carte border border-bord bg-charbon p-5.5">
@@ -137,6 +161,24 @@ export default async function PageTelechargement({
                   <li>{t(locale, 'dl.pasfait-3')}</li>
                 </ul>
               </div>
+            </section>
+
+            {/* ── LES QUESTIONS QU'ON NOUS POSE VRAIMENT ────────────────── */}
+            <section className="mt-3.5 rounded-carte border border-bord bg-charbon p-5.5">
+              <h2 className="font-mono text-[10.5px] font-bold tracking-[.18em] text-soupe uppercase">
+                {t(locale, 'dl.questions-titre')}
+              </h2>
+              <dl className="mt-3.5">
+                {questions.map((q) => (
+                  <div
+                    key={q.q}
+                    className="border-t border-bord py-3 first:border-t-0 first:pt-0"
+                  >
+                    <dt className="text-[14px] font-semibold text-creme">{q.q}</dt>
+                    <dd className="mt-1.5 text-[13.5px] leading-relaxed text-gris">{q.r}</dd>
+                  </div>
+                ))}
+              </dl>
             </section>
 
             {/* ── L'ANTIVIRUS ET L'EMPREINTE ────────────────────────────── */}
