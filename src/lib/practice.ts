@@ -190,6 +190,19 @@ export async function lireChiffres(saison: number): Promise<ChiffresSaison> {
   }
 }
 
+export type LeaderMode = { mode: string; pseudo: string; elo: number }
+
+/** Le n°1 de chaque mode, en une requête (vitrine des modes de l'accueil). */
+export async function lireLeadersParMode(saison: number): Promise<LeaderMode[]> {
+  return prisma.$queryRawUnsafe<LeaderMode[]>(
+    `select distinct on (ladder) ladder as mode, pseudo, elo
+       from practice_elo
+      where saison = $1 and matchs > 0 and ${horsExclus()}
+      order by ladder, elo desc, matchs desc, pseudo asc`,
+    saison,
+  )
+}
+
 export type MatchRecent = {
   id: string
   mode: string

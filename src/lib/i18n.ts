@@ -119,21 +119,183 @@ const DICO = {
   'commun.voir-tout': { fr: 'Voir tout', en: 'See all' },
   'commun.chargement': { fr: 'Chargement…', en: 'Loading…' },
 
-  /* ---------- accueil ---------- */
-  'accueil.un-classement': { fr: 'Un classement', en: 'A leaderboard' },
-  'accueil.competition-long': {
-    fr: 'Tout le monde démarre à 1000 Elo. Tu en gagnes en battant plus fort que toi, tu en perds en tombant contre plus faible — et un compte Discord lié est obligatoire pour figurer au tableau. La saison dure un mois, puis tout repart à zéro avec un cashprize à la clé.',
-    en: 'Everyone starts at 1000 Elo. You gain by beating stronger players, you lose by falling to weaker ones — and a linked Discord account is required to appear on the board. A season lasts a month, then everything resets with a cashprize at stake.',
+  /* ---------- accueil compétitif (22/09/2026) ---------- */
+  // {c} = le cashprize formaté (« 150€ » / « €150 »), {n} = le numéro de saison.
+  'ac.meta-titre': {
+    fr: 'LJKITS — Serveur PvP Soup 1.8 compétitif · {c} de cashprize',
+    en: 'LJKITS — Competitive 1.8 Soup PvP · {c} cashprize',
   },
-  'accueil.cherche-pseudo': {
-    fr: 'Cherche ton pseudo sur la page classement',
-    en: 'Search your name on the leaderboard page',
+  'ac.meta-desc': {
+    fr: 'Ranked 1v1 en soupe PvP Minecraft 1.8 : 4 modes classés, un Elo global et {c} de cashprize chaque mois pour le top 3. Zéro pay to win.',
+    en: 'Minecraft 1.8 soup PvP ranked 1v1: 4 ranked modes, one global Elo and a {c} cashprize every month for the top 3. Zero pay-to-win.',
   },
-  'accueil.joueurs-en-ligne': { fr: 'Joueurs en ligne', en: 'Players online' },
-  'accueil.copie-adresse': {
-    fr: 'Copie l’adresse et sors du spawn.',
-    en: 'Copy the address and leave spawn.',
+  'ac.etiquette': { fr: 'Saison {n} en cours · Ranked 1v1', en: 'Season {n} live · Ranked 1v1' },
+  'ac.h1-1': { fr: 'Monte au top 3.', en: 'Reach the top 3.' },
+  'ac.h1-2': { fr: 'Repars avec', en: 'Take home' },
+  'ac.chapo': {
+    fr: 'Le ranked soup PvP en 1.8 : des duels 1v1 classés dans quatre modes, un Elo global, et chaque mois {c} pour les trois premiers. Rien ne s’achète — seul ton niveau compte.',
+    en: 'Ranked soup PvP on 1.8: 1v1 duels in four modes, one global Elo, and {c} for the top three every month. Nothing is for sale — only your skill counts.',
   },
+  'ac.voir-classement': { fr: 'Voir le classement', en: 'See the leaderboard' },
+  'ac.garanties': { fr: 'Java 1.8 · Gratuit · Zéro pay to win', en: 'Java 1.8 · Free · Zero pay-to-win' },
+
+  'ac.cagnotte-etiquette': { fr: 'Cashprize · Saison {n}', en: 'Cashprize · Season {n}' },
+  'ac.cagnotte-sous': {
+    fr: 'à se partager entre le top 3 de l’Elo global',
+    en: 'shared between the global Elo top 3',
+  },
+  'ac.place-1': { fr: '1er', en: '1st' },
+  'ac.place-2': { fr: '2e', en: '2nd' },
+  'ac.place-3': { fr: '3e', en: '3rd' },
+  'ac.place-libre': { fr: 'Place libre', en: 'Up for grabs' },
+  'ac.live': { fr: 'En direct', en: 'Live' },
+  'ac.cloture-dans': { fr: 'Clôture dans', en: 'Closes in' },
+  'ac.cloture-le': { fr: 'Classement figé le {d}', en: 'Leaderboard frozen on {d}' },
+  'ac.rebours-j': { fr: 'jours', en: 'days' },
+  'ac.rebours-h': { fr: 'heures', en: 'hours' },
+  'ac.rebours-min': { fr: 'min', en: 'min' },
+  'ac.rebours-s': { fr: 'sec', en: 'sec' },
+  'ac.rebours-sr': { fr: 'La saison se clôture le {d}.', en: 'The season closes on {d}.' },
+  'ac.rebours-cloture': { fr: 'Saison close — le podium est figé', en: 'Season closed — the podium is frozen' },
+
+  'ac.chiffre-en-ligne': { fr: 'Joueurs en ligne', en: 'Players online' },
+  'ac.chiffre-classes': { fr: 'Joueurs classés', en: 'Ranked players' },
+  'ac.chiffre-matchs': { fr: 'Matchs ranked cette saison', en: 'Ranked matches this season' },
+  'ac.chiffre-24h': { fr: 'Matchs sur 24 heures', en: 'Matches in the last 24h' },
+
+  'ac.podium-etiquette': { fr: 'Le podium en direct', en: 'The live podium' },
+  'ac.podium-titre-1': { fr: 'Si la saison finissait', en: 'If the season ended' },
+  'ac.podium-titre-2': { fr: 'maintenant', en: 'right now' },
+  'ac.podium-chapeau': {
+    fr: 'Ces trois-là se partageraient {c}. Le classement n’est figé qu’à la seconde de la clôture : d’ici là, tout peut basculer.',
+    en: 'These three would split {c}. The leaderboard only freezes at the exact second the season closes: until then, anything can change.',
+  },
+  'ac.podium-vide': {
+    fr: 'Personne n’est encore classé cette saison : le podium est à prendre.',
+    en: 'Nobody is ranked yet this season: the podium is up for grabs.',
+  },
+  'ac.poursuivants': { fr: 'Les poursuivants', en: 'The chasers' },
+  'ac.poursuivants-texte': {
+    fr: 'L’écart avec la 3e place, c’est tout ce qui les sépare de {p}.',
+    en: 'The gap to 3rd place is all that stands between them and {p}.',
+  },
+  'ac.du-podium': { fr: 'du podium', en: 'off podium' },
+
+  'ac.etapes-etiquette': { fr: 'Comment gagner', en: 'How to win' },
+  'ac.etapes-titre-1': { fr: 'Quatre étapes jusqu’au', en: 'Four steps to the' },
+  'ac.etapes-titre-2': { fr: 'cashprize', en: 'cashprize' },
+  'ac.etape1-titre': { fr: 'Connecte-toi', en: 'Join' },
+  'ac.etape1': {
+    fr: 'Adresse {ip}, en Minecraft Java 1.8. C’est gratuit.',
+    en: 'Address {ip}, on Minecraft Java 1.8. It’s free.',
+  },
+  'ac.etape2-titre': { fr: 'Lie ton Discord', en: 'Link your Discord' },
+  'ac.etape2': {
+    fr: 'Tape /discord en jeu. Obligatoire pour le ranked — c’est aussi là que les gagnants sont contactés.',
+    en: 'Type /discord in game. Required for ranked — it is also where winners are contacted.',
+  },
+  'ac.etape3-titre': { fr: 'Débloque le ranked', en: 'Unlock ranked' },
+  'ac.etape3': {
+    fr: 'Gagne 5 matchs en unranked, avec l’épée en fer du spawn. Un échauffement, sans rien risquer.',
+    en: 'Win 5 unranked matches with the iron sword at spawn. A warm-up, nothing at stake.',
+  },
+  'ac.etape4-titre': { fr: 'Monte au top 3', en: 'Climb to the top 3' },
+  'ac.etape4': {
+    fr: 'Épée en diamant, choisis ton mode, gagne. Dans le top 3 de l’Elo global à la clôture ? Tu es payé.',
+    en: 'Diamond sword, pick your mode, win. In the global Elo top 3 at closing? You get paid.',
+  },
+  'ac.versement': {
+    fr: 'Versé par PayPal ou carte cadeau · 30 jours pour réclamer · accord parental pour les mineurs',
+    en: 'Paid by PayPal or gift card · 30 days to claim · parental consent for minors',
+  },
+  'ac.regles-cashprize': { fr: 'Les règles du cashprize', en: 'Cashprize rules' },
+
+  'ac.modes-etiquette': { fr: '4 modes classés', en: '4 ranked modes' },
+  'ac.modes-titre-1': { fr: 'Quatre modes.', en: 'Four modes.' },
+  'ac.modes-titre-2': { fr: 'Un seul classement.', en: 'One leaderboard.' },
+  'ac.modes-chapeau': {
+    fr: 'Chaque mode a son Elo, et ton Elo global en est la moyenne — un mode jamais joué compte pour 1000. Pour décrocher le cashprize, il faut être bon partout.',
+    en: 'Each mode has its own Elo, and your global Elo is their average — a mode you never played counts as 1000. To take the cashprize, you have to be good at everything.',
+  },
+  'ac.mode-hg': {
+    fr: 'Le classique du soup PvP : épée en diamant, armure en fer, soupes, seaux et blocs. Construis, piège, achève.',
+    en: 'Soup PvP’s classic: diamond sword, iron armour, soups, buckets and blocks. Build, trap, finish.',
+  },
+  'ac.mode-digger': {
+    fr: 'Le combat vertical : on pose, on creuse, et la map se remet à zéro en plein duel. Sortir par le haut, c’est perdre.',
+    en: 'Vertical fighting: place, dig, and the map resets mid-duel. Leave through the top and you lose.',
+  },
+  'ac.mode-boxing': {
+    fr: 'Épée seule, zéro dégât, que du recul. Le premier à 100 coups gagne : visée et combos, rien d’autre.',
+    en: 'Sword only, zero damage, pure knockback. First to 100 hits wins: aim and combos, nothing else.',
+  },
+  'ac.mode-ironsoup': {
+    fr: 'Armure en fer, épée Tranchant I et 32 soupes. Le soup PvP à l’état pur : celui qui gère le mieux son stock l’emporte.',
+    en: 'Iron armour, Sharpness I sword and 32 soups. Soup PvP at its purest: whoever manages their stack best wins.',
+  },
+  'ac.mode-classes': { fr: '{n} classés', en: '{n} ranked' },
+  'ac.numero-1': { fr: 'N°1', en: 'No. 1' },
+  'ac.mode-personne': { fr: 'Personne encore — à toi', en: 'Nobody yet — your move' },
+
+  'ac.paliers-etiquette': { fr: 'L’échelle', en: 'The ladder' },
+  'ac.paliers-titre': { fr: 'De Fer à', en: 'From Iron to' },
+  'ac.paliers-chapeau': {
+    fr: 'Tout le monde démarre à 1000 Elo dans chaque mode, et un match en fait gagner ou perdre 30 au plus.',
+    en: 'Everyone starts at 1000 Elo in every mode, and a match wins or loses you 30 at most.',
+  },
+  'ac.paliers-leader': {
+    fr: 'Le n°1 de la saison est {p}. Légende commence à {m}.',
+    en: 'This season’s No. 1 is {p}. Legend starts at {m}.',
+  },
+  'ac.depart': { fr: 'Départ', en: 'Start' },
+
+  'ac.merite-etiquette': { fr: 'Compétition propre', en: 'Fair competition' },
+  'ac.merite-titre-1': { fr: 'Un podium qui', en: 'A podium you' },
+  'ac.merite-titre-2': { fr: 'se mérite', en: 'earn' },
+  'ac.merite-kit-v': { fr: 'Même kit', en: 'Same kit' },
+  'ac.merite-kit': {
+    fr: 'Les deux joueurs reçoivent exactement le même stuff. La boutique ne vend rien qui touche au ranked.',
+    en: 'Both players get the exact same gear. The store sells nothing that touches ranked.',
+  },
+  'ac.merite-mm-v': { fr: '±100 Elo', en: '±100 Elo' },
+  'ac.merite-mm': {
+    fr: 'La file te cherche d’abord un adversaire de ton niveau, puis élargit peu à peu. Pas de revanche immédiate.',
+    en: 'The queue first looks for an opponent at your level, then slowly widens. No instant rematches.',
+  },
+  'ac.merite-farm-v': { fr: 'Anti-farm', en: 'Anti-farm' },
+  'ac.merite-farm': {
+    fr: 'L’Elo pris à un même adversaire est plafonné, comme les matchs par heure. Arranger un match fait perdre le prix.',
+    en: 'Elo taken from the same opponent is capped, and so are matches per hour. Fixing a match forfeits the prize.',
+  },
+  'ac.merite-ac-v': { fr: 'Anticheat', en: 'Anticheat' },
+  'ac.merite-ac': {
+    fr: 'Triche = bannissement définitif, Elo annulé, cashprize perdu. Même si c’est découvert après la saison.',
+    en: 'Cheating = permanent ban, Elo voided, cashprize forfeited. Even if it comes out after the season.',
+  },
+
+  'ac.ffa-etiquette': { fr: 'Pendant la file', en: 'While you queue' },
+  'ac.ffa-titre-1': { fr: 'Tu n’attends pas,', en: 'No waiting,' },
+  'ac.ffa-titre-2': { fr: 'tu joues', en: 'you play' },
+  'ac.ffa-texte': {
+    fr: 'En attendant ton adversaire, le FFA soupe tourne : {n} kits à débloquer en jouant, des coins à chaque kill. Dès qu’un match est trouvé, tu es téléporté dans l’arène.',
+    en: 'While you wait for an opponent, soup FFA is on: {n} kits to unlock by playing, coins for every kill. As soon as a match is found, you are teleported to the arena.',
+  },
+  'ac.ffa-kits': { fr: 'kits', en: 'kits' },
+  'ac.ffa-lien': { fr: 'Voir les kits', en: 'See the kits' },
+
+  'ac.final-etiquette': { fr: 'Saison {n} · clôture {d}', en: 'Season {n} · closes {d}' },
+  'ac.final-1': { fr: 'Le podium se joue', en: 'The podium is decided' },
+  'ac.final-2': { fr: 'maintenant', en: 'now' },
+  'ac.final-chapeau': {
+    fr: 'Connecte-toi en 1.8, lie ton Discord, gagne tes 5 matchs d’échauffement — et monte.',
+    en: 'Log in on 1.8, link your Discord, win your 5 warm-up matches — and climb.',
+  },
+  'ac.final-ip': {
+    fr: 'Clique pour copier · Minecraft Java 1.8 uniquement',
+    en: 'Click to copy · Minecraft Java 1.8 only',
+  },
+
+  /* ---------- kits : les coins ---------- */
   'kits.coins-chapeau': {
     fr: 'Aucun kit ne se paie obligatoirement. Voici tout ce qui rapporte des coins, sans sortir la carte bleue.',
     en: 'No kit has to be paid for. Here is everything that earns coins, without reaching for a card.',
@@ -169,70 +331,6 @@ const DICO = {
   'coins.discord-t': {
     fr: 'Une seule fois : /discord en jeu, puis le code dans le salon de vérification.',
     en: 'Once only: /discord in game, then the code in the verification channel.',
-  },
-  'accueil.h1-1': { fr: 'Serveur Minecraft', en: 'Minecraft server' },
-  'accueil.h1-2': { fr: 'PvP Soup', en: 'Soup PvP' },
-  'accueil.h1-3': { fr: 'en', en: 'in' },
-  'accueil.chapo-1': {
-    fr: 'Aucun cooldown d’attaque, aucune armure, et un bol de soupe pour se soigner.',
-    en: 'No attack cooldown, no armour, and a bowl of soup to heal.',
-  },
-  'accueil.chapo-kits': { fr: 'kits', en: 'kits' },
-  'accueil.chapo-2': { fr: 'à débloquer en jouant, une', en: 'to unlock by playing, a' },
-  // Il était écrit « classement remis à zéro chaque lundi » : c'était
-  // l'ancien classement hebdomadaire. Le classement est une saison Elo d'un
-  // mois, ouverte le 11/09/2026 à 18h00.
-  'accueil.chapo-classement': {
-    fr: 'saison classée d’un mois avec cashprize',
-    en: 'one-month ranked season with a cashprize',
-  },
-  'accueil.chapo-3': { fr: ', et zéro pay to win.', en: ', and zero pay-to-win.' },
-  'accueil.piliers-etiquette': { fr: 'Ce qui t’attend', en: 'What awaits you' },
-  'accueil.piliers-titre-1': { fr: 'Trois raisons de', en: 'Three reasons to' },
-  'accueil.piliers-titre-2': { fr: 'rester', en: 'stay' },
-  'accueil.pilier-kits-lien': { fr: 'Voir les kits', en: 'See the kits' },
-  'accueil.pilier-kits-texte': {
-    fr: 'Du Kangaroo au Kitsune. Tous débloquables en jouant, aucun réservé à la boutique.',
-    en: 'From Kangaroo to Kitsune. All unlockable by playing, none reserved for the shop.',
-  },
-  'accueil.pilier-elo-titre': { fr: 'Elo de départ', en: 'Starting Elo' },
-  'accueil.pilier-elo-lien': { fr: 'Voir le classement', en: 'See the leaderboard' },
-  'accueil.pilier-elo-texte': {
-    fr: 'Tout le monde part au même point. La saison dure un mois et se termine par un cashprize.',
-    en: 'Everyone starts from the same point. A season lasts a month and ends with a cashprize.',
-  },
-  'accueil.pilier-p2w-lien': { fr: 'Voir la boutique', en: 'See the shop' },
-  'accueil.pilier-p2w-texte': {
-    fr: 'Rien de ce qui se vend ne se gagne à ta place. Ni dégâts, ni stuff, ni coins.',
-    en: 'Nothing on sale wins for you. No damage, no gear, no coins.',
-  },
-  'accueil.competition': { fr: 'Compétition', en: 'Competition' },
-  'accueil.competition-titre-2': { fr: 'mérite', en: 'earned' },
-  'accueil.competition-texte': {
-    fr: 'Tout le monde démarre à 1000 Elo. Tu en gagnes en battant plus fort que toi, tu en perds en tombant contre plus faible — et un compte Discord lié',
-    en: 'Everyone starts at 1000 Elo. You gain by beating stronger players, you lose by falling to weaker ones — and a linked Discord account',
-  },
-  'accueil.final-1': { fr: 'Le bol est', en: 'The bowl is' },
-  'accueil.final-2': { fr: 'plein', en: 'full' },
-  'accueil.final-ip': {
-    fr: 'Clique pour copier · Minecraft Java 1.8 uniquement',
-    en: 'Click to copy · Minecraft Java 1.8 only',
-  },
-  'accueil.regle.cooldown': {
-    fr: 'Tu cliques, ça touche. Le combat 1.8 intégral.',
-    en: 'You click, it lands. Full 1.8 combat.',
-  },
-  'accueil.regle.armure': {
-    fr: 'Cinq cœurs, pour tout le monde, sans exception.',
-    en: 'Five hearts, for everyone, no exception.',
-  },
-  'accueil.regle.clic-droit': {
-    fr: 'La soupe soigne. Gérer son stock fait partie du duel.',
-    en: 'Soup heals. Managing your stack is part of the duel.',
-  },
-  'accueil.regle.knockback': {
-    fr: 'Le recul d’époque, réglé à la main. Le combo repart.',
-    en: 'Period-accurate knockback, tuned by hand. The combo is back.',
   },
 
   /* ---------- page kits ---------- */
@@ -825,16 +923,6 @@ const DICO = {
   'nav.ouvrir-menu': { fr: 'Ouvrir le menu', en: 'Open menu' },
   'nav.fermer-menu': { fr: 'Fermer le menu', en: 'Close menu' },
   'nav.navigation': { fr: 'Navigation', en: 'Navigation' },
-  'ouverture.connexion': { fr: 'Connexion…', en: 'Connecting…' },
-  'ouverture.en-ligne': { fr: 'Serveur en ligne', en: 'Server online' },
-  'ouverture.hors-ligne': { fr: 'Serveur hors ligne', en: 'Server offline' },
-  'ouverture.joueurs-en-ligne': { fr: 'Joueurs en ligne', en: 'Players online' },
-  'ouverture.dans': { fr: 'Saison 1 dans', en: 'Season 1 in' },
-  'ouverture.copie-sors': { fr: 'Copie l’adresse et sors du spawn.', en: 'Copy the address and step out of spawn.' },
-  'ouverture.rendez-vous': {
-    fr: 'Ouverture officielle de la saison 1 : {d}.',
-    en: 'Season 1 officially opens {d}.',
-  },
   'boutique.etiquette-bandeau': { fr: 'Boutique officielle · vendeur Tebex', en: 'Official store · Tebex reseller' },
   'boutique.soutiens': { fr: 'Soutiens le serveur.', en: 'Support the server.' },
   'boutique.grade-nomme': { fr: 'Grade {n}', en: '{n} rank' },
@@ -939,7 +1027,6 @@ const DICO = {
   'commande.etiquette': { fr: 'Commande', en: 'Order' },
   'commande.merci': { fr: 'Merci', en: 'Thanks' },
   'commande.rejoindre-discord': { fr: 'Rejoindre le Discord', en: 'Join the Discord' },
-  'accueil.qui-se': { fr: 'qui se', en: 'that is' },
   'form.consentement-complet': {
     fr: 'J’accepte que mes réponses soient enregistrées et lues par l’équipe de LJKITS pour l’examen de ma candidature. Elles sont conservées {m} mois, puis supprimées automatiquement. Je peux demander leur suppression à tout moment sur le Discord du serveur.',
     en: 'I agree that my answers are stored and read by the LJKITS team to review my application. They are kept for {m} months, then deleted automatically. I can ask for their deletion at any time on the server Discord.',
@@ -973,11 +1060,6 @@ const DICO = {
   'boutique.prix-une-fois': { fr: 'Prix, une fois', en: 'Price, once' },
   'boutique.meilleure-valeur': { fr: 'Meilleure valeur', en: 'Best value' },
   'form.obligatoire-sr': { fr: ' (obligatoire)', en: ' (required)' },
-  'accueil.regle.cooldown-titre': { fr: 'cooldown', en: 'cooldown' },
-  'accueil.regle.armure-titre': { fr: 'armure', en: 'armour' },
-  'accueil.regle.clic-droit-titre': { fr: 'Clic droit', en: 'Right click' },
-  'accueil.regle.knockback-titre': { fr: 'Knockback 1.8', en: '1.8 knockback' },
-  'accueil.pay-to-win': { fr: 'Pay to win', en: 'Pay to win' },
 
   /* ---------- classement ranked practice et profils (16/09/2026) ---------- */
   'pr.meta-titre': { fr: 'Classement ranked', en: 'Ranked leaderboard' },

@@ -15,6 +15,7 @@ import { estLocale, LANGUE_DEFAUT, lien, t, type Locale } from '@/lib/i18n'
 import { nomPalier, PALIERS } from '@/lib/paliers'
 import { lireChiffres, lireClassement, lireDerniersMatchs } from '@/lib/practice'
 import { estVue, MODES, tempsRelatif, type Vue } from '@/lib/practice-commun'
+import { CASHPRIZE, euros } from '@/lib/saison'
 import { CLASSEMENT_OUVERT, IMAGE_OG } from '@/lib/site'
 
 /**
@@ -28,10 +29,6 @@ import { CLASSEMENT_OUVERT, IMAGE_OG } from '@/lib/site'
  * ⚠ LECTURE SEULE : les tables appartiennent aux plugins LJElo et LJPractice.
  */
 export const dynamic = 'force-dynamic'
-
-/** Le montant total et sa répartition. À garder d'accord avec LJPractice (`leaderboard.cashprize`). */
-const CASHPRIZE_TOTAL = '150€'
-const CASHPRIZE_PODIUM = ['75€', '50€', '25€']
 
 type Props = {
   params: Promise<{ locale: string }>
@@ -109,7 +106,7 @@ export default async function PageClassement({ params, searchParams }: Props) {
             {t(locale, 'pr.titre-avant')} <span className="text-or">{t(locale, 'pr.titre-accent')}</span>
           </h1>
           <p className="mt-4 max-w-[62ch] text-[16px] text-gris">
-            {t(locale, 'pr.chapeau').replace('{c}', CASHPRIZE_TOTAL)}
+            {t(locale, 'pr.chapeau').replace('{c}', euros(CASHPRIZE.total, locale))}
           </p>
 
           <div className="mt-8 grid items-end gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,560px)]">
@@ -161,7 +158,7 @@ export default async function PageClassement({ params, searchParams }: Props) {
             <EtatVide message={t(locale, 'pr.vide')} />
           ) : (
             <>
-              <Podium lignes={lignes} locale={locale} cashprize={vue === 'global' ? CASHPRIZE_PODIUM : undefined} />
+              <Podium lignes={lignes} locale={locale} cashprize={vue === 'global' ? CASHPRIZE.podium.map((montant) => euros(montant, locale)) : undefined} />
               {lignes.length > 3 && (
                 <div className="mt-9">
                   <TableauClassement lignes={lignes} locale={locale} global={vue === 'global'} />
