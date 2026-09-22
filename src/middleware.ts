@@ -13,7 +13,7 @@ import { LANGUE_DEFAUT, LANGUES } from '@/lib/i18n'
  * Tout ce qui n'est pas public — /admin, /api, /connexion, les fichiers —
  * est laissé tranquille par le `matcher` en bas.
  */
-const PUBLIQUES = ['kits', 'classement', 'boutique', 'reglement', 'recrutement', 'joueur', 'partenaire', 'ljscan']
+const PUBLIQUES = ['classement', 'boutique', 'reglement', 'recrutement', 'joueur', 'partenaire', 'ljscan']
 
 /**
  * /ljscan SUIT LA LANGUE DU NAVIGATEUR, contrairement au reste du site.

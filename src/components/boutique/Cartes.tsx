@@ -178,12 +178,10 @@ export function CarteGrade({
  * Une carte de kit de la boutique.
  *
  * Compacte : elle doit tenir vingt-neuf fois dans une grille sans que la page
- * devienne un rouleau. D'où la description sur deux lignes maximum et la fiche
- * technique renvoyée à /kits/[slug].
+ * devienne un rouleau. D'où la description sur deux lignes maximum.
  *
- * ⚠ La carte n'est PAS un <Link> englobant, contrairement à celle de /kits :
- * elle contient un bouton, et un <button> dans un <a> est du HTML invalide
- * (et injouable au clavier). Le lien porte donc sur le seul nom.
+ * Le nom ne renvoie plus nulle part : la page /kits a été supprimée le
+ * 22/09/2026, le serveur se présente par son ranked.
  */
 export function CarteKitBoutique({
   kit,
@@ -207,13 +205,7 @@ export function CarteKitBoutique({
 
       <div className="relative flex flex-wrap items-baseline gap-2.25">
         <h3 className={`font-titre text-[16.5px] tracking-[-.01em] ${exclusif ? 'text-oni' : ''}`}>
-          <Link
-            href={`/kits/${kit.slug}`}
-            className="transition-colors hover:text-or"
-            aria-label={`Voir la fiche du kit ${kit.nom}`}
-          >
-            {kit.nom}
-          </Link>
+          {kit.nom}
         </h3>
         <Badge className="text-[9px] tracking-[.16em]">{kit.role}</Badge>
       </div>

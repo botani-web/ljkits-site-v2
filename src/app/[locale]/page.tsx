@@ -9,7 +9,7 @@ import { BoutonIpGeant } from '@/components/public/CopieIp'
 import { IconeDiscord } from '@/components/public/IconeDiscord'
 import { PagePublique } from '@/components/public/PagePublique'
 import { LienFleche } from '@/components/ui/Badge'
-import { classesBouton, LienBouton } from '@/components/ui/Bouton'
+import { classesBouton } from '@/components/ui/Bouton'
 import { Enveloppe } from '@/components/ui/Enveloppe'
 import { EtatVide } from '@/components/ui/EtatVide'
 import { CaseCloisonnee, GrilleCloisonnee } from '@/components/ui/GrilleCloisonnee'
@@ -456,7 +456,7 @@ export default async function Accueil({ params }: Props) {
       {/* ═════════════════════════ LE FFA, SALLE D'ATTENTE ═════════════════════════ */}
       <section className="pt-section">
         <Enveloppe>
-          <div className="grid items-center gap-6 rounded-bloc border border-bord bg-charbon p-6 sm:p-8 lg:grid-cols-[auto_minmax(0,1fr)_auto] lg:gap-10">
+          <div className="grid items-center gap-6 rounded-bloc border border-bord bg-charbon p-6 sm:p-8 lg:grid-cols-[auto_minmax(0,1fr)] lg:gap-10">
             <p className="flex items-baseline gap-2.5 lg:flex-col lg:items-start lg:gap-1">
               <span className="font-titre text-[clamp(48px,6vw,68px)] leading-none text-soupe">{nombreKits}</span>
               <span className="font-mono text-[11px] font-bold tracking-[.22em] text-gris uppercase">{t(locale, 'ac.ffa-kits')}</span>
@@ -470,9 +470,6 @@ export default async function Accueil({ params }: Props) {
                 {t(locale, 'ac.ffa-texte').replace('{n}', String(nombreKits))}
               </p>
             </div>
-            <LienBouton href={lien(locale, '/kits')} variante="vide" className="max-lg:justify-self-start">
-              {t(locale, 'ac.ffa-lien')} <span aria-hidden="true">→</span>
-            </LienBouton>
           </div>
         </Enveloppe>
       </section>

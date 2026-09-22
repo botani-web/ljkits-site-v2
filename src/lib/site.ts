@@ -57,8 +57,7 @@ export const SITE = {
  * NOTE — la durée de revalidation des pages publiques (`export const
  * revalidate = 3600`) est écrite en toutes lettres dans chaque page et non
  * ici : Next.js analyse cette valeur statiquement au build et refuse une
- * constante importée. Les quatre pages concernées sont /, /kits,
- * /kits/[slug] et /reglement.
+ * constante importée. Les pages concernées sont / et /reglement.
  */
 
 /**
@@ -70,40 +69,6 @@ export const SITE = {
  * partagés sur Discord s'affichent nus.
  */
 export const IMAGE_OG = [{ url: '/og.png', width: 1080, height: 1080 }]
-
-/**
- * Les repères chiffrés du soup 1.8, partagés par /kits et /kits/[slug].
- *
- * Ce ne sont pas des données de configuration mais des constantes de jeu :
- * elles ne changeraient que si l'équilibrage du serveur changeait. Chaque page
- * choisit les repères qu'elle affiche via `cle`, parce que la grille de /kits
- * n'en tient que quatre (celle de la maquette d'origine).
- */
-export const REPERES_DE_JEU = [
-  { cle: 'soupe', valeur: '3,5 ❤', label: 'Une soupe', labelEn: 'One soup' },
-  { cle: 'epee', valeur: '2 ❤', label: 'Épée en pierre', labelEn: 'Stone sword' },
-  { cle: 'cooldown', valeur: '0', label: 'Cooldown d’attaque', labelEn: 'Attack cooldown' },
-  { cle: 'armure', valeur: 'Aucune', valeurEn: 'None', label: 'Armure', labelEn: 'Armour' },
-  { cle: 'knockback', valeur: '1.8', label: 'Knockback d’époque', labelEn: '1.8 knockback' },
-] as const
-
-/**
- * Renvoie les repères demandés, dans l'ordre des clés fournies et dans la
- * langue demandée. `label` et `valeur` sortent déjà traduits : les pages qui
- * les affichent n'ont rien à savoir de la langue.
- */
-export function reperes(locale: 'en' | 'fr', ...cles: string[]) {
-  return cles
-    .map((cle) => REPERES_DE_JEU.find((repere) => repere.cle === cle)!)
-    .map((repere) => ({
-      cle: repere.cle,
-      valeur:
-        locale === 'en' && 'valeurEn' in repere && repere.valeurEn
-          ? repere.valeurEn
-          : repere.valeur,
-      label: locale === 'en' ? repere.labelEn : repere.label,
-    }))
-}
 
 /**
  * LE CLASSEMENT DU SITE EST FERMÉ (12/09/2026).

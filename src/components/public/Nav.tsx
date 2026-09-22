@@ -34,7 +34,6 @@ import {
  * de la page courante, et le menu burger sous 860px.
  */
 const LIENS: { href: string; cle: CleTexte }[] = [
-  { href: '/kits', cle: 'nav.kits' },
   { href: '/classement', cle: 'nav.classement' },
   { href: '/boutique', cle: 'nav.boutique' },
   { href: '/reglement', cle: 'nav.reglement' },

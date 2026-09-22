@@ -44,7 +44,6 @@ export async function Footer({ locale }: { locale: Locale }) {
             </div>
 
             <ColonneFooter titre={t(locale, 'pied.colonne.serveur')}>
-              <LienFooter href={lien(locale, '/kits')}>{t(locale, 'pied.les-kits')}</LienFooter>
               <LienFooter href={lien(locale, '/classement')}>
                 {t(locale, 'nav.classement')}
               </LienFooter>
