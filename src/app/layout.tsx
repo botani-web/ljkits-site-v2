@@ -44,7 +44,7 @@ export const metadata: Metadata = {
     template: '%s — LJKITS',
   },
   description:
-    'Minecraft 1.8 soup PvP server. Kits, soups, period-accurate knockback. No pay-to-win.',
+    'Soup PvP server on Minecraft Java 1.7 and 1.8. Ranked 1v1, one global Elo, a monthly cashprize. No pay-to-win.',
   icons: {
     icon: '/logo-icon.png',
     apple: '/logo-icon.png',

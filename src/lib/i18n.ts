@@ -96,7 +96,7 @@ const DICO = {
   'pied.colonne.serveur': { fr: 'Serveur', en: 'Server' },
   'pied.colonne.communaute': { fr: 'Communauté', en: 'Community' },
   'pied.colonne.jouer': { fr: 'Jouer', en: 'Play' },
-  'pied.versions': { fr: 'Java 1.8 uniquement', en: 'Java 1.8 only' },
+  'pied.versions': { fr: 'Java 1.7 et 1.8', en: 'Java 1.7 and 1.8' },
   'pied.hommage': {
     fr: 'Hommage indépendant, sans lien avec les anciens administrateurs de MJKits.',
     en: 'An independent tribute, unaffiliated with the former MJKits administrators.',
@@ -119,22 +119,22 @@ const DICO = {
   /* ---------- accueil compétitif (22/09/2026) ---------- */
   // {c} = le cashprize formaté (« 150€ » / « €150 »), {n} = le numéro de saison.
   'ac.meta-titre': {
-    fr: 'LJKITS — Serveur PvP Soup 1.8 compétitif · {c} de cashprize',
-    en: 'LJKITS — Competitive 1.8 Soup PvP · {c} cashprize',
+    fr: 'LJKITS — Serveur PvP Soup 1.7/1.8 compétitif · {c} de cashprize',
+    en: 'LJKITS — Competitive 1.7/1.8 Soup PvP · {c} cashprize',
   },
   'ac.meta-desc': {
-    fr: 'Ranked 1v1 en soupe PvP Minecraft 1.8 : 4 modes classés, un Elo global et {c} de cashprize chaque mois pour le top 3. Zéro pay to win.',
-    en: 'Minecraft 1.8 soup PvP ranked 1v1: 4 ranked modes, one global Elo and a {c} cashprize every month for the top 3. Zero pay-to-win.',
+    fr: 'Ranked 1v1 en soupe PvP sur Minecraft Java 1.7 et 1.8 : 4 modes classés, un Elo global et {c} de cashprize chaque mois pour le top 3. Zéro pay to win.',
+    en: 'Ranked 1v1 soup PvP on Minecraft Java 1.7 and 1.8: 4 ranked modes, one global Elo and a {c} cashprize every month for the top 3. Zero pay-to-win.',
   },
   'ac.etiquette': { fr: 'Saison {n} en cours · Ranked 1v1', en: 'Season {n} live · Ranked 1v1' },
   'ac.h1-1': { fr: 'Monte au top 3.', en: 'Reach the top 3.' },
   'ac.h1-2': { fr: 'Repars avec', en: 'Take home' },
   'ac.chapo': {
-    fr: 'Le ranked soup PvP en 1.8 : des duels 1v1 classés dans quatre modes, un Elo global, et chaque mois {c} pour les trois premiers. Rien ne s’achète — seul ton niveau compte.',
-    en: 'Ranked soup PvP on 1.8: 1v1 duels in four modes, one global Elo, and {c} for the top three every month. Nothing is for sale — only your skill counts.',
+    fr: 'Le ranked soup PvP en 1.7/1.8 : des duels 1v1 classés dans quatre modes, un Elo global, et chaque mois {c} pour les trois premiers. Rien ne s’achète — seul ton niveau compte.',
+    en: 'Ranked soup PvP on 1.7/1.8: 1v1 duels in four modes, one global Elo, and {c} for the top three every month. Nothing is for sale — only your skill counts.',
   },
   'ac.voir-classement': { fr: 'Voir le classement', en: 'See the leaderboard' },
-  'ac.garanties': { fr: 'Java 1.8 · Gratuit · Zéro pay to win', en: 'Java 1.8 · Free · Zero pay-to-win' },
+  'ac.garanties': { fr: 'Java 1.7 et 1.8 · Gratuit · Zéro pay to win', en: 'Java 1.7 and 1.8 · Free · Zero pay-to-win' },
 
   'ac.cagnotte-etiquette': { fr: 'Cashprize · Saison {n}', en: 'Cashprize · Season {n}' },
   'ac.cagnotte-sous': {
@@ -183,8 +183,8 @@ const DICO = {
   'ac.etapes-titre-2': { fr: 'cashprize', en: 'cashprize' },
   'ac.etape1-titre': { fr: 'Connecte-toi', en: 'Join' },
   'ac.etape1': {
-    fr: 'Adresse {ip}, en Minecraft Java 1.8. C’est gratuit.',
-    en: 'Address {ip}, on Minecraft Java 1.8. It’s free.',
+    fr: 'Adresse {ip}, en Minecraft Java 1.7 ou 1.8. C’est gratuit.',
+    en: 'Address {ip}, on Minecraft Java 1.7 or 1.8. It’s free.',
   },
   'ac.etape2-titre': { fr: 'Lie ton Discord', en: 'Link your Discord' },
   'ac.etape2': {
@@ -287,8 +287,8 @@ const DICO = {
     en: 'Log in on 1.8, link your Discord, win your 5 warm-up matches — and climb.',
   },
   'ac.final-ip': {
-    fr: 'Clique pour copier · Minecraft Java 1.8 uniquement',
-    en: 'Click to copy · Minecraft Java 1.8 only',
+    fr: 'Clique pour copier · Minecraft Java 1.7 et 1.8',
+    en: 'Click to copy · Minecraft Java 1.7 and 1.8',
   },
 
   /* ---------- classement ---------- */
