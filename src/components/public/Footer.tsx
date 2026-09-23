@@ -62,6 +62,9 @@ export async function Footer({ locale }: { locale: Locale }) {
               <LienFooter href={lien(locale, '/reglement')}>
                 {t(locale, 'nav.reglement')}
               </LienFooter>
+              {/* Le questionnaire n'a d'intérêt que s'il se trouve sans
+                  qu'on ait à donner le lien à chaque fois. */}
+              <LienFooter href={lien(locale, '/avis')}>{t(locale, 'pied.avis')}</LienFooter>
               {/* Le staff donne cette adresse en jeu quand il demande un
                   screenshare : elle doit être trouvable sans la connaître. */}
               <LienFooter href={lien(locale, '/ljscan')}>

@@ -1285,6 +1285,99 @@ const DICO = {
     en: 'No IP address, no personal data: usernames, dates and durations only.',
   },
 
+  /* ======================================================================
+   *  LES AVIS DE JOUEURS  (/avis, 23/09/2026)
+   * ====================================================================== */
+  'meta.avis-titre': { fr: 'Ton avis sur le serveur', en: 'Your feedback' },
+  'meta.avis-desc': {
+    fr: 'Cinq questions, une minute : dis-nous ce qui va, ce qui ne va pas, et ce qu’on devrait corriger en priorité.',
+    en: 'Five questions, one minute: tell us what works, what doesn’t, and what we should fix first.',
+  },
+
+  'pied.avis': { fr: 'Donner mon avis', en: 'Give feedback' },
+  'avis.etiquette': { fr: 'Ton avis', en: 'Your feedback' },
+  'avis.titre': {
+    fr: 'Dis-nous ce qu’on doit améliorer',
+    en: 'Tell us what we should improve',
+  },
+  'avis.chapeau': {
+    fr: 'On règle le serveur sur ce qu’on entend en jeu et sur Discord — donc sur l’avis des plus bavards. Cinq questions pour entendre les autres. Le classement, les modes et le cashprize de {c} par mois se décident aussi là-dessus.',
+    en: 'We tune the server on what we hear in game and on Discord — that is, on the loudest voices. Five questions to hear everyone else. The leaderboard, the modes and the {c} monthly cashprize are decided on this too.',
+  },
+  'avis.duree': { fr: 'Une minute · pseudo facultatif', en: 'One minute · username optional' },
+
+  'avis.q1': { fr: 'Le serveur aujourd’hui, tu lui mets combien ?', en: 'How would you rate the server today?' },
+  'avis.q1-aide': {
+    fr: 'Ta première impression, sans réfléchir trop longtemps.',
+    en: 'Your gut feeling — don’t overthink it.',
+  },
+  'avis.note-1': { fr: 'à revoir', en: 'needs work' },
+  'avis.note-2': { fr: 'moyen', en: 'meh' },
+  'avis.note-3': { fr: 'correct', en: 'decent' },
+  'avis.note-4': { fr: 'très bien', en: 'very good' },
+  'avis.note-5': { fr: 'excellent', en: 'excellent' },
+
+  'avis.q2': { fr: 'Sur quoi on doit travailler en priorité ?', en: 'What should we work on first?' },
+  'avis.q2-aide': {
+    fr: 'Un seul choix : c’est celui qu’on traitera en premier.',
+    en: 'Pick one — that’s the one we’ll tackle first.',
+  },
+  'avis.priorite-combat': { fr: 'Le combat : knockback, hits, soupe', en: 'Combat: knockback, hits, soup' },
+  'avis.priorite-triche': { fr: 'La triche et l’anticheat', en: 'Cheating and the anticheat' },
+  'avis.priorite-modes': { fr: 'Les modes de jeu (HG, Digger, Iron Soup…)', en: 'Game modes (HG, Digger, Iron Soup…)' },
+  'avis.priorite-cartes': { fr: 'Les cartes et les arènes', en: 'Maps and arenas' },
+  'avis.priorite-joueurs': { fr: 'Le nombre de joueurs en ligne', en: 'How many players are online' },
+  'avis.priorite-boutique': { fr: 'La boutique, les grades, les kits', en: 'Shop, ranks and kits' },
+  'avis.priorite-autre': { fr: 'Autre chose (dis-le plus bas)', en: 'Something else (say it below)' },
+
+  'avis.q3': { fr: 'Qu’est-ce qui t’empêche de jouer plus souvent ?', en: 'What keeps you from playing more often?' },
+  'avis.q3-aide': { fr: 'Plusieurs réponses possibles, ou aucune.', en: 'Pick as many as you like, or none.' },
+  'avis.frein-peu-de-joueurs': { fr: 'Il n’y a pas assez de monde en ligne', en: 'Not enough players online' },
+  'avis.frein-attente': { fr: 'J’attends trop longtemps en file', en: 'Queues take too long' },
+  'avis.frein-gameplay': { fr: 'Le gameplay ne me convient pas', en: 'The gameplay isn’t for me' },
+  'avis.frein-tricheurs': { fr: 'Je tombe sur des tricheurs', en: 'I run into cheaters' },
+  'avis.frein-horaires': { fr: 'Je ne suis pas là aux bonnes heures', en: 'I’m not around at the right times' },
+  'avis.frein-aucun': { fr: 'Rien, je joue autant que je veux', en: 'Nothing, I play as much as I want' },
+
+  'avis.q4': { fr: 'Savais-tu qu’il y a {c} à gagner chaque mois ?', en: 'Did you know there’s {c} to win every month?' },
+  'avis.q4-aide': {
+    fr: 'Cette question nous juge nous, pas toi : si personne n’est au courant, c’est qu’on le dit mal.',
+    en: 'This question is about us, not you: if nobody knows, we’re not saying it loudly enough.',
+  },
+  'avis.cashprize-oui': { fr: 'Oui, je le savais', en: 'Yes, I knew' },
+  'avis.cashprize-vaguement': { fr: 'J’en avais entendu parler', en: 'I’d heard about it' },
+  'avis.cashprize-non': { fr: 'Non, je ne savais pas', en: 'No, I had no idea' },
+
+  'avis.q5': { fr: 'Une suggestion, un bug, une idée ?', en: 'A suggestion, a bug, an idea?' },
+  'avis.q5-aide': {
+    fr: 'C’est la réponse qu’on lit en premier. Sois précis, même si c’est sévère.',
+    en: 'This is the one we read first. Be specific, even if it stings.',
+  },
+  'avis.q5-exemple': {
+    fr: 'Ex. : le knockback du kit Anchor me sort de l’arène, il manque un mode 2v2, la file HG est vide le matin…',
+    en: 'e.g. Anchor’s knockback throws me out of the arena, a 2v2 mode is missing, the HG queue is empty in the morning…',
+  },
+
+  'avis.pseudo': { fr: 'Ton pseudo (facultatif)', en: 'Your username (optional)' },
+  'avis.pseudo-aide': {
+    fr: 'Laisse vide pour rester anonyme. Le donner permet au staff de revenir vers toi — et rien d’autre.',
+    en: 'Leave it empty to stay anonymous. Giving it just lets the staff get back to you — nothing else.',
+  },
+  'avis.pseudo-exemple': { fr: 'TonPseudo', en: 'YourName' },
+
+  'avis.envoyer': { fr: 'Envoyer mon avis', en: 'Send my feedback' },
+  'avis.envoi': { fr: 'Envoi…', en: 'Sending…' },
+
+  'avis.merci-titre': { fr: 'Merci, c’est enregistré', en: 'Thanks — it’s in' },
+  'avis.merci-texte': {
+    fr: 'On lit tous les avis. Les plus fréquents finissent en chantier, et les corrections apparaissent sur le Discord.',
+    en: 'We read every single one. The most frequent ones become actual work, and the fixes show up on Discord.',
+  },
+  'avis.merci-cashprize': {
+    fr: 'Au fait : {c} sont remis en jeu chaque mois, partagés entre les trois premiers du classement ({p}). Il suffit de lier son Discord et de jouer en ranked.',
+    en: 'By the way: {c} is up for grabs every month, split between the top three of the leaderboard ({p}). Just link your Discord and play ranked.',
+  },
+
 } as const satisfies Record<string, Entree>
 
 export type CleTexte = keyof typeof DICO

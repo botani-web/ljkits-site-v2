@@ -1170,3 +1170,97 @@ model SessionJoueur {
   @@index([uuid], map: "idx_session_joueur_uuid")
   @@map("session_joueur")
 }
+
+/**
+ * ==========================================================================
+ * LES SANCTIONS (LJAdmin, miroir du 23/09/2026)
+ * LJAdmin range ses sanctions dans un SQLite local, sur la machine du
+ * serveur. Le panel les recopie ici pour que le site puisse afficher le
+ * casier d'un joueur (panel/lib/sanctions-neon.js). Le site ne fait que
+ * LIRE — src/lib/sanctions.ts — et cette table est déclarée pour la même
+ * raison que les tables elo_* : sans elle, la prochaine migration
+ * proposerait de la supprimer.
+ * ==========================================================================
+ */
+model Sanction {
+  /// L'identifiant DE LA SOURCE : l'id de ljadmin.db, ou une empreinte
+  /// stable pour une exclusion ranked temporaire (qui n'a pas d'id).
+  id     BigInt
+  /// `ljadmin` (le SQLite du plugin) ou `ranked` (le YAML de LJElo).
+  source String @default("ljadmin")
+
+  type        String
+  cibleUuid   String  @map("cible_uuid")
+  ciblePseudo String  @map("cible_pseudo")
+  /// Jamais affiché sur le site : une sanction engage le serveur, pas la
+  /// personne qui l'a posée.
+  staff       String
+  raison      String?
+
+  creeLe   DateTime  @map("cree_le") @db.Timestamptz(6)
+  /// Fin prévue. null = définitive, ou instantanée (un kick).
+  expireLe DateTime? @map("expire_le") @db.Timestamptz(6)
+  actif    Boolean
+  leveePar String?   @map("levee_par")
+  leveeLe  DateTime? @map("levee_le") @db.Timestamptz(6)
+
+  /// Dernier passage du miroir sur cette ligne.
+  majLe DateTime @default(now()) @map("maj_le") @db.Timestamptz(6)
+
+  @@id([source, id])
+  @@index([cibleUuid, creeLe(sort: Desc)], map: "idx_sanction_cible")
+  @@map("sanction")
+}
+
+/**
+ * ==========================================================================
+ * LES RETOURS DE JOUEURS  (page /avis, 23/09/2026)
+ * Cinq questions, une minute à remplir, et le pseudo facultatif : c'est le
+ * seul formulaire du site qu'on peut envoyer sans dire qui on est. La
+ * contrepartie est une limitation de débit par empreinte d'adresse, comme
+ * pour le recrutement.
+ * AUCUNE ADRESSE IP N'EST STOCKÉE EN CLAIR : `empreinte` est un SHA-256 salé
+ * par AUTH_SECRET. Elle sert à deux choses et deux seulement — refuser un
+ * envoi en boucle, et montrer à l'administration que dix avis viennent de la
+ * même source. Elle ne permet pas de remonter à quelqu'un.
+ * ==========================================================================
+ */
+model Avis {
+  id     String @id @default(cuid())
+  /// Numéro lisible, cité en interne : #42.
+  numero Int    @unique @default(autoincrement())
+
+  /// Facultatif, et c'est le sujet : un joueur peut parler sans signer.
+  pseudo String?
+
+  /// Question 1 — la note globale, de 1 à 5.
+  note Int
+
+  /// Question 2 — le chantier prioritaire (une clé de PRIORITES).
+  priorite String
+
+  /// Question 3 — ce qui l'empêche de jouer plus (clés de FREINS, 0 à n).
+  freins String[]
+
+  /// Question 4 — connaissait-il le cashprize ? `oui` | `vaguement` | `non`
+  cashprize String
+
+  /// Question 5 — le texte libre. C'est lui qu'on lit en premier.
+  message String? @db.Text
+
+  /// La langue de la page au moment de l'envoi : on saura à qui on parle.
+  langue String @default("fr")
+
+  /// Empreinte de l'adresse (voir l'en-tête). Jamais affichée en clair.
+  empreinte String
+
+  /// Suivi côté administration.
+  traiteAt  DateTime? @map("traite_at") @db.Timestamptz(6)
+  noteAdmin String?   @map("note_admin") @db.Text
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@index([createdAt(sort: Desc)], map: "idx_avis_date")
+  @@index([empreinte], map: "idx_avis_empreinte")
+  @@map("avis")
+}

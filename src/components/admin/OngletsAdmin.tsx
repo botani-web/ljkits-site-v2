@@ -7,7 +7,8 @@ import { usePathname } from 'next/navigation'
  * Les sections de l'administration. Le tableau de bord ouvre la marche.
  *
  * ⚠ L'ORDRE ET LA COMPOSITION DE CETTE LISTE N'ONT PAS CHANGÉ à la refonte.
- * On retrouve les huit mêmes onglets, au même rang. /admin/stats reste
+ * On retrouve les mêmes onglets, au même rang (plus « Avis » depuis le
+ * 23/09/2026). /admin/stats reste
  * volontairement hors de la barre, atteignable depuis le tableau de bord.
  */
 const ONGLETS = [
@@ -17,6 +18,7 @@ const ONGLETS = [
   { href: '/admin/packs', label: 'Packs' },
   { href: '/admin/commandes', label: 'Commandes' },
   { href: '/admin/recrutement', label: 'Recrutement' },
+  { href: '/admin/avis', label: 'Avis' },
   { href: '/admin/reglement', label: 'Règlement' },
   { href: '/admin/reglages', label: 'Réglages' },
 ]
@@ -25,7 +27,7 @@ export function OngletsAdmin() {
   const chemin = usePathname()
 
   return (
-    // Huit onglets ne tiennent pas dans 360 px. Défilement horizontal plutôt que
+    // Neuf onglets ne tiennent pas dans 360 px. Défilement horizontal plutôt que
     // retour à la ligne : la barre garde une hauteur d'une ligne sur toutes les
     // largeurs, et le trait actif reste sur la même ligne que le contenu.
     <nav className="mx-auto flex max-w-contenu gap-1 overflow-x-auto px-gouttiere">
