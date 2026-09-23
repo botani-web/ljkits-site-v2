@@ -14,6 +14,7 @@ import {
   TuileStat,
 } from '@/components/practice/Petits'
 import { RechercheJoueur } from '@/components/practice/RechercheJoueur'
+import { Sanctions } from '@/components/practice/Sanctions'
 import { Skin3D } from '@/components/practice/Skin3D'
 import { PagePublique } from '@/components/public/PagePublique'
 import { Enveloppe } from '@/components/ui/Enveloppe'
@@ -23,6 +24,7 @@ import { formaterDate } from '@/lib/format'
 import { estLocale, LANGUE_DEFAUT, lien, t, type Locale } from '@/lib/i18n'
 import { nomPalier, palierDe, PALIERS, progressionPalier, resteAvantSuivant } from '@/lib/paliers'
 import { lireProfil, type Rival } from '@/lib/practice'
+import { lireSanctions, nombreActives } from '@/lib/sanctions'
 import { cheminProfil, cleRaison, formaterDuree, infosMode, MODES, tempsRelatif, urlTete } from '@/lib/practice-commun'
 import { IMAGE_OG } from '@/lib/site'
 
@@ -66,6 +68,8 @@ export default async function PageJoueur({ params }: Params) {
   if (!saison) notFound()
   const profil = await lireProfil(saison.id, decodeURIComponent(pseudo))
   if (!profil) notFound()
+
+  const sanctions = await lireSanctions(profil.uuid)
 
   const { global, records, rivaux } = profil
   const eloPrincipal = global?.elo ?? profil.modes[0]?.elo ?? 1000
@@ -437,6 +441,19 @@ export default async function PageJoueur({ params }: Params) {
           limite={HISTORIQUE_AFFICHE}
           matchs={profil.historique.map((m) => ({ ...m, instant: m.instant.toISOString() }))}
         />
+      </Section>
+
+      {/* ══════════════════════════ SANCTIONS ══════════════════════════ */}
+      <Section
+        etiquette={t(locale, 'pr.sanctions-etiquette')}
+        titre={t(locale, 'pr.sanctions-titre')}
+        chapeau={
+          nombreActives(sanctions) > 0
+            ? t(locale, 'pr.sanctions-actives').replace('{n}', String(nombreActives(sanctions)))
+            : undefined
+        }
+      >
+        <Sanctions sanctions={sanctions} locale={locale} pseudo={profil.pseudo} />
       </Section>
     </PagePublique>
   )
