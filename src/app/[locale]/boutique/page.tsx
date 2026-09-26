@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 
 import { Boutique } from '@/components/boutique/Boutique'
-import type { GradeBoutique, PackBoutique } from '@/components/boutique/types'
+import type { PackBoutique } from '@/components/boutique/types'
 import { BoutonIpGeant } from '@/components/public/CopieIp'
 import { PagePublique } from '@/components/public/PagePublique'
 import { Accordeon, Question } from '@/components/ui/Accordeon'
@@ -12,7 +12,7 @@ import { Etiquette } from '@/components/ui/TeteSection'
 import { formaterEuros } from '@/lib/format'
 import { prisma } from '@/lib/prisma'
 import { IMAGE_OG } from '@/lib/site'
-import { estLocale, LANGUE_DEFAUT, lien, t, champ, champOptionnel, type Locale } from '@/lib/i18n'
+import { estLocale, LANGUE_DEFAUT, t, champ, type Locale } from '@/lib/i18n'
 
 export const revalidate = 3600 // une heure
 
@@ -47,8 +47,20 @@ export async function generateMetadata({
  *
  * L'ordre de cette page est donc celui d'un magasin :
  *   1. un bandeau court — le nom du rayon, une promesse, l'article phare ;
- *   2. les produits, prix en gros, les deux rayons l'un sous l'autre ;
+ *   2. les produits, prix en gros ;
  *   3. l'aide : comment ça se passe, ce qui n'est pas en vente, la FAQ.
+ *
+ * ON NE VEND PLUS QUE DES COINS  (26/09/2026).
+ *
+ * Les grades se sont mis en vente EN JEU, contre des coins (LJ+ 75 000,
+ * LJ++ 200 000) — comme les kits et comme les clans. Les vendre aussi ici
+ * aurait fait deux prix pour la même chose, dans deux monnaies.
+ *
+ * La boutique n'a donc plus qu'un rayon, et c'est une simplification pour
+ * le joueur autant que pour nous : un seul produit à comprendre, et une
+ * seule phrase à tenir — tout s'obtient en jouant, les coins font gagner
+ * du temps. Les trois grades restent en base et dans l'admin, masqués :
+ * l'historique des commandes y renvoie encore.
  */
 export default async function PageBoutique({
   params,
@@ -58,33 +70,11 @@ export default async function PageBoutique({
   const { locale: brut } = await params
   const locale: Locale = estLocale(brut) ? brut : LANGUE_DEFAUT
 
-  const [gradesEnBase, packsEnBase] = await Promise.all([
-    prisma.grade.findMany({
-      where: { visible: true },
-      orderBy: [{ ordre: 'asc' }, { id: 'asc' }],
-      include: {
-        avantages: { orderBy: { ordre: 'asc' }, select: { texte: true, texteEn: true } },
-      },
-    }),
-    prisma.pack.findMany({
-      where: { visible: true },
-      orderBy: [{ ordre: 'asc' }, { id: 'asc' }],
-      include: { kits: { orderBy: { ordre: 'asc' }, select: { nom: true } } },
-    }),
-  ])
-
-  const grades: GradeBoutique[] = gradesEnBase.map((grade, index) => ({
-    slug: grade.slug,
-    nom: grade.nom,
-    kanji: grade.kanji,
-    sousTitre: champOptionnel(locale, grade.sousTitre, grade.sousTitreEn),
-    etiquette: champOptionnel(locale, grade.etiquette, grade.etiquetteEn),
-    prixEurosCentimes: grade.prixEurosCentimes,
-    achetable: grade.achetable,
-    paiementPret: grade.tebexPackageId !== null,
-    avantages: grade.avantages.map((a) => champ(locale, a.texte, a.texteEn)),
-    heriteDe: grade.heriteDuPrecedent && index > 0 ? gradesEnBase[index - 1].nom : null,
-  }))
+  const packsEnBase = await prisma.pack.findMany({
+    where: { visible: true },
+    orderBy: [{ ordre: 'asc' }, { id: 'asc' }],
+    include: { kits: { orderBy: { ordre: 'asc' }, select: { nom: true } } },
+  })
 
   const packs: PackBoutique[] = packsEnBase.map((pack) => ({
     slug: pack.slug,
@@ -98,9 +88,19 @@ export default async function PageBoutique({
     kitsInclus: pack.kits.map((kit) => kit.nom),
   }))
 
-  // L'article phare du bandeau : le grade du milieu, celui que la carte met
-  // déjà en avant. S'il n'y a pas trois grades, pas d'article phare.
-  const phare = grades.length === 3 ? grades[1] : null
+  // L'ARTICLE PHARE DU BANDEAU : LE MEILLEUR RAPPORT.
+  //
+  // Calculé, pas choisi à la main : le pack qui donne le plus de coins par
+  // euro. C'est la seule mise en avant qu'on puisse tenir sans données de
+  // vente — « le plus choisi » aurait été une affirmation inventée.
+  const phare = packs
+    .filter((pack) => (pack.coins ?? 0) > 0 && pack.achetable && pack.paiementPret)
+    .reduce<PackBoutique | null>((meilleur, pack) => {
+      if (!meilleur) return pack
+      const ici = (pack.coins ?? 0) / pack.prixEurosCentimes
+      const la = (meilleur.coins ?? 0) / meilleur.prixEurosCentimes
+      return ici > la ? pack : meilleur
+    }, null)
 
   return (
     <PagePublique locale={locale}>
@@ -136,25 +136,19 @@ export default async function PageBoutique({
 
             {phare && (
               <a
-                href="#grades"
+                href="#coins"
                 className="group relative overflow-hidden rounded-bloc border border-or/50 bg-charbon p-5.5 transition-colors hover:border-or"
               >
                 <p className="font-mono text-[10px] font-bold tracking-[.2em] text-or uppercase">
                   {t(locale, 'boutique.plus-choisi')}
                 </p>
                 <div className="mt-3 flex items-center gap-4">
-                  <span
-                    aria-hidden="true"
-                    className="flex size-14 shrink-0 items-center justify-center rounded-carte border border-or/40 bg-nuit text-[28px] font-bold text-or"
-                  >
-                    {phare.kanji ?? '❀'}
-                  </span>
                   <span className="min-w-0">
                     <span className="block font-titre text-[22px] leading-none">
-                      {t(locale, 'boutique.grade-nomme').replace('{n}', phare.nom)}
+                      {phare.nom}
                     </span>
                     <span className="mt-1.5 block font-mono text-[12px] text-gris">
-                      {phare.etiquette ?? ''}{' '}
+                      {(phare.coins ?? 0).toLocaleString(locale === 'fr' ? 'fr-FR' : 'en-US')}{' '}
                       {t(locale, 'boutique.sur-kill')}
                     </span>
                   </span>
@@ -172,7 +166,7 @@ export default async function PageBoutique({
       </header>
 
       {/* ═══════════ LES RAYONS · LE PANIER (îlot client) ═══════════ */}
-      <Boutique grades={grades} packs={packs} />
+      <Boutique packs={packs} />
 
       {/* ═══════════════════════════ L'AIDE ═══════════════════════════ */}
       <Section
@@ -258,7 +252,7 @@ export default async function PageBoutique({
         chapeau={t(locale, 'boutique.final-chapeau')}
       >
         <div className="flex flex-wrap justify-center gap-2.75">
-          <LienBouton href="#grades" variante="or" taille="grande">
+          <LienBouton href="#coins" variante="or" taille="grande">
             {t(locale, 'boutique.choisir-grade')}
           </LienBouton>
           <BoutonIpGeant />
@@ -303,8 +297,9 @@ const ETAPES: Record<Locale, { titre: string; texte: string }[]> = {
         'Automatique en jeu sous 90 secondes. Hors ligne, ça t’attend à la prochaine connexion.',
     },
     {
-      titre: 'Le rôle Discord',
-      texte: 'Posé dans les 5 minutes, si ton compte est lié avec /discord en jeu.',
+      titre: 'Tu dépenses',
+      texte:
+        'En jeu, dans la boutique du serveur : kits, grades, clan, cosmétiques. Tout au même endroit.',
     },
   ],
   en: [
@@ -323,33 +318,36 @@ const ETAPES: Record<Locale, { titre: string; texte: string }[]> = {
         'Automatic in game within 90 seconds. Offline, it waits for your next connection.',
     },
     {
-      titre: 'The Discord role',
-      texte: 'Given within 5 minutes, if your account is linked with /discord in game.',
+      titre: 'You spend',
+      texte:
+        'In game, in the server shop: kits, ranks, clan, cosmetics. All in one place.',
     },
   ],
 }
 
 const EN_VENTE: Record<Locale, string[]> = {
   fr: [
-    'Un grade, à vie : bonus de coins, couleur de pseudo, rôle Discord',
-    'Des coins, pour débloquer tout de suite un kit que tu aurais eu en jouant',
+    'Des coins, et rien d’autre — la même monnaie que tu gagnes à chaque kill',
+    'De quoi débloquer tout de suite un kit, un grade ou un clan que tu aurais eu en jouant',
   ],
   en: [
-    'A rank, for life: coin bonus, name colour, Discord role',
-    'Coins, to unlock right away a kit you would have earned by playing',
+    'Coins, and nothing else — the same currency you earn on every kill',
+    'Enough to unlock right away a kit, a rank or a clan you would have earned by playing',
   ],
 }
 
 const JAMAIS_EN_VENTE: Record<Locale, string[]> = {
   fr: [
-    'Des kits : les trente-neuf s’obtiennent tous en jouant',
+    'Des kits : les quarante-deux s’obtiennent tous en jouant',
+    'Des grades : ils s’achètent en jeu, avec des coins gagnés en jouant',
     'Du stuff ou de l’armure',
     'Des dégâts, de la vie ou du knockback',
     'Des points de classement ou de l’Elo',
     'Une place dans le staff',
   ],
   en: [
-    'Kits: all thirty-nine are earned by playing',
+    'Kits: all forty-two are earned by playing',
+    'Ranks: they are bought in game, with coins earned by playing',
     'Gear or armour',
     'Damage, health or knockback',
     'Leaderboard points or Elo',
@@ -360,21 +358,23 @@ const JAMAIS_EN_VENTE: Record<Locale, string[]> = {
 const QUESTIONS: Record<Locale, { question: string; reponses: string[] }[]> = {
   fr: [
     {
-      question: 'Combien de temps je garde mon grade ?',
-      reponses: [
-        'À vie. Pas d’abonnement, pas de renouvellement, rien qui expire. Les grades ne sont jamais repris, y compris aux resets de classement. Les seuls grades temporaires sont ceux gagnés au classement mensuel, qui durent 30 jours.',
-      ],
-    },
-    {
-      question: 'Le bonus de coins, ce n’est pas du pay-to-win ?',
-      reponses: [
-        'Le bonus fait débloquer les kits plus vite, il ne donne aucun avantage en combat. Les kits sont équilibrés entre eux et aucun n’est objectivement meilleur : arriver plus tôt au Kitsune ne fait gagner aucun duel. Si un kit devenait trop fort, c’est le kit qui serait corrigé — pas le grade.',
-      ],
-    },
-    {
       question: 'À quoi servent les coins ?',
       reponses: [
-        'À débloquer des kits, exactement comme ceux que tu gagnes à chaque kill. Un pack de coins ne donne rien qu’un joueur ne puisse obtenir en jouant : il fait juste gagner du temps.',
+        'À tout ce que le serveur vend : les kits, les grades, la création d’un clan et sa couleur, les cosmétiques. Ce sont exactement les coins que tu gagnes à chaque kill — un pack ne donne rien qu’un joueur ne puisse obtenir en jouant, il fait gagner du temps.',
+      ],
+    },
+    {
+      question: 'Pourquoi les grades ne sont plus en vente ici ?',
+      reponses: [
+        'Parce qu’ils s’achètent en jeu, contre des coins, comme tout le reste. Les vendre aussi sur le site aurait fait deux prix pour la même chose, dans deux monnaies — et un joueur qui paie en euros aurait payé pour ce qu’un autre obtient en jouant.',
+        'La boutique n’a donc plus qu’un seul produit, et une seule promesse à tenir.',
+      ],
+    },
+    {
+      question: 'Acheter des coins, ce n’est pas du pay-to-win ?',
+      reponses: [
+        'Les coins font arriver plus vite à ce que tout le monde obtient en jouant. Ils ne donnent aucun avantage en combat : les kits sont équilibrés entre eux et aucun n’est objectivement meilleur — arriver plus tôt au Kitsune ne fait gagner aucun duel. Si un kit devenait trop fort, c’est le kit qui serait corrigé.',
+        'Rien de ce qui touche aux dégâts, à la vie, au knockback, à l’Elo ou au classement n’est en vente, et ça ne changera pas.',
       ],
     },
     {
@@ -411,21 +411,23 @@ const QUESTIONS: Record<Locale, { question: string; reponses: string[] }[]> = {
   ],
   en: [
     {
-      question: 'How long do I keep my rank?',
-      reponses: [
-        'For life. No subscription, no renewal, nothing that expires. Ranks are never taken back, including on leaderboard resets. The only temporary ranks are those won on the monthly leaderboard, which last 30 days.',
-      ],
-    },
-    {
-      question: 'Is the coin bonus not pay-to-win?',
-      reponses: [
-        'The bonus unlocks kits faster, it gives no advantage in combat. Kits are balanced against each other and none is objectively better: reaching the Kitsune sooner wins you no duel. If a kit became too strong, the kit would be fixed — not the rank.',
-      ],
-    },
-    {
       question: 'What are coins for?',
       reponses: [
-        'For unlocking kits, exactly like the coins you earn on every kill. A coin pack gives nothing a player cannot obtain by playing: it only saves time.',
+        'For everything the server sells: kits, ranks, creating a clan and its colour, cosmetics. They are exactly the coins you earn on every kill — a pack gives nothing a player cannot obtain by playing, it only saves time.',
+      ],
+    },
+    {
+      question: 'Why are ranks no longer sold here?',
+      reponses: [
+        'Because they are bought in game, with coins, like everything else. Selling them on the site too would have meant two prices for the same thing, in two currencies — and someone paying in euros would have paid for what another player earns by playing.',
+        'The shop now has a single product, and a single promise to keep.',
+      ],
+    },
+    {
+      question: 'Is buying coins not pay-to-win?',
+      reponses: [
+        'Coins get you faster to what everyone obtains by playing. They give no advantage in combat: kits are balanced against each other and none is objectively better — reaching the Kitsune sooner wins you no duel. If a kit became too strong, the kit would be fixed.',
+        'Nothing that touches damage, health, knockback, Elo or the leaderboard is for sale, and that will not change.',
       ],
     },
     {

@@ -5,15 +5,11 @@ import { useActionState, useEffect, useMemo, useState } from 'react'
 import { creerCommande, type EtatCommande } from '@/actions/commandes'
 import { ETAT_VIDE } from '@/actions/etat'
 import { BarreBoutique } from '@/components/boutique/BarreBoutique'
-import {
-  CarteGradeProduit,
-  CartePackCoinsProduit,
-  TableauComparatif,
-} from '@/components/boutique/CartesProduits'
+import { CartePackCoinsProduit } from '@/components/boutique/CartesProduits'
 import { ModaleRecapitulatif } from '@/components/boutique/ModaleRecapitulatif'
 import { PaiementTebex } from '@/components/boutique/PaiementTebex'
 import { Panier } from '@/components/boutique/Panier'
-import type { GradeBoutique, PackBoutique } from '@/components/boutique/types'
+import type { PackBoutique } from '@/components/boutique/types'
 import { EtatVide } from '@/components/ui/EtatVide'
 import { Section } from '@/components/ui/Section'
 import {
@@ -34,15 +30,18 @@ import { t } from '@/lib/i18n'
  * L'îlot client de la boutique : la barre, les deux rayons, le panier, la
  * modale de récapitulatif et l'écran de paiement.
  *
- * Refonte du 03/09/2026. Les onglets « Grades | Coins » ont disparu : ils
- * cachaient la moitié du catalogue derrière un clic, et un rayon qu'on ne
- * voit pas ne se vend pas. Les deux rayons sont maintenant affichés l'un sous
- * l'autre, avec une ancre chacun dans la barre collante.
+ * UN SEUL RAYON DEPUIS LE 26/09/2026 : les coins. Les grades s'achètent en
+ * jeu, contre des coins, comme les kits et les clans — les vendre aussi ici
+ * aurait fait deux prix pour la même chose, dans deux monnaies.
  *
  * Le panier reste un seul état partagé par les cartes, la barre, le tiroir et
  * la modale — les découper obligerait à un contexte React pour rien.
+ *
+ * Un panier enregistré AVANT ce changement peut encore contenir un grade : le
+ * filtre sur `catalogue` ci-dessous l'écarte tout seul, puisque la table ne
+ * connaît plus que les packs.
  */
-export function Boutique({ grades, packs }: { grades: GradeBoutique[]; packs: PackBoutique[] }) {
+export function Boutique({ packs }: { packs: PackBoutique[] }) {
   const locale = useLocale()
   const [panier, setPanier] = useState<ArticlePanier[]>([])
   const [pseudo, setPseudo] = useState<string | null>(null)
@@ -53,17 +52,11 @@ export function Boutique({ grades, packs }: { grades: GradeBoutique[]; packs: Pa
 
   const catalogue = useMemo(() => {
     const table = new Map<string, { nom: string; prixCentimes: number }>()
-    for (const grade of grades) {
-      table.set(`GRADE:${grade.slug}`, {
-        nom: `Grade ${grade.nom}`,
-        prixCentimes: grade.prixEurosCentimes,
-      })
-    }
     for (const pack of packs) {
       table.set(`PACK:${pack.slug}`, { nom: pack.nom, prixCentimes: pack.prixEurosCentimes })
     }
     return table
-  }, [grades, packs])
+  }, [packs])
 
   const packsCoins = useMemo(() => packs.filter((pack) => (pack.coins ?? 0) > 0), [packs])
   /** Prix aux 1 000 coins du plus petit pack : la référence du dégressif. */
@@ -122,36 +115,6 @@ export function Boutique({ grades, packs }: { grades: GradeBoutique[]; packs: Pa
         total={total}
         onOuvrirPanier={() => setPanierOuvert(true)}
       />
-
-      {/* ═══════════════════════════ LES GRADES ═══════════════════════════ */}
-      <Section
-        id="grades"
-        etiquette={t(locale, 'boutique.rayon-grades')}
-        titre={
-          <>
-            {t(locale, 'boutique.achat-vie-1')} <span className="text-or">{t(locale, 'boutique.achat-vie-2')}</span>
-          </>
-        }
-        chapeau={t(locale, 'boutique.grades-chapeau-long')}
-        className="scroll-mt-[calc(var(--spacing-nav)+64px)]"
-      >
-        {grades.length === 0 ? (
-          <EtatVide message={t(locale, 'boutique.aucun-grade')} />
-        ) : (
-          <div className="grid items-start gap-3.5 lg:grid-cols-3">
-            {grades.map((grade, index) => (
-              <CarteGradeProduit
-                key={grade.slug}
-                grade={grade}
-                recommande={grades.length === 3 && index === 1}
-                dansLePanier={contient(panier, { type: 'GRADE', slug: grade.slug })}
-                onBasculer={() => basculerArticle({ type: 'GRADE', slug: grade.slug })}
-              />
-            ))}
-          </div>
-        )}
-        <TableauComparatif grades={grades} />
-      </Section>
 
       {/* ════════════════════════════ LES COINS ════════════════════════════ */}
       <Section

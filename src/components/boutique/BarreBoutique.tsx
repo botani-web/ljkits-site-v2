@@ -8,16 +8,16 @@ import { t } from '@/lib/i18n'
  * La barre de la boutique, collante sous la navigation : les rayons à gauche,
  * le pseudo de livraison au milieu, le panier à droite.
  *
- * Les liens de rayon sont des ancres : depuis la refonte du 03/09/2026, les
- * grades et les coins sont tous deux affichés, l'un sous l'autre. On ne
- * choisit plus un rayon, on y descend.
+ * IL N'Y A PLUS QU'UN RAYON depuis le 26/09/2026 : les coins. L'ancre vers
+ * les grades pointait vers une section qui n'existe plus — un lien mort dans
+ * une barre collante, donc visible en permanence. Les ancres disparaissent
+ * avec elle : il n'y a plus qu'un endroit ou descendre.
  *
  * ⚠ VOCABULAIRE. Pas un mot de « compte » ni de « connexion » : il n'y a pas
  * de comptes sur ce site. Chaque libellé dit la même chose — c'est le pseudo
  * qui reçoit la livraison.
  */
 const RAYONS = [
-  { href: '#grades', cle: 'barre.grades' as const },
   { href: '#coins', cle: 'barre.coins' as const },
   { href: '#aide', cle: 'barre.aide' as const },
 ]
