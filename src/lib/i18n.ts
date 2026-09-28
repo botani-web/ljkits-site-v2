@@ -1414,8 +1414,8 @@ const DICO = {
     en: 'In game, your bursts reach about {c} clicks per second: that is what we expect here.',
   },
   'verif.souris': {
-    fr: 'Souris obligatoire (pas d’écran tactile). Le clic droit ne compte pas.',
-    en: 'Mouse required (no touch screen). Right click does not count.',
+    fr: 'Souris ou trackpad, ce que tu utilises en jeu (pas d’écran tactile). Le clic droit ne compte pas.',
+    en: 'Mouse or trackpad, whatever you use in game (no touch screen). Right click does not count.',
   },
   'verif.joueur': { fr: 'Compte vérifié', en: 'Account being checked' },
   'verif.essai': { fr: 'Essai {n} sur {t}', en: 'Try {n} of {t}' },
