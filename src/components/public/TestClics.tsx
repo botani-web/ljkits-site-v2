@@ -115,7 +115,9 @@ export function TestClics({ locale }: { locale: Locale }) {
         setPhase('pret')
         return
       }
-      if (phase === 'pret') {
+      // `phase` peut avoir un rendu de retard : à 20 CPS le deuxième clic arrive
+      // avant React. C'est la référence qui dit si l'essai a déjà commencé.
+      if (phase === 'pret' && !courant.current) {
         setErreur(null)
         courant.current = { clics: [], pointeur: e.pointerType, mouvement: 0 }
         debut.current = e.timeStamp
