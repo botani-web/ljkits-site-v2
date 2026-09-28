@@ -24,6 +24,14 @@ import { t, type Locale } from '@/lib/i18n'
  *   référence, et l'affichage se rafraîchit à chaque image.
  * - Pas de verdict affiché : un tricheur ne doit pas pouvoir régler son
  *   autoclicker à tâtons jusqu'à passer.
+ *
+ * ── LE JOURNAL SILENCIEUX (28/09/2026) ─────────────────────────────────────
+ * Pendant tout le test, la page note AUSSI, sans rien afficher : chaque touche
+ * du clavier enfoncée ou relâchée, chaque bouton de souris autre que le gauche
+ * (molette, droit, boutons latéraux), et chaque perte de focus. La plupart des
+ * autoclickers PvP s'activent en maintenant un bouton latéral ou une touche :
+ * si les clics démarrent et s'arrêtent exactement avec elle, le panel le voit.
+ * Le joueur n'en sait rien — c'est voulu (décision de l'administration).
  */
 
 const PANEL = process.env.NEXT_PUBLIC_PANEL_URL ?? 'https://panel.ljkits.eu'
@@ -32,6 +40,8 @@ type Clic = { d: number; u?: number; v: boolean }
 type Essai = { clics: Clic[]; pointeur: string; mouvement: number }
 type Session = { id: string; jeton: string; joueur: string; essais: number; duree: number; cpsJeu: number }
 type Phase = 'code' | 'pret' | 'essai' | 'entre' | 'envoi' | 'fini'
+/** kd/ku = touche enfoncée/relâchée, bd/bu = bouton de souris (hors gauche), f = focus/visibilité */
+type Evenement = { t: number; e: 'kd' | 'ku' | 'bd' | 'bu' | 'f'; c: string; r?: boolean; v?: boolean }
 
 /** Le plus petit écart non nul de `performance.now()` : la précision réelle du navigateur. */
 function precisionHorloge(): number {
@@ -58,6 +68,44 @@ export function TestClics({ locale }: { locale: Locale }) {
   const debut = useRef<number | null>(null)
   const dernierePos = useRef<{ x: number; y: number } | null>(null)
   const image = useRef<number | null>(null)
+  const journal = useRef<Evenement[]>([])
+
+  // Le journal silencieux : de l'ouverture du code jusqu'à l'envoi.
+  const ecoute = phase !== 'code' && phase !== 'fini'
+  useEffect(() => {
+    if (!ecoute) return
+    const noter = (ev: Evenement) => {
+      if (journal.current.length < 6000) journal.current.push(ev)
+    }
+    const touche = (type: 'kd' | 'ku') => (e: KeyboardEvent) =>
+      noter({ t: e.timeStamp, e: type, c: e.code || e.key, r: e.repeat, v: e.isTrusted })
+    const bouton = (type: 'bd' | 'bu') => (e: MouseEvent) => {
+      if (e.button === 0) return
+      noter({ t: e.timeStamp, e: type, c: 'B' + e.button, v: e.isTrusted })
+      // Boutons latéraux : Chrome ferait « page précédente » au relâchement.
+      if (e.button === 3 || e.button === 4) e.preventDefault()
+    }
+    const focus = (etat: string) => () => noter({ t: performance.now(), e: 'f', c: etat })
+    const vis = () => noter({ t: performance.now(), e: 'f', c: document.visibilityState })
+    const kd = touche('kd'), ku = touche('ku'), bd = bouton('bd'), bu = bouton('bu')
+    const bl = focus('blur'), fo = focus('focus')
+    window.addEventListener('keydown', kd, true)
+    window.addEventListener('keyup', ku, true)
+    window.addEventListener('mousedown', bd, true)
+    window.addEventListener('mouseup', bu, true)
+    window.addEventListener('blur', bl)
+    window.addEventListener('focus', fo)
+    document.addEventListener('visibilitychange', vis)
+    return () => {
+      window.removeEventListener('keydown', kd, true)
+      window.removeEventListener('keyup', ku, true)
+      window.removeEventListener('mousedown', bd, true)
+      window.removeEventListener('mouseup', bu, true)
+      window.removeEventListener('blur', bl)
+      window.removeEventListener('focus', fo)
+      document.removeEventListener('visibilitychange', vis)
+    }
+  }, [ecoute])
 
   const ouvrir = useCallback(
     async (e: React.FormEvent) => {
@@ -169,6 +217,7 @@ export function TestClics({ locale }: { locale: Locale }) {
           id: session.id,
           jeton: session.jeton,
           essais: essais.current,
+          evenements: journal.current,
           nav: { ua: navigator.userAgent, precision: precisionHorloge() },
         }),
       })
