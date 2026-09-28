@@ -261,6 +261,17 @@ export function TestClics({ locale }: { locale: Locale }) {
     }
   }, [locale, numero, session])
 
+  // Fin du dernier essai : on envoie tout seul (28/09). Le bouton du dernier
+  // essai disait « Commencer » : des joueurs (liberix) croyaient avoir fini et ne
+  // cliquaient pas. Le bouton « Envoyer » ne reste qu'en secours, si l'envoi échoue.
+  const envoiAuto = useRef(false)
+  useEffect(() => {
+    if (phase === 'entre' && session && numero >= session.essais && !envoiAuto.current) {
+      envoiAuto.current = true
+      void suivant()
+    }
+  }, [phase, numero, session, suivant])
+
   useEffect(
     () => () => {
       if (image.current) cancelAnimationFrame(image.current)
@@ -347,7 +358,7 @@ export function TestClics({ locale }: { locale: Locale }) {
 
       {phase === 'entre' && (
         <button type="button" onClick={suivant} className={classesBouton({ pleineLargeur: true })}>
-          {numero < total ? t(locale, 'verif.suivant') : t(locale, 'verif.code-bouton')}
+          {numero < total ? t(locale, 'verif.suivant') : t(locale, 'verif.envoyer')}
         </button>
       )}
       {erreur && <p className="text-[14px] text-rouge">{erreur}</p>}

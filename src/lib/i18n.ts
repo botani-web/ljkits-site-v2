@@ -1430,6 +1430,7 @@ const DICO = {
     en: 'This test needs a mouse. Plug it in and restart this try.',
   },
   'verif.envoi': { fr: 'Envoi…', en: 'Sending…' },
+  'verif.envoyer': { fr: 'Envoyer le résultat', en: 'Send the result' },
   'verif.merci-titre': { fr: 'C’est envoyé', en: 'All sent' },
   'verif.merci': {
     fr: 'Le résultat est parti au staff. Tu peux retourner en jeu : tu seras libéré dès qu’il arrive.',
