@@ -40,8 +40,12 @@ type Clic = { d: number; u?: number; v: boolean }
 type Essai = { clics: Clic[]; pointeur: string; mouvement: number }
 type Session = { id: string; jeton: string; joueur: string; essais: number; duree: number; cpsJeu: number }
 type Phase = 'code' | 'pret' | 'essai' | 'entre' | 'envoi' | 'fini'
-/** kd/ku = touche enfoncée/relâchée, bd/bu = bouton de souris (hors gauche), f = focus/visibilité */
-type Evenement = { t: number; e: 'kd' | 'ku' | 'bd' | 'bu' | 'f'; c: string; r?: boolean; v?: boolean }
+/**
+ * kd/ku = touche enfoncée/relâchée, bd/bu = bouton de souris (hors gauche),
+ * cd/cu = clic gauche (PARTOUT et TOUT LE TEMPS, y compris après les 15 s),
+ * f = focus/visibilité
+ */
+type Evenement = { t: number; e: 'kd' | 'ku' | 'bd' | 'bu' | 'cd' | 'cu' | 'f'; c: string; r?: boolean; v?: boolean }
 
 /** Le plus petit écart non nul de `performance.now()` : la précision réelle du navigateur. */
 function precisionHorloge(): number {
@@ -75,32 +79,54 @@ export function TestClics({ locale }: { locale: Locale }) {
   useEffect(() => {
     if (!ecoute) return
     const noter = (ev: Evenement) => {
-      if (journal.current.length < 6000) journal.current.push(ev)
+      if (journal.current.length < 12000) journal.current.push(ev)
     }
     const touche = (type: 'kd' | 'ku') => (e: KeyboardEvent) =>
       noter({ t: e.timeStamp, e: type, c: e.code || e.key, r: e.repeat, v: e.isTrusted })
-    const bouton = (type: 'bd' | 'bu') => (e: MouseEvent) => {
-      if (e.button === 0) return
-      noter({ t: e.timeStamp, e: type, c: 'B' + e.button, v: e.isTrusted })
-      // Boutons latéraux : Chrome ferait « page précédente » au relâchement.
+    // L'ÉTAT DES BOUTONS, et non les seuls pointerdown (28/09) : quand un bouton
+    // est déjà enfoncé (Mouse4 tenu pour un autoclicker « maintien »), les clics
+    // suivants n'arrivent PAS en pointerdown mais en pointermove avec un autre
+    // `buttons`. On compare donc le masque à chaque événement.
+    // Le clic gauche est noté partout et même après les 15 s : un autoclicker en
+    // bascule s'arrête souvent APRÈS la fin de l'essai, et c'est l'arrêt net au
+    // moment de la touche qui le trahit.
+    const BITS: [number, string][] = [[1, 'B0'], [2, 'B2'], [4, 'B1'], [8, 'B3'], [16, 'B4']]
+    let masque = 0
+    const bouton = (e: PointerEvent) => {
+      if (e.pointerType !== 'mouse') return
+      const nouveau = e.buttons
+      for (const [bit, code] of BITS) {
+        const avant = (masque & bit) !== 0, apres = (nouveau & bit) !== 0
+        if (avant === apres) continue
+        if (code === 'B0') noter({ t: e.timeStamp, e: apres ? 'cd' : 'cu', c: code, v: e.isTrusted })
+        else noter({ t: e.timeStamp, e: apres ? 'bd' : 'bu', c: code, v: e.isTrusted })
+      }
+      masque = nouveau
+    }
+    // Boutons latéraux : Chrome ferait « page précédente » au relâchement.
+    const pasDeRetour = (e: MouseEvent) => {
       if (e.button === 3 || e.button === 4) e.preventDefault()
     }
     const focus = (etat: string) => () => noter({ t: performance.now(), e: 'f', c: etat })
     const vis = () => noter({ t: performance.now(), e: 'f', c: document.visibilityState })
-    const kd = touche('kd'), ku = touche('ku'), bd = bouton('bd'), bu = bouton('bu')
+    const kd = touche('kd'), ku = touche('ku')
     const bl = focus('blur'), fo = focus('focus')
     window.addEventListener('keydown', kd, true)
     window.addEventListener('keyup', ku, true)
-    window.addEventListener('mousedown', bd, true)
-    window.addEventListener('mouseup', bu, true)
+    window.addEventListener('pointerdown', bouton, true)
+    window.addEventListener('pointerup', bouton, true)
+    window.addEventListener('pointermove', bouton, true)
+    window.addEventListener('mouseup', pasDeRetour, true)
     window.addEventListener('blur', bl)
     window.addEventListener('focus', fo)
     document.addEventListener('visibilitychange', vis)
     return () => {
       window.removeEventListener('keydown', kd, true)
       window.removeEventListener('keyup', ku, true)
-      window.removeEventListener('mousedown', bd, true)
-      window.removeEventListener('mouseup', bu, true)
+      window.removeEventListener('pointerdown', bouton, true)
+      window.removeEventListener('pointerup', bouton, true)
+      window.removeEventListener('pointermove', bouton, true)
+      window.removeEventListener('mouseup', pasDeRetour, true)
       window.removeEventListener('blur', bl)
       window.removeEventListener('focus', fo)
       document.removeEventListener('visibilitychange', vis)
@@ -155,7 +181,7 @@ export function TestClics({ locale }: { locale: Locale }) {
     (e: React.PointerEvent<HTMLDivElement>) => {
       if (e.button !== 0 || !session) return
       e.preventDefault()
-      e.currentTarget.setPointerCapture(e.pointerId)
+      if (e.type === 'pointerdown') e.currentTarget.setPointerCapture(e.pointerId)
       if (e.pointerType !== 'mouse') {
         courant.current = null
         debut.current = null
@@ -193,12 +219,18 @@ export function TestClics({ locale }: { locale: Locale }) {
   }, [])
 
   const mouvement = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+    // Clic gauche pendant qu'un autre bouton est tenu : il arrive ici, pas en
+    // pointerdown (voir le journal plus haut).
+    if (e.button === 0 && e.pointerType === 'mouse') {
+      if (e.buttons & 1) appui(e)
+      else relachement(e)
+    }
     const c = courant.current
     const p = dernierePos.current
     if (!c || !p) return
     c.mouvement += Math.hypot(e.clientX - p.x, e.clientY - p.y)
     dernierePos.current = { x: e.clientX, y: e.clientY }
-  }, [])
+  }, [appui, relachement])
 
   const suivant = useCallback(async () => {
     if (!session) return
