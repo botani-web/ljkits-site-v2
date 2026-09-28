@@ -1378,6 +1378,67 @@ const DICO = {
     en: 'By the way: {c} is up for grabs every month, split between the top three of the leaderboard ({p}). Just link your Discord and play ranked.',
   },
 
+  // ── Vérification de clic (/verifauto, 28/09/2026) ─────────────────────
+  'meta.verif-titre': { fr: 'Vérification de clic', en: 'Click check' },
+  'meta.verif-desc': {
+    fr: 'Test de clic demandé par le staff de LJKITS.',
+    en: 'Click test requested by the LJKITS staff.',
+  },
+  'verif.etiquette': { fr: 'Vérification anticheat', en: 'Anticheat check' },
+  'verif.titre': { fr: 'Montre-nous comment tu cliques', en: 'Show us how you click' },
+  'verif.chapeau': {
+    fr: 'Le staff a remarqué des clics inhabituels sur ton compte. Ce test compare ta façon de cliquer ici avec celle du jeu : si c’est bien ta main, il le montre, et tu ne seras plus embêté.',
+    en: 'The staff noticed unusual clicks on your account. This test compares how you click here with how you click in game: if it really is your hand, it shows it, and you won’t be bothered again.',
+  },
+  'verif.code-label': { fr: 'Le code donné en jeu', en: 'The code given in game' },
+  'verif.code-aide': { fr: '6 caractères, valable 10 minutes.', en: '6 characters, valid for 10 minutes.' },
+  'verif.code-bouton': { fr: 'Commencer', en: 'Start' },
+  'verif.erreur-code': {
+    fr: 'Code inconnu, déjà utilisé ou expiré. Demande un nouveau code au staff.',
+    en: 'Unknown, used or expired code. Ask the staff for a new one.',
+  },
+  'verif.erreur-essais': {
+    fr: 'Trop d’essais. Réessaie dans dix minutes.',
+    en: 'Too many attempts. Try again in ten minutes.',
+  },
+  'verif.erreur-reseau': {
+    fr: 'Le serveur ne répond pas. Réessaie dans un instant.',
+    en: 'The server is not answering. Try again in a moment.',
+  },
+  'verif.consigne': {
+    fr: 'Clique dans la zone orange avec ta souris, exactement comme en combat : même main, même technique (butterfly, jitter…), aussi vite qu’en jeu. Trois essais de 15 secondes. Chaque essai démarre à ton premier clic.',
+    en: 'Click inside the orange area with your mouse, exactly like in a fight: same hand, same technique (butterfly, jitter…), as fast as in game. Three 15-second tries. Each try starts on your first click.',
+  },
+  'verif.vitesse-jeu': {
+    fr: 'En jeu, tes rafales montent vers {c} clics par seconde : c’est ce qu’on attend ici.',
+    en: 'In game, your bursts reach about {c} clicks per second: that is what we expect here.',
+  },
+  'verif.souris': {
+    fr: 'Souris obligatoire (pas d’écran tactile). Le clic droit ne compte pas.',
+    en: 'Mouse required (no touch screen). Right click does not count.',
+  },
+  'verif.joueur': { fr: 'Compte vérifié', en: 'Account being checked' },
+  'verif.essai': { fr: 'Essai {n} sur {t}', en: 'Try {n} of {t}' },
+  'verif.pret': { fr: 'Clique ici pour commencer', en: 'Click here to start' },
+  'verif.en-cours': { fr: 'Continue !', en: 'Keep going!' },
+  'verif.secondes': { fr: '{s} s', en: '{s}s' },
+  'verif.cps': { fr: '{c} clics/s', en: '{c} clicks/s' },
+  'verif.suivant': { fr: 'Essai suivant', en: 'Next try' },
+  'verif.fini-essai': { fr: 'Essai terminé.', en: 'Try finished.' },
+  'verif.pas-souris': {
+    fr: 'Ce test se fait avec une souris. Branche-la et recommence cet essai.',
+    en: 'This test needs a mouse. Plug it in and restart this try.',
+  },
+  'verif.envoi': { fr: 'Envoi…', en: 'Sending…' },
+  'verif.merci-titre': { fr: 'C’est envoyé', en: 'All sent' },
+  'verif.merci': {
+    fr: 'Le résultat est parti au staff. Tu peux retourner en jeu : tu seras libéré dès qu’il arrive.',
+    en: 'The result went to the staff. You can go back in game: you will be released as soon as it arrives.',
+  },
+  'verif.vie-privee': {
+    fr: 'Ce test n’enregistre que l’heure de tes clics et le déplacement de ta souris dans la zone, pendant les 45 secondes. Rien d’autre sur ton ordinateur.',
+    en: 'This test only records the timing of your clicks and your mouse movement inside the area, during the 45 seconds. Nothing else on your computer.',
+  },
 } as const satisfies Record<string, Entree>
 
 export type CleTexte = keyof typeof DICO
