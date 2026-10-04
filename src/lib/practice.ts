@@ -1,3 +1,5 @@
+import { unstable_cache } from 'next/cache'
+
 import { MODES, type Resultat, type Vue } from '@/lib/practice-commun'
 import { prisma } from '@/lib/prisma'
 
@@ -596,3 +598,25 @@ function calculerActivite(matchs: MatchProfil[], jours: number): Profil['activit
   }
   return activite
 }
+
+/* ================================================================
+ *  LES MÊMES LECTURES, EN CACHE (04/10/2026)
+ *
+ *  La page /classement est rendue à la demande (elle dépend de `?mode=`) :
+ *  sans cache, chaque navigation rouvrait une connexion Neon et refaisait
+ *  les six requêtes, soit ~150 ms de serveur avant le moindre pixel.
+ *
+ *  Trente secondes de cache suffisent : un match dure plusieurs minutes, et
+ *  le classement en jeu (`/leaderboard`) se relit lui aussi toutes les 30 s.
+ *
+ *  ⚠ Le cache de Next sérialise ce qu'il stocke : les `Date` en ressortent
+ *  sous forme de chaîne ISO. Tout ce qui les affiche passe par
+ *  `tempsRelatif()`, qui accepte les deux.
+ * ================================================================ */
+
+const TRENTE_SECONDES = { revalidate: 30 }
+
+export const lireClassementCache = unstable_cache(lireClassement, ['practice-classement'], TRENTE_SECONDES)
+export const lireChiffresCache = unstable_cache(lireChiffres, ['practice-chiffres'], TRENTE_SECONDES)
+export const lireDerniersMatchsCache = unstable_cache(lireDerniersMatchs, ['practice-derniers'], TRENTE_SECONDES)
+export const lireLeadersParModeCache = unstable_cache(lireLeadersParMode, ['practice-leaders'], TRENTE_SECONDES)

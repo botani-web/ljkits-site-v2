@@ -18,9 +18,9 @@ import { formaterOuverture, formaterOuvertureEnPhrase } from '@/lib/format'
 import { estLocale, LANGUE_DEFAUT, lien, t, type CleTexte, type Locale } from '@/lib/i18n'
 import { nomPalier, palierDe } from '@/lib/paliers'
 import {
-  lireChiffres,
-  lireClassement,
-  lireLeadersParMode,
+  lireChiffresCache,
+  lireClassementCache,
+  lireLeadersParModeCache,
   type ChiffresSaison,
   type LeaderMode,
   type LigneClassement,
@@ -86,9 +86,9 @@ export default async function Accueil({ params }: Props) {
   let leaders: LeaderMode[] = []
   if (saisonBase && CLASSEMENT_OUVERT) {
     ;[top, chiffres, leaders] = await Promise.all([
-      lireClassement(saisonBase.id, 'global', TAILLE_TOP),
-      lireChiffres(saisonBase.id),
-      lireLeadersParMode(saisonBase.id),
+      lireClassementCache(saisonBase.id, 'global', TAILLE_TOP),
+      lireChiffresCache(saisonBase.id),
+      lireLeadersParModeCache(saisonBase.id),
     ])
   }
 
