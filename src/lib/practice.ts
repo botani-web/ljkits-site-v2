@@ -114,18 +114,20 @@ export async function lireClassement(saison: number, vue: Vue, limite = 500): Pr
   }))
 }
 
-/** Les 5 derniers résultats de chaque joueur, en une seule requête. */
+/** Les 5 derniers résultats de chaque joueur, en une seule requête (rien d'avant son reset payé). */
 async function lireFormes(saison: number, uuids: string[], ladder: string | null): Promise<Map<string, Resultat[]>> {
   const filtre = ladder ? 'and ladder = $3' : ''
   const parametres: unknown[] = ladder ? [saison, uuids, ladder] : [saison, uuids]
   const lignes = await prisma.$queryRawUnsafe<{ uuid: string; resultats: string[] }[]>(
-    `select uuid, (array_agg(r order by instant desc))[1:5] as resultats
+    `select x.uuid, (array_agg(x.r order by x.instant desc))[1:5] as resultats
        from (select gagnant as uuid, instant, 'V' as r from practice_match
               where saison = $1 and gagnant = any($2) ${filtre}
              union all
              select perdant as uuid, instant, 'D' as r from practice_match
               where saison = $1 and perdant = any($2) ${filtre}) x
-      group by uuid`,
+       left join joueur_reset jr on jr.uuid = x.uuid
+      where jr.instant is null or x.instant > jr.instant
+      group by x.uuid`,
     ...parametres,
   )
   return new Map(lignes.map((l) => [l.uuid, l.resultats as Resultat[]]))
@@ -433,8 +435,10 @@ export async function lireProfil(saison: number, recherche: string): Promise<Pro
       uuid,
     ),
     prisma.$queryRawUnsafe<BrutMatch[]>(
+      // Un reset payé en boutique masque les matchs d'avant, sur SON profil seulement.
       `select ${COLONNES_MATCH} from practice_match
         where saison = $1 and (gagnant = $2 or perdant = $2)
+          and instant > coalesce((select instant from joueur_reset where uuid = $2), '-infinity')
         order by instant desc limit $3`,
       saison,
       uuid,

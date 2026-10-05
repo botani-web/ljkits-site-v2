@@ -969,6 +969,15 @@ model EloExclusion {
   @@map("elo_exclusion")
 }
 
+/// Reset total des stats acheté en boutique (LJElo, 05/10/2026) : l'instant
+/// du dernier reset. Le site masque les matchs d'avant sur le profil du joueur.
+model JoueurReset {
+  uuid    String   @id
+  instant DateTime @default(now()) @db.Timestamptz(6)
+
+  @@map("joueur_reset")
+}
+
 /// La liaison Discord. C'est elle qui rend un joueur CLASSABLE : le plugin
 /// comme le site excluent du classement les comptes non liés.
 model EloLiaison {
