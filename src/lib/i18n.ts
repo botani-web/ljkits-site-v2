@@ -956,6 +956,13 @@ const DICO = {
   'pr.match-barre': { fr: 'Barre', en: 'Hotbar' },
   'pr.match-inventaire-absent': { fr: 'Inventaire non enregistré', en: 'Inventory not recorded' },
   'pr.match-voir': { fr: 'Détails', en: 'Details' },
+  'pr.annule': { fr: 'Annulé', en: 'Cancelled' },
+  'pr.annule.elo-boosting': { fr: 'Elo boosting', en: 'Elo boosting' },
+  'pr.annule.autre': { fr: 'Décision du staff', en: 'Staff decision' },
+  'pr.match-annule': {
+    fr: 'Match annulé pour {r} : l’Elo gagné et perdu dans ce match a été retiré.',
+    en: 'Match cancelled for {r}: the Elo won and lost in this match was removed.',
+  },
   'pr.match-anti-farm': {
     fr: 'Elo réduit par l’anti-farm (adversaire trop souvent affronté).',
     en: 'Elo reduced by anti-farm (opponent faced too often).',

@@ -55,6 +55,11 @@ export function cleRaison(raison: string | null | undefined): CleTexte {
   return (raison && RAISONS.has(raison) ? `pr.raison.${raison}` : 'pr.raison.autre') as CleTexte
 }
 
+/** Pourquoi un match a été annulé, dans la langue de la page (05/10/2026). */
+export function cleAnnulation(annule: string): CleTexte {
+  return (annule === 'elo-boosting' ? 'pr.annule.elo-boosting' : 'pr.annule.autre') as CleTexte
+}
+
 /** Les PV du gagnant n'ont de sens que sur un kill, et jamais en boxing (les cœurs ne baissent pas). */
 export function pvSignificatifs(mode: string, raison: string | null | undefined, pv: number | null | undefined): pv is number {
   return pv != null && raison === 'tue' && mode !== 'boxing'

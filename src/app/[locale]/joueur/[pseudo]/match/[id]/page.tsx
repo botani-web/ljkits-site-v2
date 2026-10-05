@@ -12,7 +12,7 @@ import { formaterDateHeure } from '@/lib/format'
 import { estLocale, LANGUE_DEFAUT, lien, t, type Locale } from '@/lib/i18n'
 import { palierDe } from '@/lib/paliers'
 import { lireMatch, type CoteMatch } from '@/lib/practice'
-import { cheminMatch, cheminProfil, cleRaison, formaterDuree, infosMode, urlTete } from '@/lib/practice-commun'
+import { cheminMatch, cheminProfil, cleAnnulation, cleRaison, formaterDuree, infosMode, urlTete } from '@/lib/practice-commun'
 import { IMAGE_OG } from '@/lib/site'
 
 /**
@@ -49,7 +49,7 @@ function Valeur({ v, locale, format = String }: { v: number | null; locale: Loca
   return v == null ? <span className="text-[12px] text-gris/70 italic">{t(locale, 'pr.match-non-mesure')}</span> : <>{format(v)}</>
 }
 
-function CarteJoueur({ c, gagnant, locale }: { c: CoteMatch; gagnant: boolean; locale: Locale }) {
+function CarteJoueur({ c, gagnant, annule, locale }: { c: CoteMatch; gagnant: boolean; annule: boolean; locale: Locale }) {
   const palier = palierDe(c.eloApres)
   return (
     <Link
@@ -68,7 +68,7 @@ function CarteJoueur({ c, gagnant, locale }: { c: CoteMatch; gagnant: boolean; l
         <span className="mt-1.5 flex flex-wrap items-center gap-2 font-mono text-[13px] tabular-nums">
           <BadgePalier elo={c.eloApres} locale={locale} petit />
           <span style={{ color: palier.couleur }}>{c.eloApres}</span>
-          <span className={c.delta > 0 ? 'text-vert' : c.delta < 0 ? 'text-rouge' : 'text-gris'}>
+          <span className={`${c.delta > 0 ? 'text-vert' : c.delta < 0 ? 'text-rouge' : 'text-gris'} ${annule ? 'line-through opacity-60' : ''}`}>
             ({c.delta > 0 ? `+${c.delta}` : c.delta})
           </span>
         </span>
@@ -122,10 +122,16 @@ export default async function PageMatch({ params }: Params) {
             <span className="font-mono text-[11px] text-gris">#{m.id}</span>
           </div>
 
+          {m.annule && (
+            <p className="mt-5 rounded-carte border border-soupe/50 bg-soupe/10 px-4 py-3 text-[14px] font-semibold text-soupe">
+              ⚠ {t(locale, 'pr.match-annule').replace('{r}', t(locale, cleAnnulation(m.annule)).toLowerCase())}
+            </p>
+          )}
+
           <div className="mt-5 grid items-center gap-3 md:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]">
-            <CarteJoueur c={g} gagnant locale={locale} />
+            <CarteJoueur c={g} gagnant annule={!!m.annule} locale={locale} />
             <span className="text-center font-titre text-[22px] text-gris">VS</span>
-            <CarteJoueur c={p} gagnant={false} locale={locale} />
+            <CarteJoueur c={p} gagnant={false} annule={!!m.annule} locale={locale} />
           </div>
 
           <dl className="mt-5 grid grid-cols-2 gap-2.5 sm:grid-cols-4">

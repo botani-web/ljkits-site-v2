@@ -220,12 +220,15 @@ export type MatchRecent = {
   pvGagnant: number | null
   eloGagnantApres: number
   eloPerdantApres: number
+  /** Annulé par le staff (« elo-boosting »…) : affiché, mais son Elo a été retiré (05/10/2026). */
+  annule: string | null
 }
 
 const COLONNES_MATCH = `id::text as id, ladder as mode, instant, gagnant, gagnant_pseudo as "gagnantPseudo",
   perdant, perdant_pseudo as "perdantPseudo", elo_gagnant_avant as "eloGagnantAvant",
   elo_gagnant_apres as "eloGagnantApres", elo_perdant_avant as "eloPerdantAvant",
-  elo_perdant_apres as "eloPerdantApres", gain, perte, duree_secondes as duree, raison, pv_gagnant as "pvGagnant"`
+  elo_perdant_apres as "eloPerdantApres", gain, perte, duree_secondes as duree, raison, pv_gagnant as "pvGagnant",
+  (to_jsonb(practice_match)->>'annule') as annule`
 
 export async function lireDerniersMatchs(saison: number, limite = 8, vue: Vue = 'global'): Promise<MatchRecent[]> {
   return vue === 'global'
@@ -275,6 +278,8 @@ export type DetailMatch = {
   raison: string | null
   carte: string | null
   facteurFarm: number
+  /** Annulé par le staff (« elo-boosting ») : l'Elo de ce match a été retiré. */
+  annule: string | null
   gagnant: CoteMatch
   perdant: CoteMatch
 }
@@ -326,6 +331,7 @@ export async function lireMatch(id: string): Promise<DetailMatch | null> {
     raison: r.raison == null ? null : String(r.raison),
     carte: r.carte == null ? null : String(r.carte),
     facteurFarm: Number(r.facteur_farm ?? 1),
+    annule: r.annule == null ? null : String(r.annule),
     gagnant: cote(true),
     perdant: cote(false),
   }
@@ -391,6 +397,8 @@ export type MatchProfil = {
   duree: number
   raison: string
   pvGagnant: number | null
+  /** Annulé par le staff : visible, mais sans effet sur l'Elo (05/10/2026). */
+  annule: string | null
 }
 
 export type Rival = {
@@ -469,6 +477,7 @@ type BrutMatch = {
   duree: number
   raison: string
   pvGagnant: number | null
+  annule: string | null
 }
 
 /** Le profil complet d'un joueur pour la saison, ou null s'il n'a jamais joué de ranked. */
@@ -546,6 +555,7 @@ export async function lireProfil(saison: number, recherche: string): Promise<Pro
       duree: b.duree,
       raison: b.raison,
       pvGagnant: b.pvGagnant,
+      annule: b.annule,
     }
   })
 

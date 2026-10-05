@@ -1046,6 +1046,8 @@ model PracticeMatch {
   carte             String?
   inventaireGagnant Json?   @map("inventaire_gagnant")
   inventairePerdant Json?   @map("inventaire_perdant")
+  /// Match annulé par le staff (« elo-boosting »…), 05/10/2026 : affiché, Elo retiré à la main.
+  annule            String?
 
   @@index([saison, ladder, instant(sort: Desc)], map: "idx_practice_match_saison")
   @@index([gagnant], map: "idx_practice_match_gagnant")

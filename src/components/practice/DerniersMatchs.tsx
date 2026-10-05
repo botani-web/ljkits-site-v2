@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { Section } from '@/components/ui/Section'
 import { lien, t, type Locale } from '@/lib/i18n'
 import { palierDe } from '@/lib/paliers'
-import { cheminMatch, cheminProfil, formaterDuree, tempsRelatif, urlTete } from '@/lib/practice-commun'
+import { cheminMatch, cheminProfil, cleAnnulation, formaterDuree, tempsRelatif, urlTete } from '@/lib/practice-commun'
 import type { MatchRecent } from '@/lib/practice'
 
 import { PastilleMode } from './Petits'
@@ -56,7 +56,13 @@ export function DerniersMatchs({ matchs, locale }: { matchs: MatchRecent[]; loca
               <span className="block font-mono text-[10px] text-gris">
                 {t(locale, 'pr.bat')} · {formaterDuree(m.duree)}
               </span>
-              <span className="block font-mono text-[9.5px] tracking-[.1em] text-or/80 uppercase">{t(locale, 'pr.match-voir')} →</span>
+              {m.annule ? (
+                <span className="block font-mono text-[9.5px] tracking-[.08em] text-soupe uppercase">
+                  ⚠ {t(locale, 'pr.annule')} · {t(locale, cleAnnulation(m.annule))}
+                </span>
+              ) : (
+                <span className="block font-mono text-[9.5px] tracking-[.1em] text-or/80 uppercase">{t(locale, 'pr.match-voir')} →</span>
+              )}
             </Link>
             <span className="flex min-w-0 items-center justify-end gap-3">
               {joueur(m.perdantPseudo, m.eloPerdantApres, m.perte, false)}
