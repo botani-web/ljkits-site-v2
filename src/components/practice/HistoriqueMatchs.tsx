@@ -7,6 +7,8 @@ import { Filtre } from '@/components/ui/Pilule'
 import { lien, t, type Locale } from '@/lib/i18n'
 import { palierDe } from '@/lib/paliers'
 import {
+  cleAnnulation,
+  cheminMatch,
   cheminProfil,
   cleRaison,
   formaterDuree,
@@ -31,9 +33,12 @@ export function HistoriqueMatchs({
   matchs,
   locale,
   limite,
+  pseudo,
 }: {
   matchs: MatchClient[]
   locale: Locale
+  /** Le joueur du profil : la page de chaque match s'ouvre depuis chez lui (05/10/2026). */
+  pseudo: string
   /** Le nombre maximum de matchs chargés (pour l'expliquer s'il est atteint). */
   limite: number
 }) {
@@ -127,14 +132,18 @@ export function HistoriqueMatchs({
                 <span className="text-right font-mono text-[13px] tabular-nums md:text-left">
                   <span className="hidden text-gris md:inline">{m.eloAvant} → </span>
                   <span style={{ color: palierDe(m.eloApres).couleur }}>{m.eloApres}</span>{' '}
-                  <span className={m.delta > 0 ? 'text-vert' : m.delta < 0 ? 'text-rouge' : 'text-gris'}>
+                  <span className={`${m.delta > 0 ? 'text-vert' : m.delta < 0 ? 'text-rouge' : 'text-gris'} ${m.annule ? 'line-through opacity-60' : ''}`}>
                     ({m.delta > 0 ? `+${m.delta}` : m.delta})
                   </span>
                 </span>
 
-                <span className="col-start-2 font-mono text-[12px] text-gris md:col-start-auto md:text-creme">
-                  ⏱ {formaterDuree(m.duree)}
-                </span>
+                <Link
+                  href={lien(locale, cheminMatch(pseudo, m.id))}
+                  className="col-start-2 font-mono text-[12px] text-gris transition-colors hover:text-or md:col-start-auto md:text-creme"
+                  title={t(locale, 'pr.match-voir')}
+                >
+                  ⏱ {formaterDuree(m.duree)} <span className="text-or/80">→</span>
+                </Link>
 
                 <span className="col-start-2 hidden font-mono text-[11.5px] text-gris md:col-start-auto md:block">
                   {t(locale, cleRaison(m.raison))}
@@ -145,6 +154,11 @@ export function HistoriqueMatchs({
 
                 <span className="col-span-1 text-right font-mono text-[11px] text-gris" suppressHydrationWarning>
                   {tempsRelatif(m.instant, locale)}
+                  {m.annule && (
+                    <span className="mt-1 block text-[9.5px] tracking-[.08em] text-soupe uppercase">
+                      ⚠ {t(locale, 'pr.annule')} · {t(locale, cleAnnulation(m.annule))}
+                    </span>
+                  )}
                 </span>
               </li>
             )

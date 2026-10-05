@@ -222,12 +222,15 @@ export type MatchRecent = {
   pvGagnant: number | null
   eloGagnantApres: number
   eloPerdantApres: number
+  /** Annulé par le staff (« elo-boosting »…) : affiché, mais son Elo a été retiré (05/10/2026). */
+  annule: string | null
 }
 
 const COLONNES_MATCH = `id::text as id, ladder as mode, instant, gagnant, gagnant_pseudo as "gagnantPseudo",
   perdant, perdant_pseudo as "perdantPseudo", elo_gagnant_avant as "eloGagnantAvant",
   elo_gagnant_apres as "eloGagnantApres", elo_perdant_avant as "eloPerdantAvant",
-  elo_perdant_apres as "eloPerdantApres", gain, perte, duree_secondes as duree, raison, pv_gagnant as "pvGagnant"`
+  elo_perdant_apres as "eloPerdantApres", gain, perte, duree_secondes as duree, raison, pv_gagnant as "pvGagnant",
+  (to_jsonb(practice_match)->>'annule') as annule`
 
 export async function lireDerniersMatchs(saison: number, limite = 8, vue: Vue = 'global'): Promise<MatchRecent[]> {
   return vue === 'global'
@@ -242,6 +245,98 @@ export async function lireDerniersMatchs(saison: number, limite = 8, vue: Vue = 
         vue,
         limite,
       )
+}
+
+/* ================================================================
+ *  LE DÉTAIL D'UN MATCH (05/10/2026)
+ * ================================================================ */
+
+/** Un objet de l'inventaire de fin, tel que LJPractice l'écrit (InventaireJson). */
+export type ObjetInventaire = { t: string; n: number; d?: number; e?: Record<string, number>; nm?: string }
+
+/** Armure (casque → bottes) puis les 36 cases (barre 0-8, puis 9-35). */
+export type InventaireFin = { a: (ObjetInventaire | null)[]; i: (ObjetInventaire | null)[] }
+
+/** Les chiffres d'un des deux joueurs ; null = non mesuré (matchs d'avant le 05/10). */
+export type CoteMatch = {
+  uuid: string
+  pseudo: string
+  eloAvant: number
+  eloApres: number
+  delta: number
+  coups: number | null
+  soupes: number | null
+  combo: number | null
+  vie: number | null
+  inventaire: InventaireFin | null
+}
+
+export type DetailMatch = {
+  id: string
+  saison: number
+  mode: string
+  instant: Date
+  duree: number
+  raison: string | null
+  carte: string | null
+  facteurFarm: number
+  /** Annulé par le staff (« elo-boosting ») : l'Elo de ce match a été retiré. */
+  annule: string | null
+  gagnant: CoteMatch
+  perdant: CoteMatch
+}
+
+function nombreOuNull(v: unknown): number | null {
+  return typeof v === 'number' && Number.isFinite(v) ? v : null
+}
+
+function inventaireOuNull(v: unknown): InventaireFin | null {
+  if (!v || typeof v !== 'object') return null
+  const inv = v as Partial<InventaireFin>
+  return Array.isArray(inv.a) && Array.isArray(inv.i) ? { a: inv.a, i: inv.i } : null
+}
+
+/**
+ * Un match par son numéro. `row_to_json` lit toutes les colonnes présentes :
+ * la page marche donc aussi avant l'ajout des colonnes du détail en base, et
+ * pour les anciens matchs, qui n'ont ni coups ni inventaires.
+ */
+export async function lireMatch(id: string): Promise<DetailMatch | null> {
+  if (!/^\d{1,18}$/.test(id)) return null
+  const lignes = await prisma.$queryRawUnsafe<{ r: Record<string, unknown> }[]>(
+    `select row_to_json(m) as r from practice_match m where id = $1::bigint`,
+    id,
+  )
+  const r = lignes[0]?.r
+  if (!r) return null
+  const cote = (g: boolean): CoteMatch => {
+    const x = g ? 'gagnant' : 'perdant'
+    return {
+      uuid: String(r[x]),
+      pseudo: String(r[`${x}_pseudo`]),
+      eloAvant: Number(r[`elo_${x}_avant`]),
+      eloApres: Number(r[`elo_${x}_apres`]),
+      delta: g ? Number(r.gain) : -Number(r.perte),
+      coups: nombreOuNull(r[`coups_${x}`]),
+      soupes: nombreOuNull(r[`soupes_${x}`]),
+      combo: nombreOuNull(r[`combo_${x}`]),
+      vie: nombreOuNull(r[g ? 'pv_gagnant' : 'pv_perdant']),
+      inventaire: inventaireOuNull(r[`inventaire_${x}`]),
+    }
+  }
+  return {
+    id: String(r.id),
+    saison: Number(r.saison),
+    mode: String(r.ladder),
+    instant: new Date(String(r.instant)),
+    duree: Number(r.duree_secondes ?? 0),
+    raison: r.raison == null ? null : String(r.raison),
+    carte: r.carte == null ? null : String(r.carte),
+    facteurFarm: Number(r.facteur_farm ?? 1),
+    annule: r.annule == null ? null : String(r.annule),
+    gagnant: cote(true),
+    perdant: cote(false),
+  }
 }
 
 /* ================================================================
@@ -304,6 +399,8 @@ export type MatchProfil = {
   duree: number
   raison: string
   pvGagnant: number | null
+  /** Annulé par le staff : visible, mais sans effet sur l'Elo (05/10/2026). */
+  annule: string | null
 }
 
 export type Rival = {
@@ -382,6 +479,7 @@ type BrutMatch = {
   duree: number
   raison: string
   pvGagnant: number | null
+  annule: string | null
 }
 
 /** Le profil complet d'un joueur pour la saison, ou null s'il n'a jamais joué de ranked. */
@@ -461,6 +559,7 @@ export async function lireProfil(saison: number, recherche: string): Promise<Pro
       duree: b.duree,
       raison: b.raison,
       pvGagnant: b.pvGagnant,
+      annule: b.annule,
     }
   })
 
