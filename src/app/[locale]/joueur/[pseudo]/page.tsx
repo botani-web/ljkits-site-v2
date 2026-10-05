@@ -439,6 +439,7 @@ export default async function PageJoueur({ params }: Params) {
         <HistoriqueMatchs
           locale={locale}
           limite={HISTORIQUE_AFFICHE}
+          pseudo={profil.pseudo}
           matchs={profil.historique.map((m) => ({ ...m, instant: m.instant.toISOString() }))}
         />
       </Section>

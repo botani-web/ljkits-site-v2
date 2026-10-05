@@ -49,7 +49,7 @@ export function tempsRelatif(date: Date | string, locale: 'fr' | 'en', maintenan
 }
 
 /** Les causes de fin connues de LJPractice (colonne `raison`). */
-const RAISONS = new Set(['tue', 'temps', 'boxing', 'abandon', 'deconnexion', 'sortie', 'sortie-haut'])
+const RAISONS = new Set(['tue', 'temps', 'boxing', 'abandon', 'deconnexion', 'sortie', 'sortie-haut', 'obsitrap'])
 
 export function cleRaison(raison: string | null | undefined): CleTexte {
   return (raison && RAISONS.has(raison) ? `pr.raison.${raison}` : 'pr.raison.autre') as CleTexte
@@ -63,6 +63,11 @@ export function pvSignificatifs(mode: string, raison: string | null | undefined,
 /** Le lien vers le profil d'un joueur. */
 export function cheminProfil(pseudo: string): string {
   return `/joueur/${encodeURIComponent(pseudo)}`
+}
+
+/** Le lien vers la page d'un match (05/10/2026), vu depuis le profil de ce joueur. */
+export function cheminMatch(pseudo: string, id: string): string {
+  return `${cheminProfil(pseudo)}/match/${id}`
 }
 
 /** La tête d'un joueur (mc-heads), à la taille voulue. */

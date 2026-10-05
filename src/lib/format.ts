@@ -42,6 +42,7 @@ export function centimesVersEuros(centimes: number | null): string {
  */
 export function formaterDate(date: Date, locale: 'en' | 'fr' = 'fr'): string {
   return date.toLocaleDateString(locale === 'en' ? 'en-GB' : 'fr-FR', {
+    timeZone: 'Europe/Paris',
     day: 'numeric',
     month: 'long',
     year: 'numeric',
@@ -119,7 +120,9 @@ export function formaterNumeroCommande(numero: number): string {
 
 /** Date + heure : "12 mars 2026 à 14:32", ou l'équivalent anglais. */
 export function formaterDateHeure(date: Date, locale: 'en' | 'fr' = 'fr'): string {
+  // Heure de Paris (05/10/2026) : Vercel tourne en UTC, les heures sortaient 2 h trop tôt.
   return date.toLocaleString(locale === 'en' ? 'en-GB' : 'fr-FR', {
+    timeZone: 'Europe/Paris',
     day: 'numeric',
     month: 'long',
     year: 'numeric',

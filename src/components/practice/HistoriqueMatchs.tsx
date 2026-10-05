@@ -7,6 +7,7 @@ import { Filtre } from '@/components/ui/Pilule'
 import { lien, t, type Locale } from '@/lib/i18n'
 import { palierDe } from '@/lib/paliers'
 import {
+  cheminMatch,
   cheminProfil,
   cleRaison,
   formaterDuree,
@@ -31,9 +32,12 @@ export function HistoriqueMatchs({
   matchs,
   locale,
   limite,
+  pseudo,
 }: {
   matchs: MatchClient[]
   locale: Locale
+  /** Le joueur du profil : la page de chaque match s'ouvre depuis chez lui (05/10/2026). */
+  pseudo: string
   /** Le nombre maximum de matchs chargés (pour l'expliquer s'il est atteint). */
   limite: number
 }) {
@@ -132,9 +136,13 @@ export function HistoriqueMatchs({
                   </span>
                 </span>
 
-                <span className="col-start-2 font-mono text-[12px] text-gris md:col-start-auto md:text-creme">
-                  ⏱ {formaterDuree(m.duree)}
-                </span>
+                <Link
+                  href={lien(locale, cheminMatch(pseudo, m.id))}
+                  className="col-start-2 font-mono text-[12px] text-gris transition-colors hover:text-or md:col-start-auto md:text-creme"
+                  title={t(locale, 'pr.match-voir')}
+                >
+                  ⏱ {formaterDuree(m.duree)} <span className="text-or/80">→</span>
+                </Link>
 
                 <span className="col-start-2 hidden font-mono text-[11.5px] text-gris md:col-start-auto md:block">
                   {t(locale, cleRaison(m.raison))}

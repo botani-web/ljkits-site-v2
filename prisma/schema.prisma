@@ -405,6 +405,10 @@ model Joueur {
   /// Toute colonne ajoutée côté jeu doit être ajoutée ici en miroir.
   departOffert Boolean @default(false) @map("depart_offert")
   killsKit     String  @default("") @map("kills_kit")
+  /// Série FFA en cours, gardée en base par LJRank depuis le 29/09/2026
+  /// (elle survit aux déconnexions et aux redémarrages).
+  serieEnCours Int     @default(0) @map("serie_en_cours")
+  serieComptee Int     @default(0) @map("serie_comptee")
 
   // Index créés par skript-db pour les classements. `map:` reprend leur nom
   // exact et `sort: Desc` leur sens : sans ces trois lignes, db push les
@@ -1030,6 +1034,18 @@ model PracticeMatch {
   raison          String?
   pvGagnant       Float?   @map("pv_gagnant")
   facteurFarm     Float    @default(1) @map("facteur_farm")
+  /// Le détail du match pour sa page sur le site (LJPractice → LJElo, 05/10/2026).
+  /// NULL pour les matchs d'avant : la page affiche « non mesuré ».
+  coupsGagnant      Int?    @map("coups_gagnant")
+  coupsPerdant      Int?    @map("coups_perdant")
+  soupesGagnant     Int?    @map("soupes_gagnant")
+  soupesPerdant     Int?    @map("soupes_perdant")
+  comboGagnant      Int?    @map("combo_gagnant")
+  comboPerdant      Int?    @map("combo_perdant")
+  pvPerdant         Float?  @map("pv_perdant")
+  carte             String?
+  inventaireGagnant Json?   @map("inventaire_gagnant")
+  inventairePerdant Json?   @map("inventaire_perdant")
 
   @@index([saison, ladder, instant(sort: Desc)], map: "idx_practice_match_saison")
   @@index([gagnant], map: "idx_practice_match_gagnant")

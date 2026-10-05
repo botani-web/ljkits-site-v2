@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { Section } from '@/components/ui/Section'
 import { lien, t, type Locale } from '@/lib/i18n'
 import { palierDe } from '@/lib/paliers'
-import { cheminProfil, formaterDuree, tempsRelatif, urlTete } from '@/lib/practice-commun'
+import { cheminMatch, cheminProfil, formaterDuree, tempsRelatif, urlTete } from '@/lib/practice-commun'
 import type { MatchRecent } from '@/lib/practice'
 
 import { PastilleMode } from './Petits'
@@ -47,12 +47,17 @@ export function DerniersMatchs({ matchs, locale }: { matchs: MatchRecent[]; loca
             className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-3 rounded-carte border border-bord bg-braise px-4 py-3"
           >
             {joueur(m.gagnantPseudo, m.eloGagnantApres, m.gain, true)}
-            <span className="text-center">
+            <Link
+              href={lien(locale, cheminMatch(m.gagnantPseudo, m.id))}
+              className="rounded-controle px-2 py-1 text-center transition-colors hover:bg-charbon"
+              title={t(locale, 'pr.match-voir')}
+            >
               <PastilleMode mode={m.mode} />
               <span className="block font-mono text-[10px] text-gris">
                 {t(locale, 'pr.bat')} · {formaterDuree(m.duree)}
               </span>
-            </span>
+              <span className="block font-mono text-[9.5px] tracking-[.1em] text-or/80 uppercase">{t(locale, 'pr.match-voir')} →</span>
+            </Link>
             <span className="flex min-w-0 items-center justify-end gap-3">
               {joueur(m.perdantPseudo, m.eloPerdantApres, m.perte, false)}
             </span>
