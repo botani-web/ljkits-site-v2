@@ -1352,6 +1352,90 @@ const DICO = {
     en: 'By the way: {c} is up for grabs every month, split between the top three of the leaderboard ({p}). Just link your Discord and play ranked.',
   },
 
+  /* ================================================================
+   *  LES SUGGESTIONS POUR LA SAISON 2  (/suggestions, 07/10/2026)
+   * ================================================================ */
+  'meta.sugg-titre': { fr: 'Tes idées pour la saison 2', en: 'Your ideas for season 2' },
+  'meta.sugg-desc': {
+    fr: 'La saison 2 de LJKITS se prépare maintenant. Dis-nous ce qui te ferait rester.',
+    en: 'LJKITS season 2 is being built right now. Tell us what would make you stay.',
+  },
+  'sugg.etiquette': { fr: 'Saison 2', en: 'Season 2' },
+  'sugg.titre': {
+    fr: 'Qu’est-ce qui te ferait rester ?',
+    en: 'What would make you stay?',
+  },
+  'sugg.chapeau': {
+    fr: 'La saison 1 se termine le {d}. La saison 2, on la construit avec vous : modes, combat, récompenses, events… Dis-nous ce qui ferait de LJKITS le serveur où tu restes jouer.',
+    en: 'Season 1 ends on {d}. We’re building season 2 with you: modes, combat, rewards, events… Tell us what would make LJKITS the server you stick with.',
+  },
+  'sugg.duree': { fr: 'Deux minutes · pseudo facultatif', en: 'Two minutes · username optional' },
+
+  'sugg.q1': { fr: 'Ce qui te ferait rester en priorité', en: 'What would keep you here the most' },
+  'sugg.q1-aide': { fr: 'Un seul choix.', en: 'Pick one.' },
+  'sugg.cat-modes': { fr: 'De nouveaux modes de jeu', en: 'New game modes' },
+  'sugg.cat-combat': { fr: 'Le combat : knockback, hits, fluidité', en: 'Combat: knockback, hits, smoothness' },
+  'sugg.cat-anticheat': { fr: 'Moins de tricheurs, un meilleur anticheat', en: 'Fewer cheaters, a better anticheat' },
+  'sugg.cat-recompenses': { fr: 'Les récompenses : cashprize, cosmétiques, grades', en: 'Rewards: cash prize, cosmetics, ranks' },
+  'sugg.cat-events': { fr: 'Plus d’events et de tournois', en: 'More events and tournaments' },
+  'sugg.cat-joueurs': { fr: 'Plus de monde en ligne', en: 'More players online' },
+  'sugg.cat-autre': { fr: 'Autre chose', en: 'Something else' },
+  'sugg.erreur-categorie': { fr: 'Choisis une réponse.', en: 'Pick an answer.' },
+
+  'sugg.q2': { fr: 'Ta suggestion', en: 'Your suggestion' },
+  'sugg.q2-aide': {
+    fr: 'Une idée précise vaut mieux que dix vagues. Tu peux en revenir proposer d’autres.',
+    en: 'One specific idea beats ten vague ones. You can come back to send more.',
+  },
+  'sugg.q2-exemple': {
+    fr: 'Ex. : un mode Sumo en ranked, des tournois le week-end, un kit gratuit par semaine, une file 2v2…',
+    en: 'e.g. a ranked Sumo mode, weekend tournaments, a free kit every week, a 2v2 queue…',
+  },
+  'sugg.erreur-message': {
+    fr: 'Écris ta suggestion (au moins une phrase, 2000 caractères max).',
+    en: 'Write your suggestion (at least one sentence, 2000 characters max).',
+  },
+
+  'sugg.q3': {
+    fr: 'Si tu joues peu ou as arrêté, pourquoi ?',
+    en: 'If you play little or stopped, why?',
+  },
+  'sugg.q3-aide': { fr: 'Facultatif, plusieurs réponses possibles.', en: 'Optional, pick as many as you like.' },
+  'sugg.raison-peu-de-joueurs': { fr: 'Pas assez de monde en ligne', en: 'Not enough players online' },
+  'sugg.raison-attente': { fr: 'Les files sont trop longues', en: 'Queues take too long' },
+  'sugg.raison-tricheurs': { fr: 'Je tombe sur des tricheurs', en: 'I run into cheaters' },
+  'sugg.raison-gameplay': { fr: 'Le gameplay ne me convient pas', en: 'The gameplay isn’t for me' },
+  'sugg.raison-lassitude': { fr: 'Je fais vite le tour, rien de nouveau', en: 'It gets repetitive, nothing new' },
+  'sugg.raison-horaires': { fr: 'Je ne suis pas là aux bonnes heures', en: 'I’m not around at the right times' },
+  'sugg.raison-aucune': { fr: 'Je joue autant que je veux', en: 'I play as much as I want' },
+
+  'sugg.q4': { fr: 'Qui es-tu ? (facultatif)', en: 'Who are you? (optional)' },
+  'sugg.q4-aide': {
+    fr: 'Laisse vide pour rester anonyme. Les donner permet juste au staff de te répondre.',
+    en: 'Leave empty to stay anonymous. It just lets the staff get back to you.',
+  },
+  'sugg.pseudo': { fr: 'Pseudo Minecraft', en: 'Minecraft username' },
+  'sugg.discord': { fr: 'Pseudo Discord', en: 'Discord username' },
+  'sugg.erreur-pseudo': {
+    fr: 'Un pseudo Minecraft fait 3 à 16 caractères (lettres, chiffres, _).',
+    en: 'A Minecraft username is 3 to 16 characters (letters, digits, _).',
+  },
+  'sugg.erreur-discord': {
+    fr: 'Un pseudo Discord fait 2 à 32 caractères (lettres, chiffres, _ et .).',
+    en: 'A Discord username is 2 to 32 characters (letters, digits, _ and .).',
+  },
+
+  'sugg.envoyer': { fr: 'Envoyer ma suggestion', en: 'Send my suggestion' },
+  'sugg.envoi': { fr: 'Envoi…', en: 'Sending…' },
+
+  'sugg.merci-titre': { fr: 'Merci, c’est noté !', en: 'Thanks, got it!' },
+  'sugg.merci-texte': {
+    fr: 'Le staff lit toutes les suggestions. Les nouveautés de la saison 2 seront annoncées sur le Discord.',
+    en: 'The staff reads every suggestion. Season 2 news will be announced on Discord.',
+  },
+  'sugg.merci-autre': { fr: 'Envoyer une autre idée', en: 'Send another idea' },
+  'sugg.merci-discord': { fr: 'Rejoindre le Discord', en: 'Join the Discord' },
+
   // ── Vérification de clic (/verifauto, 28/09/2026) ─────────────────────
   'meta.verif-titre': { fr: 'Vérification de clic', en: 'Click check' },
   'meta.verif-desc': {

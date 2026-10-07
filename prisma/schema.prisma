@@ -1291,3 +1291,38 @@ model Avis {
   @@index([empreinte], map: "idx_avis_empreinte")
   @@map("avis")
 }
+
+/// Suggestions pour la saison 2 (page /suggestions, 07/10/2026).
+/// Même anti-spam que les avis : empreinte d'adresse salée, jamais l'adresse.
+/// Le bot Discord relit les nouvelles lignes (par `numero`) et les poste dans
+/// le salon staff — il ne fait que LIRE cette table.
+model Suggestion {
+  id     String @id @default(cuid())
+  /// Numéro lisible, cité sur Discord : #12.
+  numero Int    @unique @default(autoincrement())
+
+  /// Question 1 — ce qui le ferait rester (une clé de CATEGORIES_SUGGESTION).
+  categorie String
+
+  /// Question 2 — la suggestion elle-même, obligatoire.
+  message String @db.Text
+
+  /// Question 3 — pourquoi il joue peu (clés de RAISONS_SUGGESTION, 0 à n).
+  raisons String[]
+
+  /// Question 4 — facultatifs, pour pouvoir répondre.
+  pseudo  String?
+  discord String?
+
+  langue    String @default("fr")
+  empreinte String
+
+  traiteAt  DateTime? @map("traite_at") @db.Timestamptz(6)
+  noteAdmin String?   @map("note_admin") @db.Text
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@index([createdAt(sort: Desc)], map: "idx_suggestion_date")
+  @@index([empreinte], map: "idx_suggestion_empreinte")
+  @@map("suggestion")
+}

@@ -19,6 +19,7 @@ const ONGLETS = [
   { href: '/admin/commandes', label: 'Commandes' },
   { href: '/admin/recrutement', label: 'Recrutement' },
   { href: '/admin/avis', label: 'Avis' },
+  { href: '/admin/suggestions', label: 'Suggestions' },
   { href: '/admin/reglement', label: 'Règlement' },
   { href: '/admin/reglages', label: 'Réglages' },
 ]
