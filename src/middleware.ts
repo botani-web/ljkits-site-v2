@@ -13,7 +13,7 @@ import { LANGUE_DEFAUT, LANGUES } from '@/lib/i18n'
  * Tout ce qui n'est pas public — /admin, /api, /connexion, les fichiers —
  * est laissé tranquille par le `matcher` en bas.
  */
-const PUBLIQUES = ['classement', 'boutique', 'reglement', 'recrutement', 'joueur', 'partenaire', 'ljscan']
+const PUBLIQUES = ['classement', 'boutique', 'reglement', 'recrutement', 'joueur', 'partenaire', 'ljscan', 'suggestions']
 
 /**
  * /ljscan SUIT LA LANGUE DU NAVIGATEUR, contrairement au reste du site.
@@ -42,7 +42,8 @@ export function middleware(requete: NextRequest) {
   }
 
   const url = requete.nextUrl.clone()
-  const langue = premier === 'ljscan'
+  // /suggestions aussi : c'est le lien posté sur Discord, lu par des FR et des EN.
+  const langue = premier === 'ljscan' || premier === 'suggestions'
     ? langueDemandee(requete.headers.get('accept-language'))
     : LANGUE_DEFAUT
   url.pathname = `/${langue}${pathname === '/' ? '' : pathname}`
