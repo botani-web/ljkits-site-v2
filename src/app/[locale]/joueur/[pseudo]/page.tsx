@@ -124,9 +124,9 @@ export default async function PageJoueur({ params, searchParams }: Params) {
             >
               {t(locale, 'pr.retour')}
             </Link>
-            <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center">
+            <div className="relative z-30 flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center">
               <SelecteurSaison saisons={saisons} actuelle={saison} hrefPour={hrefPour} locale={locale} />
-              <RechercheJoueur locale={locale} className="w-full max-w-[340px]" />
+              <RechercheJoueur locale={locale} className="w-full sm:w-[340px]" />
             </div>
           </div>
 

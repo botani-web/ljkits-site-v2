@@ -96,16 +96,8 @@ export default async function PageClassement({ params, searchParams }: Props) {
           <h1 className="text-h1 mt-3 font-titre">{t(locale, 'lb.titre')}</h1>
           <p className="mt-4 max-w-[62ch] text-[16px] text-gris">{t(locale, 'lb.chapeau')}</p>
 
-          <div className="mt-8 grid items-end gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,560px)]">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
-              <SelecteurSaison
-                saisons={saisons}
-                actuelle={saison}
-                locale={locale}
-                hrefPour={(id) => lien(locale, `/classement?saison=${id}${vue === 'global' ? '' : `&mode=${vue}`}`)}
-              />
-              <RechercheJoueur locale={locale} className="w-full max-w-[420px]" />
-            </div>
+          {/* Les quatre chiffres sur toute la largeur, au-dessus du choix de saison et de la recherche. */}
+          <div className="mt-8">
             <Suspense fallback={<TuilesSquelette />}>
               <Tuiles saison={saison.id} locale={locale} />
             </Suspense>
@@ -116,6 +108,17 @@ export default async function PageClassement({ params, searchParams }: Props) {
       {/* ══════════════════════════ LE CLASSEMENT ══════════════════════════ */}
       <section className="pb-[clamp(56px,7vw,96px)]">
         <Enveloppe>
+          {/* Hors de l'en-tête : son `overflow: hidden` (le halo) coupait le menu des saisons.
+              `z-30` : le menu ouvert passe au-dessus des onglets des modes. */}
+          <div className="relative z-30 mb-5 flex flex-col gap-3 sm:flex-row sm:items-center">
+            <SelecteurSaison
+              saisons={saisons}
+              actuelle={saison}
+              locale={locale}
+              hrefPour={(id) => lien(locale, `/classement?saison=${id}${vue === 'global' ? '' : `&mode=${vue}`}`)}
+            />
+            <RechercheJoueur locale={locale} className="w-full sm:w-[420px]" />
+          </div>
           {/* `key` : changer d'onglet ou de saison remet le squelette, sinon l'ancien
               tableau resterait affiché pendant le chargement du nouveau. */}
           <Suspense key={`${saison.id}-${vue}`} fallback={<ClassementSquelette />}>
