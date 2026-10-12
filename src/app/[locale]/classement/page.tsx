@@ -3,20 +3,19 @@ import Link from 'next/link'
 import { Suspense } from 'react'
 
 import { DerniersMatchs } from '@/components/practice/DerniersMatchs'
-import { Podium } from '@/components/practice/Podium'
 import { RechercheJoueur } from '@/components/practice/RechercheJoueur'
-import { TableauClassement } from '@/components/practice/TableauClassement'
+import { SelecteurSaison } from '@/components/practice/SelecteurSaison'
+import { TableauRivals } from '@/components/practice/TableauRivals'
 import { PagePublique } from '@/components/public/PagePublique'
 import { Enveloppe } from '@/components/ui/Enveloppe'
 import { EtatVide } from '@/components/ui/EtatVide'
 import { Section } from '@/components/ui/Section'
 import { Etiquette } from '@/components/ui/TeteSection'
-import { lireSaisonCourante, nomSaison } from '@/lib/elo'
 import { estLocale, LANGUE_DEFAUT, lien, t, type Locale } from '@/lib/i18n'
 import { nomPalier, PALIERS } from '@/lib/paliers'
 import { lireChiffresCache, lireClassementCache, lireDerniersMatchsCache } from '@/lib/practice'
 import { estVue, MODES, tempsRelatif, type Vue } from '@/lib/practice-commun'
-import { CASHPRIZE, euros } from '@/lib/saison'
+import { choisirSaison, lireSaisonsCache, type Saison } from '@/lib/saisons'
 import { CLASSEMENT_OUVERT, IMAGE_OG } from '@/lib/site'
 
 /**
@@ -41,7 +40,7 @@ export const dynamic = 'force-dynamic'
 
 type Props = {
   params: Promise<{ locale: string }>
-  searchParams: Promise<{ mode?: string }>
+  searchParams: Promise<{ mode?: string; saison?: string }>
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -60,7 +59,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function PageClassement({ params, searchParams }: Props) {
   const { locale: brut } = await params
   const locale: Locale = estLocale(brut) ? brut : LANGUE_DEFAUT
-  const { mode } = await searchParams
+  const { mode, saison: saisonDemandee } = await searchParams
   const vue: Vue = estVue(mode) ? mode : 'global'
 
   if (!CLASSEMENT_OUVERT) {
@@ -73,7 +72,8 @@ export default async function PageClassement({ params, searchParams }: Props) {
     )
   }
 
-  const saison = await lireSaisonCourante()
+  const saisons = await lireSaisonsCache()
+  const saison = choisirSaison(saisons, saisonDemandee)
   if (!saison) {
     return (
       <PagePublique locale={locale}>
@@ -86,19 +86,26 @@ export default async function PageClassement({ params, searchParams }: Props) {
 
   return (
     <PagePublique locale={locale}>
-      {/* ══════════════════════════ EN-TÊTE ══════════════════════════ */}
-      <header className="halo-hero relative pt-[clamp(44px,6vw,84px)] pb-[clamp(28px,4vw,48px)]">
+      {/* ══════════════════════════ EN-TÊTE (à la PvPRivals, 12/10/2026) ══════════════════════════ */}
+      <header className="halo-hero relative pt-[clamp(44px,6vw,84px)] pb-[clamp(24px,3vw,40px)]">
         <Enveloppe>
-          <Etiquette>{t(locale, 'pr.etiquette').replace('{s}', nomSaison(saison.nom, locale))}</Etiquette>
-          <h1 className="text-h1 mt-3 font-titre">
-            {t(locale, 'pr.titre-avant')} <span className="text-or">{t(locale, 'pr.titre-accent')}</span>
-          </h1>
-          <p className="mt-4 max-w-[62ch] text-[16px] text-gris">
-            {t(locale, 'pr.chapeau').replace('{c}', euros(CASHPRIZE.total, locale))}
-          </p>
+          <Etiquette>
+            {t(locale, 'lb.saison-n').replace('{n}', String(saison.id))}
+            {saison.terminee ? ` · ${t(locale, 'lb.archive')}` : ''}
+          </Etiquette>
+          <h1 className="text-h1 mt-3 font-titre">{t(locale, 'lb.titre')}</h1>
+          <p className="mt-4 max-w-[62ch] text-[16px] text-gris">{t(locale, 'lb.chapeau')}</p>
 
           <div className="mt-8 grid items-end gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,560px)]">
-            <RechercheJoueur locale={locale} grand className="max-w-[560px]" />
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+              <SelecteurSaison
+                saisons={saisons}
+                actuelle={saison}
+                locale={locale}
+                hrefPour={(id) => lien(locale, `/classement?saison=${id}${vue === 'global' ? '' : `&mode=${vue}`}`)}
+              />
+              <RechercheJoueur locale={locale} className="w-full max-w-[420px]" />
+            </div>
             <Suspense fallback={<TuilesSquelette />}>
               <Tuiles saison={saison.id} locale={locale} />
             </Suspense>
@@ -109,10 +116,10 @@ export default async function PageClassement({ params, searchParams }: Props) {
       {/* ══════════════════════════ LE CLASSEMENT ══════════════════════════ */}
       <section className="pb-[clamp(56px,7vw,96px)]">
         <Enveloppe>
-          {/* `key` : changer d'onglet remet le squelette, sinon l'ancien
+          {/* `key` : changer d'onglet ou de saison remet le squelette, sinon l'ancien
               tableau resterait affiché pendant le chargement du nouveau. */}
-          <Suspense key={vue} fallback={<ClassementSquelette />}>
-            <Classement saison={saison.id} vue={vue} locale={locale} />
+          <Suspense key={`${saison.id}-${vue}`} fallback={<ClassementSquelette />}>
+            <Classement saison={saison} vue={vue} locale={locale} />
           </Suspense>
         </Enveloppe>
       </section>
@@ -204,18 +211,19 @@ function TuilesSquelette() {
   )
 }
 
-/** Les onglets, le podium et le tableau : tout ce qui dépend de la vue choisie. */
-async function Classement({ saison, vue, locale }: { saison: number; vue: Vue; locale: Locale }) {
-  const [lignes, chiffres] = await Promise.all([lireClassementCache(saison, vue), lireChiffresCache(saison)])
+/** Les onglets des modes et le tableau : tout ce qui dépend de la vue et de la saison choisies. */
+async function Classement({ saison, vue, locale }: { saison: Saison; vue: Vue; locale: Locale }) {
+  const [lignes, chiffres] = await Promise.all([lireClassementCache(saison.id, vue), lireChiffresCache(saison.id)])
 
   const onglets: { vue: Vue; nom: string; aide?: string; nombre: number }[] = [
     { vue: 'global', nom: t(locale, 'pr.global'), aide: t(locale, 'pr.global-aide'), nombre: chiffres.joueurs },
     ...MODES.map((m) => ({ vue: m.id as Vue, nom: m.nom, nombre: chiffres.classesParMode[m.id] ?? 0 })),
   ]
+  const base = `/classement?saison=${saison.id}`
 
   return (
     <>
-      <nav aria-label={t(locale, 'pr.meta-titre')} className="sans-barre-de-defilement -mx-gouttiere mb-7 overflow-x-auto px-gouttiere">
+      <nav aria-label={t(locale, 'lb.mode')} className="sans-barre-de-defilement -mx-gouttiere mb-6 overflow-x-auto px-gouttiere">
         <ul className="flex min-w-max gap-2">
           {onglets.map((onglet) => {
             const actif = onglet.vue === vue
@@ -223,18 +231,15 @@ async function Classement({ saison, vue, locale }: { saison: number; vue: Vue; l
             return (
               <li key={onglet.vue}>
                 <Link
-                  href={lien(locale, onglet.vue === 'global' ? '/classement' : `/classement?mode=${onglet.vue}`)}
+                  href={lien(locale, onglet.vue === 'global' ? base : `${base}&mode=${onglet.vue}`)}
                   scroll={false}
                   aria-current={actif ? 'page' : undefined}
-                  className={`flex min-h-12 items-center gap-2.5 rounded-controle border px-4 transition ${
+                  className={`flex min-h-11 items-center gap-2.5 rounded-full border px-4 transition ${
                     actif ? 'border-or/70 bg-or/10 text-or' : 'border-bord bg-charbon text-gris hover:border-gris/60 hover:text-creme'
                   }`}
                 >
                   {couleur && <span aria-hidden className="size-2 rounded-full" style={{ background: couleur }} />}
-                  <span className="text-left">
-                    <span className="block font-mono text-[12.5px] font-bold tracking-[.1em] uppercase">{onglet.nom}</span>
-                    {onglet.aide && <span className="block text-[10.5px] leading-tight opacity-75">{onglet.aide}</span>}
-                  </span>
+                  <span className="font-mono text-[12.5px] font-bold tracking-[.1em] uppercase">{onglet.nom}</span>
                   <span className="rounded-micro bg-nuit/70 px-1.5 py-0.5 font-mono text-[10.5px] tabular-nums">{onglet.nombre}</span>
                 </Link>
               </li>
@@ -244,20 +249,13 @@ async function Classement({ saison, vue, locale }: { saison: number; vue: Vue; l
       </nav>
 
       {lignes.length === 0 ? (
-        <EtatVide message={t(locale, 'pr.vide')} />
+        <EtatVide
+          message={
+            saison.aDesMatchs ? t(locale, 'pr.vide') : t(locale, 'lb.vide-saison').replace('{n}', String(saison.id))
+          }
+        />
       ) : (
-        <>
-          <Podium
-            lignes={lignes}
-            locale={locale}
-            cashprize={vue === 'global' ? CASHPRIZE.podium.map((montant) => euros(montant, locale)) : undefined}
-          />
-          {lignes.length > 3 && (
-            <div className="mt-9">
-              <TableauClassement lignes={lignes} locale={locale} global={vue === 'global'} />
-            </div>
-          )}
-        </>
+        <TableauRivals lignes={lignes} locale={locale} />
       )}
     </>
   )
@@ -277,14 +275,8 @@ function ClassementSquelette() {
         ))}
       </div>
 
-      <div className="grid items-end gap-4 lg:grid-cols-3">
-        <div className="h-[250px] rounded-bloc border border-bord bg-charbon/60 lg:order-1 lg:h-[280px]" />
-        <div className="h-[290px] rounded-bloc border border-bord bg-charbon/60 lg:order-2 lg:h-[340px]" />
-        <div className="h-[250px] rounded-bloc border border-bord bg-charbon/60 lg:order-3 lg:h-[260px]" />
-      </div>
-
-      <div className="mt-9 overflow-hidden rounded-carte border border-bord bg-charbon/60">
-        {[0, 1, 2, 3, 4, 5].map((index) => (
+      <div className="overflow-hidden rounded-carte border border-bord bg-charbon/60">
+        {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((index) => (
           <div key={index} className="h-[54px] border-b border-bord last:border-b-0" />
         ))}
       </div>
@@ -294,6 +286,7 @@ function ClassementSquelette() {
 
 /** Les derniers matchs arrivent en dernier : personne ne les attend pour lire le classement. */
 async function DerniersMatchsDiffere({ saison, vue, locale }: { saison: number; vue: Vue; locale: Locale }) {
+  if (saison <= 0) return null
   const derniers = await lireDerniersMatchsCache(saison, 8, vue)
   return <DerniersMatchs matchs={derniers} locale={locale} />
 }

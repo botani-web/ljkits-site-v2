@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server'
 
 import { LANGUE_DEFAUT, LANGUES } from '@/lib/i18n'
+import { MAINTENANCE, OUVERTS_EN_MAINTENANCE } from '@/lib/site'
 
 /**
  * Aiguillage des langues.
@@ -30,8 +31,18 @@ function langueDemandee(entete: string | null): string {
 export function middleware(requete: NextRequest) {
   const { pathname } = requete.nextUrl
 
-  // Déjà préfixé : rien à faire.
-  if (LANGUES.some((l) => pathname === `/${l}` || pathname.startsWith(`/${l}/`))) {
+  // Déjà préfixé : rien à faire… sauf en maintenance (12/10/2026), où tout ce qui
+  // n'est pas le classement ou un profil affiche la page de maintenance.
+  const prefixe = LANGUES.find((l) => pathname === `/${l}` || pathname.startsWith(`/${l}/`))
+  if (prefixe) {
+    if (MAINTENANCE) {
+      const section = pathname.split('/')[2] ?? ''
+      if (!OUVERTS_EN_MAINTENANCE.includes(section)) {
+        const url = requete.nextUrl.clone()
+        url.pathname = `/${prefixe}/maintenance`
+        return NextResponse.rewrite(url)
+      }
+    }
     return NextResponse.next()
   }
 

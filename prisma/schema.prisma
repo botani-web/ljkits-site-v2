@@ -1025,36 +1025,36 @@ model PracticeElo {
 
 /// Un match ranked terminé : gagnant, perdant, Elo avant/après, durée, issue.
 model PracticeMatch {
-  id              BigInt   @id @default(autoincrement())
-  saison          Int
-  ladder          String
-  instant         DateTime @default(now()) @db.Timestamptz(6)
-  gagnant         String
-  gagnantPseudo   String   @map("gagnant_pseudo")
-  perdant         String
-  perdantPseudo   String   @map("perdant_pseudo")
-  eloGagnantAvant Int      @map("elo_gagnant_avant")
-  eloGagnantApres Int      @map("elo_gagnant_apres")
-  eloPerdantAvant Int      @map("elo_perdant_avant")
-  eloPerdantApres Int      @map("elo_perdant_apres")
-  gain            Int
-  perte           Int
-  dureeSecondes   Int      @default(0) @map("duree_secondes")
-  raison          String?
-  pvGagnant       Float?   @map("pv_gagnant")
-  facteurFarm     Float    @default(1) @map("facteur_farm")
+  id                BigInt   @id @default(autoincrement())
+  saison            Int
+  ladder            String
+  instant           DateTime @default(now()) @db.Timestamptz(6)
+  gagnant           String
+  gagnantPseudo     String   @map("gagnant_pseudo")
+  perdant           String
+  perdantPseudo     String   @map("perdant_pseudo")
+  eloGagnantAvant   Int      @map("elo_gagnant_avant")
+  eloGagnantApres   Int      @map("elo_gagnant_apres")
+  eloPerdantAvant   Int      @map("elo_perdant_avant")
+  eloPerdantApres   Int      @map("elo_perdant_apres")
+  gain              Int
+  perte             Int
+  dureeSecondes     Int      @default(0) @map("duree_secondes")
+  raison            String?
+  pvGagnant         Float?   @map("pv_gagnant")
+  facteurFarm       Float    @default(1) @map("facteur_farm")
   /// Le détail du match pour sa page sur le site (LJPractice → LJElo, 05/10/2026).
   /// NULL pour les matchs d'avant : la page affiche « non mesuré ».
-  coupsGagnant      Int?    @map("coups_gagnant")
-  coupsPerdant      Int?    @map("coups_perdant")
-  soupesGagnant     Int?    @map("soupes_gagnant")
-  soupesPerdant     Int?    @map("soupes_perdant")
-  comboGagnant      Int?    @map("combo_gagnant")
-  comboPerdant      Int?    @map("combo_perdant")
-  pvPerdant         Float?  @map("pv_perdant")
+  coupsGagnant      Int?     @map("coups_gagnant")
+  coupsPerdant      Int?     @map("coups_perdant")
+  soupesGagnant     Int?     @map("soupes_gagnant")
+  soupesPerdant     Int?     @map("soupes_perdant")
+  comboGagnant      Int?     @map("combo_gagnant")
+  comboPerdant      Int?     @map("combo_perdant")
+  pvPerdant         Float?   @map("pv_perdant")
   carte             String?
-  inventaireGagnant Json?   @map("inventaire_gagnant")
-  inventairePerdant Json?   @map("inventaire_perdant")
+  inventaireGagnant Json?    @map("inventaire_gagnant")
+  inventairePerdant Json?    @map("inventaire_perdant")
   /// Match annulé par le staff (« elo-boosting »…), 05/10/2026 : affiché, Elo retiré à la main.
   annule            String?
 
@@ -1325,4 +1325,65 @@ model Suggestion {
   @@index([createdAt(sort: Desc)], map: "idx_suggestion_date")
   @@index([empreinte], map: "idx_suggestion_empreinte")
   @@map("suggestion")
+}
+
+// =====================================================================
+//  ARCHIVES DE SAISON (12/10/2026, fin de la saison 1)
+//
+//  L'Elo et les matchs ranked sont deja rangés par saison (practice_elo,
+//  practice_match). Ce qui ne l'est PAS, et qui repart a zero a chaque saison,
+//  est fige ici au moment de la cloture : stats FFA (table joueur), stats
+//  practice ranked ET unranked (fichier stats.yml du serveur, jamais en base),
+//  et le reste (niveaux, records, tournois) en JSON. Ecrit une seule fois par
+//  saison, lu par le site (choix de la saison dans le classement et le profil).
+// =====================================================================
+
+/// Les stats FFA d'un joueur a la fin d'une saison (photo de la table joueur).
+model SaisonJoueur {
+  saison      Int
+  uuid        String
+  pseudo      String
+  kills       Int
+  morts       Int
+  points      Int
+  coins       Int
+  recordSerie Int    @map("record_serie")
+  killsKit    String @default("") @map("kills_kit")
+
+  @@id([saison, uuid])
+  @@index([saison, kills(sort: Desc)], map: "idx_saison_joueur_kills")
+  @@map("saison_joueur")
+}
+
+/// Les stats practice d'un joueur, par mode et par type (ranked/unranked), a la fin d'une saison.
+model SaisonPractice {
+  saison         Int
+  uuid           String
+  pseudo         String?
+  ladder         String
+  ranked         Boolean
+  matchs         Int
+  victoires      Int
+  defaites       Int
+  nuls           Int
+  serie          Int
+  meilleureSerie Int     @map("meilleure_serie")
+  soupes         Int
+  coups          Int
+  secondes       Int
+
+  @@id([saison, uuid, ladder, ranked])
+  @@index([saison, ladder, ranked], map: "idx_saison_practice_mode")
+  @@map("saison_practice")
+}
+
+/// Tout le reste d'une saison (niveaux unranked, records, tournois...), une ligne par source, en JSON.
+model SaisonArchive {
+  saison  Int
+  cle     String
+  donnees Json
+  creeLe  DateTime @default(now()) @map("cree_le") @db.Timestamptz(6)
+
+  @@id([saison, cle])
+  @@map("saison_archive")
 }

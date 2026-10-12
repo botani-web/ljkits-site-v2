@@ -14,18 +14,19 @@ import {
   TuileStat,
 } from '@/components/practice/Petits'
 import { RechercheJoueur } from '@/components/practice/RechercheJoueur'
+import { SelecteurSaison } from '@/components/practice/SelecteurSaison'
 import { Sanctions } from '@/components/practice/Sanctions'
 import { Skin3D } from '@/components/practice/Skin3D'
 import { PagePublique } from '@/components/public/PagePublique'
 import { Enveloppe } from '@/components/ui/Enveloppe'
 import { Section } from '@/components/ui/Section'
-import { lireSaisonCourante } from '@/lib/elo'
 import { formaterDate } from '@/lib/format'
 import { estLocale, LANGUE_DEFAUT, lien, t, type Locale } from '@/lib/i18n'
 import { nomPalier, palierDe, PALIERS, progressionPalier, resteAvantSuivant } from '@/lib/paliers'
-import { lireProfil, type Rival } from '@/lib/practice'
+import { lireArchiveJoueur, lireProfil, saisonsDuJoueur, type ArchiveJoueur, type Profil, type Rival } from '@/lib/practice'
+import { choisirSaison, lireSaisonsCache } from '@/lib/saisons'
 import { lireSanctions, nombreActives } from '@/lib/sanctions'
-import { cheminProfil, cleRaison, formaterDuree, infosMode, MODES, tempsRelatif, urlTete } from '@/lib/practice-commun'
+import { cheminProfil, cleRaison, formaterDuree, formaterTempsJeu, infosMode, MODES, tempsRelatif, urlTete } from '@/lib/practice-commun'
 import { IMAGE_OG } from '@/lib/site'
 
 /**
@@ -38,7 +39,7 @@ import { IMAGE_OG } from '@/lib/site'
  */
 export const revalidate = 30
 
-type Params = { params: Promise<{ pseudo: string; locale: string }> }
+type Params = { params: Promise<{ pseudo: string; locale: string }>; searchParams: Promise<{ saison?: string }> }
 
 /** Au plus autant de matchs dans l'historique affiché (voir HISTORIQUE_MAX de practice.ts). */
 const HISTORIQUE_AFFICHE = 80
@@ -60,16 +61,40 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   }
 }
 
-export default async function PageJoueur({ params }: Params) {
+export default async function PageJoueur({ params, searchParams }: Params) {
   const { pseudo, locale: brut } = await params
   const locale: Locale = estLocale(brut) ? brut : LANGUE_DEFAUT
+  const { saison: saisonDemandee } = await searchParams
+  const recherche = decodeURIComponent(pseudo)
 
-  const saison = await lireSaisonCourante()
+  const saisons = await lireSaisonsCache()
+  const saison = choisirSaison(saisons, saisonDemandee)
   if (!saison) notFound()
-  const profil = await lireProfil(saison.id, decodeURIComponent(pseudo))
-  if (!profil) notFound()
+  const profil = await lireProfil(saison.id, recherche)
+  const hrefPour = (id: number) => lien(locale, `${cheminProfil(profil?.pseudo ?? recherche)}?saison=${id}`)
 
-  const sanctions = await lireSanctions(profil.uuid)
+  // Pas de ranked dans CETTE saison, mais connu ailleurs : on le dit, avec le choix de la saison.
+  if (!profil) {
+    const autres = await saisonsDuJoueur(recherche)
+    if (autres.length === 0) notFound()
+    return (
+      <PagePublique locale={locale}>
+        <header className="halo-hero relative py-[clamp(44px,6vw,84px)]">
+          <Enveloppe>
+            <h1 className="text-h1 font-titre break-all">{t(locale, 'pf.titre').replace('{p}', recherche)}</h1>
+            <p className="mt-4 max-w-[62ch] text-[16px] text-gris">
+              {t(locale, 'pf.pas-cette-saison').replace('{p}', recherche).replace('{n}', String(saison.id))}
+            </p>
+            <div className="mt-6">
+              <SelecteurSaison saisons={saisons.filter((x) => autres.includes(x.id) || x.id === saison.id)} actuelle={saison} hrefPour={hrefPour} locale={locale} />
+            </div>
+          </Enveloppe>
+        </header>
+      </PagePublique>
+    )
+  }
+
+  const [sanctions, archive] = await Promise.all([lireSanctions(profil.uuid), lireArchiveJoueur(saison.id, profil.uuid)])
 
   const { global, records, rivaux } = profil
   const eloPrincipal = global?.elo ?? profil.modes[0]?.elo ?? 1000
@@ -94,13 +119,20 @@ export default async function PageJoueur({ params }: Params) {
         <Enveloppe className="relative">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <Link
-              href={lien(locale, '/classement')}
+              href={lien(locale, `/classement?saison=${saison.id}`)}
               className="font-mono text-[11px] tracking-[.12em] text-gris uppercase transition-colors hover:text-or"
             >
               {t(locale, 'pr.retour')}
             </Link>
-            <RechercheJoueur locale={locale} className="w-full max-w-[340px]" />
+            <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center">
+              <SelecteurSaison saisons={saisons} actuelle={saison} hrefPour={hrefPour} locale={locale} />
+              <RechercheJoueur locale={locale} className="w-full max-w-[340px]" />
+            </div>
           </div>
+
+          {/* Comme PvPRivals : « X's Profile » et une ligne d'accroche, avant la carte du joueur. */}
+          <p className="mt-8 font-titre text-[clamp(22px,2.6vw,30px)]">{t(locale, 'pf.titre').replace('{p}', profil.pseudo)}</p>
+          <p className="mt-1 text-[15px] text-gris">{t(locale, 'pf.chapeau')}</p>
 
           <div className="mt-6 grid items-center gap-[clamp(20px,4vw,56px)] lg:grid-cols-[minmax(0,430px)_minmax(0,1fr)]">
             <div className="relative">
@@ -211,10 +243,89 @@ export default async function PageJoueur({ params }: Params) {
                 <span className="font-mono text-[10.5px] tracking-[.16em] text-gris uppercase">{t(locale, 'pr.forme')}</span>
                 <FormeRecente forme={profil.forme} locale={locale} />
               </div>
+
+              {/* Les repères de la carte joueur PvPRivals (rang, première et dernière apparition), avec nos mots. */}
+              <dl className="mt-5 grid max-w-[560px] grid-cols-2 gap-x-6 gap-y-2.5 border-t border-bord pt-4 font-mono text-[12.5px] sm:grid-cols-4">
+                <div>
+                  <dt className="text-[9.5px] tracking-[.14em] text-gris uppercase">{t(locale, 'pf.palier')}</dt>
+                  <dd className="mt-1" style={{ color: palier.couleur }}>{nomPalier(palier, locale)}</dd>
+                </div>
+                <div>
+                  <dt className="text-[9.5px] tracking-[.14em] text-gris uppercase">{t(locale, 'pf.position')}</dt>
+                  <dd className="mt-1">{global && global.rang > 0 ? `#${global.rang}` : '—'}</dd>
+                </div>
+                <div>
+                  <dt className="text-[9.5px] tracking-[.14em] text-gris uppercase">{t(locale, 'pf.premier')}</dt>
+                  <dd className="mt-1">{records.premier ? formaterDate(records.premier, locale) : '—'}</dd>
+                </div>
+                <div>
+                  <dt className="text-[9.5px] tracking-[.14em] text-gris uppercase">{t(locale, 'pf.dernier')}</dt>
+                  <dd className="mt-1">{records.dernier ? tempsRelatif(records.dernier, locale) : '—'}</dd>
+                </div>
+              </dl>
             </div>
           </div>
         </Enveloppe>
       </header>
+
+      {/* ══════════════════════════ PROGRESSION ══════════════════════════ */}
+      <Section etiquette={t(locale, 'pr.progression-etiquette')} titre={t(locale, 'pf.progression')}>
+        <CourbeModes
+          locale={locale}
+          courbes={profil.courbes.map((c) => ({
+            mode: c.mode,
+            points: c.points.map((p) => ({ instant: p.instant.toISOString(), elo: p.elo })),
+          }))}
+          seuils={PALIERS.map((p) => ({ minimum: p.minimum, couleur: p.couleur, nom: nomPalier(p, locale) }))}
+        />
+
+      </Section>
+
+      {/* ══════════════════════════ STATISTIQUES (ordre PvPRivals) ══════════════════════════ */}
+      <Section fond="charbon" etiquette={t(locale, 'pf.statistiques')} titre={t(locale, 'pf.statistiques')}>
+        <TableauStatistiques profil={profil} locale={locale} />
+      </Section>
+
+      {/* ══════════════════════════ HISTORIQUE ══════════════════════════ */}
+      <Section fond="charbon" etiquette={t(locale, 'pr.historique-etiquette')} titre={t(locale, 'pf.historique')}>
+        <HistoriqueMatchs
+          locale={locale}
+          limite={HISTORIQUE_AFFICHE}
+          pseudo={profil.pseudo}
+          matchs={profil.historique.map((m) => ({ ...m, instant: m.instant.toISOString() }))}
+        />
+      </Section>
+
+      {/* ══════════════════════════ ACTIVITÉ ══════════════════════════ */}
+      <Section etiquette={t(locale, 'pf.en-plus')} titre={t(locale, 'pr.activite')}>
+        <div className="rounded-carte border border-bord bg-charbon p-5">
+          <p className="font-mono text-[10.5px] tracking-[.16em] text-gris uppercase">{t(locale, 'pr.activite')}</p>
+          <div className="mt-4 flex h-24 items-end gap-1.5">
+            {profil.activite.map((jour) => (
+              <div
+                key={jour.jour}
+                className="group relative flex-1"
+                title={t(locale, 'pr.matchs-le')
+                  .replace('{n}', String(jour.matchs))
+                  .replace('{d}', new Date(`${jour.jour}T12:00:00Z`).toLocaleDateString(locale, { day: 'numeric', month: 'short' }))}
+              >
+                <div
+                  className="w-full rounded-t-micro transition-opacity group-hover:opacity-80"
+                  style={{
+                    height: `${Math.max(4, (jour.matchs / pic) * 96)}px`,
+                    background: jour.matchs > 0 ? palier.couleur : 'var(--color-bord)',
+                    opacity: jour.matchs > 0 ? 0.35 + 0.65 * (jour.matchs / pic) : 1,
+                  }}
+                />
+              </div>
+            ))}
+          </div>
+          <div className="mt-2 flex justify-between font-mono text-[10px] text-gris">
+            <span>{new Date(`${profil.activite[0].jour}T12:00:00Z`).toLocaleDateString(locale, { day: 'numeric', month: 'short' })}</span>
+            <span>{new Date(`${profil.activite[profil.activite.length - 1].jour}T12:00:00Z`).toLocaleDateString(locale, { day: 'numeric', month: 'short' })}</span>
+          </div>
+        </div>
+      </Section>
 
       {/* ══════════════════════════ PAR MODE ══════════════════════════ */}
       <Section fond="charbon" etiquette={t(locale, 'pr.modes-etiquette')} titre={t(locale, 'pr.modes-titre')}>
@@ -281,46 +392,6 @@ export default async function PageJoueur({ params }: Params) {
               </Link>
             )
           })}
-        </div>
-      </Section>
-
-      {/* ══════════════════════════ PROGRESSION ══════════════════════════ */}
-      <Section etiquette={t(locale, 'pr.progression-etiquette')} titre={t(locale, 'pr.progression-titre')}>
-        <CourbeModes
-          locale={locale}
-          courbes={profil.courbes.map((c) => ({
-            mode: c.mode,
-            points: c.points.map((p) => ({ instant: p.instant.toISOString(), elo: p.elo })),
-          }))}
-          seuils={PALIERS.map((p) => ({ minimum: p.minimum, couleur: p.couleur, nom: nomPalier(p, locale) }))}
-        />
-
-        <div className="mt-6 rounded-carte border border-bord bg-charbon p-5">
-          <p className="font-mono text-[10.5px] tracking-[.16em] text-gris uppercase">{t(locale, 'pr.activite')}</p>
-          <div className="mt-4 flex h-24 items-end gap-1.5">
-            {profil.activite.map((jour) => (
-              <div
-                key={jour.jour}
-                className="group relative flex-1"
-                title={t(locale, 'pr.matchs-le')
-                  .replace('{n}', String(jour.matchs))
-                  .replace('{d}', new Date(`${jour.jour}T12:00:00Z`).toLocaleDateString(locale, { day: 'numeric', month: 'short' }))}
-              >
-                <div
-                  className="w-full rounded-t-micro transition-opacity group-hover:opacity-80"
-                  style={{
-                    height: `${Math.max(4, (jour.matchs / pic) * 96)}px`,
-                    background: jour.matchs > 0 ? palier.couleur : 'var(--color-bord)',
-                    opacity: jour.matchs > 0 ? 0.35 + 0.65 * (jour.matchs / pic) : 1,
-                  }}
-                />
-              </div>
-            ))}
-          </div>
-          <div className="mt-2 flex justify-between font-mono text-[10px] text-gris">
-            <span>{new Date(`${profil.activite[0].jour}T12:00:00Z`).toLocaleDateString(locale, { day: 'numeric', month: 'short' })}</span>
-            <span>{new Date(`${profil.activite[profil.activite.length - 1].jour}T12:00:00Z`).toLocaleDateString(locale, { day: 'numeric', month: 'short' })}</span>
-          </div>
         </div>
       </Section>
 
@@ -434,15 +505,17 @@ export default async function PageJoueur({ params }: Params) {
         )}
       </Section>
 
-      {/* ══════════════════════════ HISTORIQUE ══════════════════════════ */}
-      <Section fond="charbon" etiquette={t(locale, 'pr.historique-etiquette')} titre={t(locale, 'pr.historique-titre')}>
-        <HistoriqueMatchs
-          locale={locale}
-          limite={HISTORIQUE_AFFICHE}
-          pseudo={profil.pseudo}
-          matchs={profil.historique.map((m) => ({ ...m, instant: m.instant.toISOString() }))}
-        />
-      </Section>
+      {/* ══════════════════════════ ARCHIVE DE SAISON (FFA + unranked) ══════════════════════════ */}
+      {archive && (
+        <Section
+          fond="charbon"
+          etiquette={t(locale, 'pf.archive-etiquette').replace('{n}', String(saison.id))}
+          titre={t(locale, 'pf.archive-titre')}
+          chapeau={t(locale, 'pf.archive-chapeau')}
+        >
+          <BlocArchive archive={archive} locale={locale} />
+        </Section>
+      )}
 
       {/* ══════════════════════════ SANCTIONS ══════════════════════════ */}
       <Section
@@ -515,5 +588,160 @@ function CarteRival({
         </p>
       </div>
     </Link>
+  )
+}
+
+/**
+ * LE TABLEAU « STATISTICS » DE PVPRIVALS (12/10/2026) : une ligne Global puis
+ * une par mode, mêmes colonnes que chez eux (mode, #, Elo, Elo max, matchs,
+ * victoires, winrate, série, meilleure série, temps de jeu). Un mode jamais joué
+ * reste dans la liste, avec des tirets.
+ */
+function TableauStatistiques({ profil, locale }: { profil: Profil; locale: Locale }) {
+  const g = profil.global
+  const lignes = [
+    {
+      cle: 'global',
+      nom: t(locale, 'pr.global'),
+      couleur: undefined as string | undefined,
+      rang: g && g.rang > 0 ? g.rang : null,
+      elo: g?.elo ?? null,
+      eloMax: g?.eloMax ?? null,
+      matchs: g?.matchs ?? profil.totaux.matchs,
+      victoires: g?.victoires ?? profil.totaux.victoires,
+      winrate: g?.winrate ?? profil.totaux.winrate,
+      serie: g?.serie ?? 0,
+      recordSerie: g?.recordSerie ?? 0,
+      temps: profil.temps.total,
+    },
+    ...MODES.map((m) => {
+      const x = profil.modes.find((y) => y.mode === m.id)
+      return {
+        cle: m.id,
+        nom: m.nom,
+        couleur: m.couleur,
+        rang: x && x.rang > 0 ? x.rang : null,
+        elo: x?.elo ?? null,
+        eloMax: x?.eloMax ?? null,
+        matchs: x?.matchs ?? 0,
+        victoires: x?.victoires ?? 0,
+        winrate: x?.winrate ?? 0,
+        serie: x?.serie ?? 0,
+        recordSerie: x?.recordSerie ?? 0,
+        temps: profil.temps.parMode[m.id] ?? 0,
+      }
+    }),
+  ]
+  const th = 'px-3 py-3 font-mono text-[10.5px] font-bold tracking-[.12em] text-gris uppercase'
+  return (
+    <div className="overflow-x-auto rounded-carte border border-bord bg-braise">
+      <table className="w-full min-w-[860px] border-collapse text-left">
+        <thead className="bg-nuit">
+          <tr>
+            <th scope="col" className={`${th} pl-5`}>{t(locale, 'lb.col-mode')}</th>
+            <th scope="col" className={`${th} text-right`}>#</th>
+            <th scope="col" className={`${th} text-right`}>{t(locale, 'lb.col-rating')}</th>
+            <th scope="col" className={`${th} text-right`}>{t(locale, 'lb.col-pic')}</th>
+            <th scope="col" className={`${th} text-right`}>{t(locale, 'lb.col-matchs')}</th>
+            <th scope="col" className={`${th} text-right`}>{t(locale, 'lb.col-victoires')}</th>
+            <th scope="col" className={`${th} text-right`}>{t(locale, 'lb.col-winrate')}</th>
+            <th scope="col" className={`${th} text-right`}>{t(locale, 'lb.col-serie')}</th>
+            <th scope="col" className={`${th} text-right`}>{t(locale, 'lb.col-meilleure')}</th>
+            <th scope="col" className={`${th} pr-5 text-right`}>{t(locale, 'lb.col-temps')}</th>
+          </tr>
+        </thead>
+        <tbody className="font-mono text-[13px] tabular-nums">
+          {lignes.map((l) => (
+            <tr key={l.cle} className={`border-t border-bord ${l.cle === 'global' ? 'bg-charbon/60' : ''}`}>
+              <td className="py-3 pr-3 pl-5">
+                <span className="flex items-center gap-2 font-semibold">
+                  {l.couleur && <span aria-hidden className="size-2 rounded-full" style={{ background: l.couleur }} />}
+                  {l.nom}
+                </span>
+              </td>
+              <td className={`px-3 py-3 text-right ${l.rang && l.rang <= 3 ? 'text-or' : ''}`}>{l.rang ?? '—'}</td>
+              <td className="px-3 py-3 text-right font-titre text-[16px]" style={{ color: l.elo != null ? palierDe(l.elo).couleur : undefined }}>
+                {l.elo ?? '—'}
+              </td>
+              <td className="px-3 py-3 text-right" style={{ color: l.eloMax != null ? palierDe(l.eloMax).couleur : undefined }}>
+                {l.eloMax ?? '—'}
+              </td>
+              <td className="px-3 py-3 text-right">{l.matchs}</td>
+              <td className="px-3 py-3 text-right text-vert">{l.victoires}</td>
+              <td className="px-3 py-3 text-right" style={{ color: l.matchs > 0 ? couleurWinrate(l.winrate) : undefined }}>
+                {l.matchs > 0 ? `${l.winrate}%` : '—'}
+              </td>
+              <td className="px-3 py-3 text-right">{l.serie > 0 ? <span className="text-soupe">🔥 {l.serie}</span> : '0'}</td>
+              <td className="px-3 py-3 text-right">{l.recordSerie}</td>
+              <td className="py-3 pr-5 pl-3 text-right text-gris">{formaterTempsJeu(l.temps)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )
+}
+
+/** Les compteurs figés à la clôture : FFA, puis practice ranked et unranked par mode. */
+function BlocArchive({ archive, locale }: { archive: ArchiveJoueur; locale: Locale }) {
+  const { ffa, practice } = archive
+  const kdr = ffa ? (ffa.morts > 0 ? (ffa.kills / ffa.morts).toFixed(2) : String(ffa.kills)) : '—'
+  return (
+    <div className="grid gap-4">
+      {ffa && (
+        <div>
+          <p className="mb-3 font-mono text-[10.5px] tracking-[.16em] text-gris uppercase">{t(locale, 'pf.ffa')}</p>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
+            <TuileStat libelle={t(locale, 'pf.kills')} valeur={ffa.kills} couleur="var(--color-vert)" />
+            <TuileStat libelle={t(locale, 'pf.morts')} valeur={ffa.morts} couleur="var(--color-rouge)" />
+            <TuileStat libelle={t(locale, 'pf.kdr')} valeur={kdr} />
+            <TuileStat libelle={t(locale, 'pf.points')} valeur={ffa.points} couleur="var(--color-or)" />
+            <TuileStat libelle={t(locale, 'pf.record-serie')} valeur={ffa.recordSerie} couleur="var(--color-soupe)" />
+          </div>
+        </div>
+      )}
+      {practice.length > 0 && (
+        <div className="overflow-x-auto rounded-carte border border-bord bg-braise">
+          <table className="w-full min-w-[640px] border-collapse text-left font-mono text-[13px] tabular-nums">
+            <thead className="bg-nuit text-[10.5px] tracking-[.12em] text-gris uppercase">
+              <tr>
+                <th scope="col" className="px-3 py-3 pl-5">{t(locale, 'lb.col-mode')}</th>
+                <th scope="col" className="px-3 py-3" />
+                <th scope="col" className="px-3 py-3 text-right">{t(locale, 'lb.col-matchs')}</th>
+                <th scope="col" className="px-3 py-3 text-right">{t(locale, 'lb.col-victoires')}</th>
+                <th scope="col" className="px-3 py-3 text-right">{t(locale, 'lb.col-winrate')}</th>
+                <th scope="col" className="px-3 py-3 text-right">{t(locale, 'lb.col-meilleure')}</th>
+                <th scope="col" className="px-3 py-3 pr-5 text-right">{t(locale, 'lb.col-temps')}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {practice.map((p) => {
+                const winrate = p.matchs > 0 ? Math.round((p.victoires * 100) / p.matchs) : 0
+                return (
+                  <tr key={`${p.mode}-${p.ranked}`} className="border-t border-bord">
+                    <td className="px-3 py-3 pl-5">
+                      <span className="flex items-center gap-2 font-semibold">
+                        <span aria-hidden className="size-2 rounded-full" style={{ background: infosMode(p.mode).couleur }} />
+                        {infosMode(p.mode).nom}
+                      </span>
+                    </td>
+                    <td className="px-3 py-3">
+                      <span className={`rounded-micro px-1.5 py-0.5 text-[10.5px] uppercase ${p.ranked ? 'bg-or/10 text-or' : 'bg-nuit text-gris'}`}>
+                        {p.ranked ? t(locale, 'pf.ranked') : t(locale, 'pf.unranked')}
+                      </span>
+                    </td>
+                    <td className="px-3 py-3 text-right">{p.matchs}</td>
+                    <td className="px-3 py-3 text-right text-vert">{p.victoires}</td>
+                    <td className="px-3 py-3 text-right" style={{ color: couleurWinrate(winrate) }}>{winrate}%</td>
+                    <td className="px-3 py-3 text-right">{p.meilleureSerie}</td>
+                    <td className="px-3 py-3 pr-5 text-right text-gris">{formaterTempsJeu(p.secondes)}</td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
   )
 }

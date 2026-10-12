@@ -9,6 +9,7 @@ import { useReglages } from '@/components/public/ContexteReglages'
 import { BoutonCopieIp } from '@/components/public/CopieIp'
 import { IconeDiscord } from '@/components/public/IconeDiscord'
 import { classesBouton } from '@/components/ui/Bouton'
+import { MAINTENANCE } from '@/lib/site'
 import {
   type CleTexte,
   estLocale,
@@ -33,11 +34,14 @@ import {
  * Composant client pour deux raisons : usePathname(), qui met en soupe le lien
  * de la page courante, et le menu burger sous 860px.
  */
-const LIENS: { href: string; cle: CleTexte }[] = [
+const TOUS_LES_LIENS: { href: string; cle: CleTexte }[] = [
   { href: '/classement', cle: 'nav.classement' },
   { href: '/boutique', cle: 'nav.boutique' },
   { href: '/reglement', cle: 'nav.reglement' },
 ]
+
+/** En maintenance entre deux saisons (12/10/2026), seul le classement reste dans la nav. */
+const LIENS = MAINTENANCE ? TOUS_LES_LIENS.filter((l) => l.href === '/classement') : TOUS_LES_LIENS
 
 /**
  * La langue se lit dans l'URL, pas dans une propriété : la nav est déjà un

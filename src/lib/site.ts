@@ -81,3 +81,16 @@ export const IMAGE_OG = [{ url: '/og.png', width: 1080, height: 1080 }]
  */
 // ROUVERT le 16/09/2026 : classement ranked practice (global + par mode), profils détaillés.
 export const CLASSEMENT_OUVERT = true
+
+/**
+ * MAINTENANCE ENTRE DEUX SAISONS (12/10/2026, fin de la saison 1).
+ *
+ * Tant qu'elle est active, seuls le classement, les profils (et le détail des
+ * matchs) restent ouverts, avec /ljscan et /verif que le staff donne en jeu ;
+ * tout le reste affiche la page « Season 2 is coming ». /admin et /api ne sont
+ * jamais concernés. Pour la couper sans toucher au code : NEXT_PUBLIC_MAINTENANCE=0.
+ */
+export const MAINTENANCE = process.env.NEXT_PUBLIC_MAINTENANCE !== '0'
+
+/** Les sections qui restent ouvertes pendant la maintenance. */
+export const OUVERTS_EN_MAINTENANCE = ['classement', 'joueur', 'maintenance', 'ljscan', 'verif']

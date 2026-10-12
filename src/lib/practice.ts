@@ -55,6 +55,8 @@ export type LigneClassement = {
   forme: Resultat[]
   /** Vue globale seulement : l'Elo de chacun de ses modes. */
   modes: { mode: string; elo: number }[]
+  /** Temps passé en match ranked dans la vue, en secondes (12/10/2026). */
+  temps: number
 }
 
 type BrutClassement = {
@@ -100,9 +102,10 @@ export async function lireClassement(saison: number, vue: Vue, limite = 500): Pr
 
   if (lignes.length === 0) return []
   const uuids = lignes.map((l) => l.uuid)
-  const [formes, modes] = await Promise.all([
+  const [formes, modes, temps] = await Promise.all([
     lireFormes(saison, uuids, vue === 'global' ? null : vue),
     vue === 'global' ? lireModesDesJoueurs(saison, uuids) : Promise.resolve(new Map<string, { mode: string; elo: number }[]>()),
+    lireTempsDeJeu(saison, uuids, vue === 'global' ? null : vue),
   ])
 
   return lignes.map((l, index) => ({
@@ -111,7 +114,23 @@ export async function lireClassement(saison: number, vue: Vue, limite = 500): Pr
     winrate: pourcentage(l.victoires, l.matchs),
     forme: formes.get(l.uuid) ?? [],
     modes: modes.get(l.uuid) ?? [],
+    temps: temps.get(l.uuid) ?? 0,
   }))
+}
+
+/** Le temps passé en match ranked par joueur (somme des durées), dans un mode ou tous. */
+async function lireTempsDeJeu(saison: number, uuids: string[], ladder: string | null): Promise<Map<string, number>> {
+  const filtre = ladder ? 'and ladder = $3' : ''
+  const parametres: unknown[] = ladder ? [saison, uuids, ladder] : [saison, uuids]
+  const lignes = await prisma.$queryRawUnsafe<{ uuid: string; t: number }[]>(
+    `select x.uuid, sum(x.d)::int as t
+       from (select gagnant as uuid, duree_secondes as d from practice_match where saison = $1 and gagnant = any($2) ${filtre}
+             union all
+             select perdant as uuid, duree_secondes as d from practice_match where saison = $1 and perdant = any($2) ${filtre}) x
+      group by x.uuid`,
+    ...parametres,
+  )
+  return new Map(lignes.map((l) => [l.uuid, l.t]))
 }
 
 /** Les 5 derniers résultats de chaque joueur, en une seule requête (rien d'avant son reset payé). */
@@ -451,6 +470,8 @@ export type Profil = {
   courbes: { mode: string; points: { instant: Date; elo: number }[] }[]
   /** Matchs par jour sur les 14 derniers jours (UTC), le plus ancien d'abord. */
   activite: { jour: string; matchs: number }[]
+  /** Temps en match ranked, en secondes : total et par mode (12/10/2026). */
+  temps: { total: number; parMode: Record<string, number> }
 }
 
 /** Au-delà, l'historique s'arrête : les statistiques, elles, portent sur toute la saison. */
@@ -588,7 +609,67 @@ export async function lireProfil(saison: number, recherche: string): Promise<Pro
     rivaux: calculerRivaux(matchs),
     courbes: calculerCourbes(matchs),
     activite: calculerActivite(matchs, 14),
+    temps: calculerTemps(matchs),
   }
+}
+
+function calculerTemps(matchs: MatchProfil[]): Profil['temps'] {
+  const parMode: Record<string, number> = {}
+  let total = 0
+  for (const m of matchs) {
+    parMode[m.mode] = (parMode[m.mode] ?? 0) + m.duree
+    total += m.duree
+  }
+  return { total, parMode }
+}
+
+/* ================================================================
+ *  LES ARCHIVES DE SAISON (12/10/2026)
+ *
+ *  Écrites une fois à la clôture (tables saison_joueur et saison_practice) :
+ *  stats FFA et stats practice ranked + unranked, qui repartent à zéro à
+ *  chaque saison. null si la saison n'a pas (encore) d'archive.
+ * ================================================================ */
+
+export type ArchiveJoueur = {
+  ffa: { kills: number; morts: number; points: number; recordSerie: number } | null
+  practice: {
+    mode: string
+    ranked: boolean
+    matchs: number
+    victoires: number
+    defaites: number
+    meilleureSerie: number
+    secondes: number
+  }[]
+}
+
+export async function lireArchiveJoueur(saison: number, uuid: string): Promise<ArchiveJoueur | null> {
+  const [ffa, practice] = await Promise.all([
+    prisma.$queryRawUnsafe<NonNullable<ArchiveJoueur['ffa']>[]>(
+      `select kills, morts, points, record_serie as "recordSerie" from saison_joueur where saison = $1 and uuid = $2`,
+      saison,
+      uuid,
+    ),
+    prisma.$queryRawUnsafe<ArchiveJoueur['practice']>(
+      `select ladder as mode, ranked, matchs, victoires, defaites, meilleure_serie as "meilleureSerie", secondes
+         from saison_practice where saison = $1 and uuid = $2 and matchs > 0
+        order by ranked desc, matchs desc`,
+      saison,
+      uuid,
+    ),
+  ])
+  if (!ffa[0] && practice.length === 0) return null
+  return { ffa: ffa[0] ?? null, practice }
+}
+
+/** Le pseudo est-il connu dans une AUTRE saison ? (profil ouvert sur une saison où il n'a pas joué) */
+export async function saisonsDuJoueur(pseudo: string): Promise<number[]> {
+  const lignes = await prisma.$queryRawUnsafe<{ saison: number }[]>(
+    `select distinct saison from practice_elo where lower(pseudo) = lower($1) and matchs > 0 order by saison desc`,
+    pseudo,
+  )
+  return lignes.map((l) => l.saison)
 }
 
 function calculerTotaux(matchs: MatchProfil[]): Profil['totaux'] {

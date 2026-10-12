@@ -30,6 +30,18 @@ export function infosMode(id: string): { id: string; nom: string; couleur: strin
   return MODES.find((m) => m.id === id) ?? { id, nom: id, couleur: '#9e93ac' }
 }
 
+/** Temps de jeu à la PvPRivals : « 1d 22h », « 20h 14m », « 35m », « 0s » (12/10/2026). */
+export function formaterTempsJeu(secondes: number): string {
+  const s = Math.max(0, Math.round(secondes))
+  const j = Math.floor(s / 86400)
+  const h = Math.floor((s % 86400) / 3600)
+  const m = Math.floor((s % 3600) / 60)
+  if (j > 0) return `${j}d ${h}h`
+  if (h > 0) return `${h}h ${m}m`
+  if (m > 0) return `${m}m`
+  return `${s}s`
+}
+
 /** « 0:59 », « 12:04 ». */
 export function formaterDuree(secondes: number): string {
   const s = Math.max(0, Math.round(secondes))
