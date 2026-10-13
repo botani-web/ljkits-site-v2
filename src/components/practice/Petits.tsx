@@ -37,9 +37,9 @@ export function BadgePalier({
 }
 
 /** Un Elo, toujours dans la couleur de son palier. */
-export function Elo({ valeur, className = '' }: { valeur: number; className?: string }) {
+export function Elo({ valeur, className = '', saison }: { valeur: number; className?: string; saison?: number }) {
   return (
-    <span className={`font-mono font-bold tabular-nums ${className}`} style={{ color: palierDe(valeur).couleur }}>
+    <span className={`font-mono font-bold tabular-nums ${className}`} style={{ color: palierDe(valeur, saison).couleur }}>
       {valeur}
     </span>
   )

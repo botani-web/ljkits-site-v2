@@ -9,7 +9,7 @@ import type { MatchRecent } from '@/lib/practice'
 import { PastilleMode } from './Petits'
 
 /** Les derniers matchs ranked joués sur le serveur (ou dans le mode affiché). */
-export function DerniersMatchs({ matchs, locale }: { matchs: MatchRecent[]; locale: Locale }) {
+export function DerniersMatchs({ matchs, locale, saison }: { matchs: MatchRecent[]; locale: Locale; saison?: number }) {
   if (matchs.length === 0) return null
 
   const joueur = (pseudo: string, elo: number, delta: number, gagnant: boolean) => (
@@ -22,7 +22,7 @@ export function DerniersMatchs({ matchs, locale }: { matchs: MatchRecent[]; loca
       <span className="min-w-0">
         <span className={`block truncate text-[14px] font-semibold ${gagnant ? 'text-creme' : 'text-gris'}`}>{pseudo}</span>
         <span className="block font-mono text-[10.5px] tabular-nums">
-          <span style={{ color: palierDe(elo).couleur }}>{elo}</span>{' '}
+          <span style={{ color: palierDe(elo, saison).couleur }}>{elo}</span>{' '}
           <span className={gagnant ? 'text-vert' : 'text-rouge'}>{gagnant ? `+${delta}` : `−${delta}`}</span>
         </span>
       </span>

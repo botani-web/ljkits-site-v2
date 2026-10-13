@@ -22,7 +22,7 @@ import { Enveloppe } from '@/components/ui/Enveloppe'
 import { Section } from '@/components/ui/Section'
 import { formaterDate } from '@/lib/format'
 import { estLocale, LANGUE_DEFAUT, lien, t, type Locale } from '@/lib/i18n'
-import { nomPalier, palierDe, PALIERS, progressionPalier, resteAvantSuivant } from '@/lib/paliers'
+import { baremeDe, nomPalier, palierDe, progressionPalier, resteAvantSuivant } from '@/lib/paliers'
 import { lireArchiveJoueur, lireProfil, saisonsDuJoueur, type ArchiveJoueur, type Profil, type Rival } from '@/lib/practice'
 import { choisirSaison, lireSaisonsCache } from '@/lib/saisons'
 import { lireSanctions, nombreActives } from '@/lib/sanctions'
@@ -97,10 +97,10 @@ export default async function PageJoueur({ params, searchParams }: Params) {
   const [sanctions, archive] = await Promise.all([lireSanctions(profil.uuid), lireArchiveJoueur(saison.id, profil.uuid)])
 
   const { global, records, rivaux } = profil
-  const eloPrincipal = global?.elo ?? profil.modes[0]?.elo ?? 1400
-  const palier = palierDe(eloPrincipal)
-  const suivant = resteAvantSuivant(eloPrincipal)
-  const progression = progressionPalier(eloPrincipal)
+  const eloPrincipal = global?.elo ?? profil.modes[0]?.elo ?? (saison.id <= 1 ? 1000 : 1400)
+  const palier = palierDe(eloPrincipal, saison.id)
+  const suivant = resteAvantSuivant(eloPrincipal, saison.id)
+  const progression = progressionPalier(eloPrincipal, saison.id)
   const matchsTotaux = global?.matchs ?? profil.totaux.matchs
 
   const pic = Math.max(1, ...profil.activite.map((a) => a.matchs))
@@ -150,7 +150,7 @@ export default async function PageJoueur({ params, searchParams }: Params) {
 
             <div>
               <div className="flex flex-wrap items-center gap-2">
-                <BadgePalier elo={eloPrincipal} locale={locale} />
+                <BadgePalier elo={eloPrincipal} locale={locale} saison={saison.id} />
                 {profil.exclu && (
                   <span className="rounded-micro border border-oni/50 bg-oni/10 px-2 py-[3px] font-mono text-[11px] tracking-[.1em] text-oni uppercase">
                     {t(locale, 'pr.exclu')}
@@ -232,7 +232,7 @@ export default async function PageJoueur({ params, searchParams }: Params) {
                   <TuileStat
                     libelle={t(locale, 'pr.elo-max')}
                     valeur={global?.eloMax ?? eloPrincipal}
-                    couleur={palierDe(global?.eloMax ?? eloPrincipal).couleur}
+                    couleur={palierDe(global?.eloMax ?? eloPrincipal, saison.id).couleur}
                   />
                   <TuileStat libelle={t(locale, 'pr.serie')} valeur={global?.serie ? `🔥 ${global.serie}` : '0'} couleur={global?.serie ? 'var(--color-soupe)' : undefined} />
                   <TuileStat libelle={t(locale, 'pr.meilleure-serie')} valeur={global?.recordSerie ?? 0} />
@@ -276,14 +276,14 @@ export default async function PageJoueur({ params, searchParams }: Params) {
             mode: c.mode,
             points: c.points.map((p) => ({ instant: p.instant.toISOString(), elo: p.elo })),
           }))}
-          seuils={PALIERS.map((p) => ({ minimum: p.minimum, couleur: p.couleur, nom: nomPalier(p, locale) }))}
+          seuils={baremeDe(saison.id).map((p) => ({ minimum: p.minimum, couleur: p.couleur, nom: nomPalier(p, locale) }))}
         />
 
       </Section>
 
       {/* ══════════════════════════ STATISTIQUES (ordre PvPRivals) ══════════════════════════ */}
       <Section fond="charbon" etiquette={t(locale, 'pf.statistiques')} titre={t(locale, 'pf.statistiques')}>
-        <TableauStatistiques profil={profil} locale={locale} />
+        <TableauStatistiques profil={profil} locale={locale} saison={saison.id} />
       </Section>
 
       {/* ══════════════════════════ HISTORIQUE ══════════════════════════ */}
@@ -292,6 +292,7 @@ export default async function PageJoueur({ params, searchParams }: Params) {
           locale={locale}
           limite={HISTORIQUE_AFFICHE}
           pseudo={profil.pseudo}
+          saison={saison.id}
           matchs={profil.historique.map((m) => ({ ...m, instant: m.instant.toISOString() }))}
         />
       </Section>
@@ -340,7 +341,7 @@ export default async function PageJoueur({ params, searchParams }: Params) {
                 </div>
               )
             }
-            const couleur = palierDe(stats.elo).couleur
+            const couleur = palierDe(stats.elo, saison.id).couleur
             return (
               <Link
                 key={mode.id}
@@ -364,9 +365,9 @@ export default async function PageJoueur({ params, searchParams }: Params) {
                   {stats.elo}
                 </p>
                 <div className="mt-2.5 flex flex-wrap items-center gap-2">
-                  <BadgePalier elo={stats.elo} locale={locale} petit />
+                  <BadgePalier elo={stats.elo} locale={locale} petit saison={saison.id} />
                   <span className="font-mono text-[10.5px] text-gris">
-                    {t(locale, 'pr.elo-max')} <span style={{ color: palierDe(stats.eloMax).couleur }}>{stats.eloMax}</span>
+                    {t(locale, 'pr.elo-max')} <span style={{ color: palierDe(stats.eloMax, saison.id).couleur }}>{stats.eloMax}</span>
                   </span>
                 </div>
                 <BarreWinrate valeur={stats.winrate} className="mt-4" />
@@ -597,7 +598,7 @@ function CarteRival({
  * victoires, winrate, série, meilleure série, temps de jeu). Un mode jamais joué
  * reste dans la liste, avec des tirets.
  */
-function TableauStatistiques({ profil, locale }: { profil: Profil; locale: Locale }) {
+function TableauStatistiques({ profil, locale, saison }: { profil: Profil; locale: Locale; saison: number }) {
   const g = profil.global
   const lignes = [
     {
@@ -660,10 +661,10 @@ function TableauStatistiques({ profil, locale }: { profil: Profil; locale: Local
                 </span>
               </td>
               <td className={`px-3 py-3 text-right ${l.rang && l.rang <= 3 ? 'text-or' : ''}`}>{l.rang ?? '—'}</td>
-              <td className="px-3 py-3 text-right font-titre text-[16px]" style={{ color: l.elo != null ? palierDe(l.elo).couleur : undefined }}>
+              <td className="px-3 py-3 text-right font-titre text-[16px]" style={{ color: l.elo != null ? palierDe(l.elo, saison).couleur : undefined }}>
                 {l.elo ?? '—'}
               </td>
-              <td className="px-3 py-3 text-right" style={{ color: l.eloMax != null ? palierDe(l.eloMax).couleur : undefined }}>
+              <td className="px-3 py-3 text-right" style={{ color: l.eloMax != null ? palierDe(l.eloMax, saison).couleur : undefined }}>
                 {l.eloMax ?? '—'}
               </td>
               <td className="px-3 py-3 text-right">{l.matchs}</td>
