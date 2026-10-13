@@ -49,8 +49,8 @@ function Valeur({ v, locale, format = String }: { v: number | null; locale: Loca
   return v == null ? <span className="text-[12px] text-gris/70 italic">{t(locale, 'pr.match-non-mesure')}</span> : <>{format(v)}</>
 }
 
-function CarteJoueur({ c, gagnant, annule, locale, saison }: { c: CoteMatch; gagnant: boolean; annule: boolean; locale: Locale; saison?: number }) {
-  const palier = palierDe(c.eloApres, saison)
+function CarteJoueur({ c, gagnant, annule, locale }: { c: CoteMatch; gagnant: boolean; annule: boolean; locale: Locale }) {
+  const palier = palierDe(c.eloApres)
   return (
     <Link
       href={lien(locale, cheminProfil(c.pseudo))}
@@ -66,7 +66,7 @@ function CarteJoueur({ c, gagnant, annule, locale, saison }: { c: CoteMatch; gag
         </span>
         <span className="mt-0.5 block truncate font-titre text-[clamp(20px,2.6vw,28px)] leading-tight group-hover:text-or">{c.pseudo}</span>
         <span className="mt-1.5 flex flex-wrap items-center gap-2 font-mono text-[13px] tabular-nums">
-          <BadgePalier elo={c.eloApres} locale={locale} petit saison={saison} />
+          <BadgePalier elo={c.eloApres} locale={locale} petit />
           <span style={{ color: palier.couleur }}>{c.eloApres}</span>
           <span className={`${c.delta > 0 ? 'text-vert' : c.delta < 0 ? 'text-rouge' : 'text-gris'} ${annule ? 'line-through opacity-60' : ''}`}>
             ({c.delta > 0 ? `+${c.delta}` : c.delta})
@@ -129,9 +129,9 @@ export default async function PageMatch({ params }: Params) {
           )}
 
           <div className="mt-5 grid items-center gap-3 md:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]">
-            <CarteJoueur c={g} gagnant annule={!!m.annule} locale={locale} saison={m.saison} />
+            <CarteJoueur c={g} gagnant annule={!!m.annule} locale={locale} />
             <span className="text-center font-titre text-[22px] text-gris">VS</span>
-            <CarteJoueur c={p} gagnant={false} annule={!!m.annule} locale={locale} saison={m.saison} />
+            <CarteJoueur c={p} gagnant={false} annule={!!m.annule} locale={locale} />
           </div>
 
           <dl className="mt-5 grid grid-cols-2 gap-2.5 sm:grid-cols-4">

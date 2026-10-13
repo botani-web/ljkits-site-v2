@@ -97,7 +97,7 @@ export default async function PageJoueur({ params, searchParams }: Params) {
   const [sanctions, archive] = await Promise.all([lireSanctions(profil.uuid), lireArchiveJoueur(saison.id, profil.uuid)])
 
   const { global, records, rivaux } = profil
-  const eloPrincipal = global?.elo ?? profil.modes[0]?.elo ?? 1400
+  const eloPrincipal = global?.elo ?? profil.modes[0]?.elo ?? 1000
   const palier = palierDe(eloPrincipal)
   const suivant = resteAvantSuivant(eloPrincipal)
   const progression = progressionPalier(eloPrincipal)
