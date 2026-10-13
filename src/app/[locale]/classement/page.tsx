@@ -12,7 +12,7 @@ import { EtatVide } from '@/components/ui/EtatVide'
 import { Section } from '@/components/ui/Section'
 import { Etiquette } from '@/components/ui/TeteSection'
 import { estLocale, LANGUE_DEFAUT, lien, t, type Locale } from '@/lib/i18n'
-import { baremeDe, DERNIERE_SAISON_ANCIEN_BAREME, nomPalier } from '@/lib/paliers'
+import { nomPalier, PALIERS } from '@/lib/paliers'
 import { lireChiffresCache, lireClassementCache, lireDerniersMatchsCache } from '@/lib/practice'
 import { estVue, MODES, tempsRelatif, type Vue } from '@/lib/practice-commun'
 import { choisirSaison, lireSaisonsCache, type Saison } from '@/lib/saisons'
@@ -83,8 +83,6 @@ export default async function PageClassement({ params, searchParams }: Props) {
       </PagePublique>
     )
   }
-  // La saison 1 garde son barème (Fer -> Légende) ; les suivantes ont celui de PvPRivals (13/10/2026).
-  const ancien = saison.id <= DERNIERE_SAISON_ANCIEN_BAREME
 
   return (
     <PagePublique locale={locale}>
@@ -139,14 +137,14 @@ export default async function PageClassement({ params, searchParams }: Props) {
         etiquette={t(locale, 'classement.paliers')}
         titre={
           <>
-            {t(locale, ancien ? 'classement.paliers-titre-s1' : 'classement.paliers-titre')}{' '}
-            <span className="text-or">{t(locale, ancien ? 'classement.paliers-legende-s1' : 'classement.paliers-legende')}</span>
+            {t(locale, 'classement.paliers-titre')}{' '}
+            <span className="text-or">{t(locale, 'classement.paliers-legende')}</span>
           </>
         }
-        chapeau={t(locale, ancien ? 'classement.paliers-chapeau-s1' : 'classement.paliers-chapeau')}
+        chapeau={t(locale, 'classement.paliers-chapeau')}
       >
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-          {baremeDe(saison.id).map((palier) => (
+          {PALIERS.map((palier) => (
             <div
               key={palier.nom}
               className="relative overflow-hidden rounded-carte border bg-braise p-5"
@@ -157,7 +155,7 @@ export default async function PageClassement({ params, searchParams }: Props) {
                 {nomPalier(palier, locale)}
               </p>
               <p className="mt-3 font-mono text-[12.5px] text-creme">
-                {palier.minimum === 0 ? t(locale, ancien ? 'classement.moins-de-s1' : 'classement.moins-de') : `${palier.minimum} ${t(locale, 'classement.et-plus')}`}
+                {palier.minimum === 0 ? t(locale, 'classement.moins-de') : `${palier.minimum} ${t(locale, 'classement.et-plus')}`}
               </p>
             </div>
           ))}
@@ -260,7 +258,7 @@ async function Classement({ saison, vue, locale }: { saison: Saison; vue: Vue; l
           }
         />
       ) : (
-        <TableauRivals lignes={lignes} locale={locale} saison={saison.id} />
+        <TableauRivals lignes={lignes} locale={locale} />
       )}
     </>
   )
@@ -293,5 +291,5 @@ function ClassementSquelette() {
 async function DerniersMatchsDiffere({ saison, vue, locale }: { saison: number; vue: Vue; locale: Locale }) {
   if (saison <= 0) return null
   const derniers = await lireDerniersMatchsCache(saison, 8, vue)
-  return <DerniersMatchs matchs={derniers} locale={locale} saison={saison} />
+  return <DerniersMatchs matchs={derniers} locale={locale} />
 }

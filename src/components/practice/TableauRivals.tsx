@@ -23,7 +23,7 @@ const COULEURS_PODIUM = ['var(--color-or)', '#c9cfd8', '#d08a4f']
  * « 1–25 sur N ». Les couleurs et les polices restent les nôtres (paliers,
  * or des trois premiers).
  */
-export function TableauRivals({ lignes, locale, saison }: { lignes: LigneClassement[]; locale: Locale; saison?: number }) {
+export function TableauRivals({ lignes, locale }: { lignes: LigneClassement[]; locale: Locale }) {
   const [taille, setTaille] = useState<number>(25)
   const [page, setPage] = useState(0)
 
@@ -70,10 +70,10 @@ export function TableauRivals({ lignes, locale, saison }: { lignes: LigneClassem
                         style={couleurRang ? { boxShadow: `0 0 0 2px ${couleurRang}` } : undefined}
                       />
                       <span className="truncate font-semibold transition-colors group-hover:text-or">{l.pseudo}</span>
-                      <BadgePalier elo={l.elo} locale={locale} petit saison={saison} />
+                      <BadgePalier elo={l.elo} locale={locale} petit />
                     </Link>
                   </td>
-                  <td className="px-3 py-3 text-right font-titre text-[18px] tabular-nums" style={{ color: palierDe(l.elo, saison).couleur }}>
+                  <td className="px-3 py-3 text-right font-titre text-[18px] tabular-nums" style={{ color: palierDe(l.elo).couleur }}>
                     {l.elo}
                   </td>
                   <td className="px-3 py-3 text-right font-mono text-[13px] tabular-nums">{l.matchs}</td>

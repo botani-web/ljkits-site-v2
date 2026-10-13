@@ -49,7 +49,7 @@ export const ELO_DEPART = 1400
 export type Palier = (typeof PALIERS)[number] | (typeof PALIERS_SAISON_1)[number]
 
 /** Le barème d'une saison (sans saison : le barème actuel). */
-export function baremeDe(saison?: number): readonly Palier[] {
+function bareme(saison?: number): readonly Palier[] {
   return saison != null && saison > 0 && saison <= DERNIERE_SAISON_ANCIEN_BAREME ? PALIERS_SAISON_1 : PALIERS
 }
 
@@ -60,7 +60,7 @@ export function nomPalier(palier: Palier, locale: 'en' | 'fr'): string {
 
 /** Le palier d'un Elo. Le tableau est trié, on prend le dernier atteint. */
 export function palierDe(elo: number, saison?: number): Palier {
-  const liste = baremeDe(saison)
+  const liste = bareme(saison)
   let trouve: Palier = liste[0]
   for (const palier of liste) {
     if (elo >= palier.minimum) trouve = palier
@@ -70,7 +70,7 @@ export function palierDe(elo: number, saison?: number): Palier {
 
 /** Ce qu'il reste avant le palier suivant, ou null au palier maximum. */
 export function resteAvantSuivant(elo: number, saison?: number): { palier: Palier; reste: number } | null {
-  for (const palier of baremeDe(saison)) {
+  for (const palier of bareme(saison)) {
     if (elo < palier.minimum) return { palier, reste: palier.minimum - elo }
   }
   return null
@@ -82,7 +82,7 @@ export function progressionPalier(elo: number, saison?: number): number {
   const suivant = resteAvantSuivant(elo, saison)
   if (!suivant) return 1
   // Le 1er palier commence à 0 : on mesure depuis le départ réel de chaque joueur.
-  const ancien = baremeDe(saison) === PALIERS_SAISON_1
+  const ancien = bareme(saison) === PALIERS_SAISON_1
   const bas = actuel.minimum === 0 ? (ancien ? 1000 : ELO_DEPART) : actuel.minimum
   const largeur = suivant.palier.minimum - bas
   return largeur > 0 ? Math.min(1, Math.max(0, (elo - bas) / largeur)) : 0

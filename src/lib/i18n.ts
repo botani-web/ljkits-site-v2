@@ -277,13 +277,6 @@ const DICO = {
     en: 'Coins unlock kits, ranks and clans — and all of it can be earned by playing, without exception. Here you buy speed, not reach.',
   },
   'classement.moins-de': { fr: 'moins de 1500', en: 'under 1500' },
-  'classement.moins-de-s1': { fr: 'moins de 1100', en: 'under 1100' },
-  'classement.paliers-titre-s1': { fr: 'Dix rangs, de Fer à', en: 'Ten ranks, from Iron to' },
-  'classement.paliers-legende-s1': { fr: 'Légende', en: 'Legend' },
-  'classement.paliers-chapeau-s1': {
-    fr: 'Le barème de la saison 1 : tout le monde démarrait à 1000, en Fer, avec un palier tous les 100 points jusqu’à Légende (1900 et plus).',
-    en: 'The season 1 scale: everyone started at 1000, in Iron, with a new tier every 100 points up to Legend (1900 and above).',
-  },
   'classement.et-plus': { fr: 'Elo et plus', en: 'Elo and above' },
   'classement.ferme': {
     fr: 'Le classement de la saison arrive très bientôt sur le site. En attendant, le top 100 (global, HG et Digger) est disponible en jeu avec /leaderboard.',

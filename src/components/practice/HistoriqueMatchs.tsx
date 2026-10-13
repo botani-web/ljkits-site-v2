@@ -34,7 +34,6 @@ export function HistoriqueMatchs({
   locale,
   limite,
   pseudo,
-  saison,
 }: {
   matchs: MatchClient[]
   locale: Locale
@@ -42,8 +41,6 @@ export function HistoriqueMatchs({
   pseudo: string
   /** Le nombre maximum de matchs chargés (pour l'expliquer s'il est atteint). */
   limite: number
-  /** La saison du profil (la saison 1 garde son ancien barème). */
-  saison?: number
 }) {
   const [mode, setMode] = useState<string>('tous')
   const [resultat, setResultat] = useState<'tous' | 'V' | 'D'>('tous')
@@ -134,7 +131,7 @@ export function HistoriqueMatchs({
 
                 <span className="text-right font-mono text-[13px] tabular-nums md:text-left">
                   <span className="hidden text-gris md:inline">{m.eloAvant} → </span>
-                  <span style={{ color: palierDe(m.eloApres, saison).couleur }}>{m.eloApres}</span>{' '}
+                  <span style={{ color: palierDe(m.eloApres).couleur }}>{m.eloApres}</span>{' '}
                   <span className={`${m.delta > 0 ? 'text-vert' : m.delta < 0 ? 'text-rouge' : 'text-gris'} ${m.annule ? 'line-through opacity-60' : ''}`}>
                     ({m.delta > 0 ? `+${m.delta}` : m.delta})
                   </span>
