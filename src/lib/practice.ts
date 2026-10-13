@@ -371,13 +371,13 @@ export type SuggestionJoueur = { uuid: string; pseudo: string; elo: number }
 export async function rechercherJoueurs(saison: number, saisie: string, limite = 8): Promise<SuggestionJoueur[]> {
   const motif = saisie.replace(/[\\%_]/g, (c) => `\\${c}`)
   return prisma.$queryRawUnsafe<SuggestionJoueur[]>(
-    `select p.uuid, p.pseudo, coalesce(j.elo, 1000)::int as elo
+    `select p.uuid, p.pseudo, coalesce(j.elo, 1400)::int as elo
        from (select distinct on (uuid) uuid, pseudo
                from practice_elo where saison = $1
               order by uuid, derniere_maj desc) p
        left join elo_joueur j on j.uuid = p.uuid and j.saison = $1
       where p.pseudo ilike '%' || $2 || '%' and ${horsExclus('p')}
-      order by (lower(p.pseudo) like lower($2) || '%') desc, coalesce(j.elo, 1000) desc, p.pseudo asc
+      order by (lower(p.pseudo) like lower($2) || '%') desc, coalesce(j.elo, 1400) desc, p.pseudo asc
       limit $3`,
     saison,
     motif,

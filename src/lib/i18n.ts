@@ -276,7 +276,7 @@ const DICO = {
     fr: 'Les coins débloquent les kits, les grades et les clans — et tout cela s’obtient en jouant, sans exception. Ici, tu achètes de quoi aller plus vite, pas plus loin.',
     en: 'Coins unlock kits, ranks and clans — and all of it can be earned by playing, without exception. Here you buy speed, not reach.',
   },
-  'classement.moins-de': { fr: 'moins de 1100', en: 'under 1100' },
+  'classement.moins-de': { fr: 'moins de 1500', en: 'under 1500' },
   'classement.et-plus': { fr: 'Elo et plus', en: 'Elo and above' },
   'classement.ferme': {
     fr: 'Le classement de la saison arrive très bientôt sur le site. En attendant, le top 100 (global, HG et Digger) est disponible en jeu avec /leaderboard.',
@@ -287,13 +287,13 @@ const DICO = {
     en: 'The Elo leaderboard has not started yet. Come back when the first season opens.',
   },
   'classement.paliers-titre': {
-    fr: 'Huit rangs, de Fer à',
-    en: 'Eight ranks, from Iron to',
+    fr: 'Neuf rangs, d’Argent à',
+    en: 'Nine ranks, from Silver to',
   },
-  'classement.paliers-legende': { fr: 'Légende', en: 'Legend' },
+  'classement.paliers-legende': { fr: 'Champion', en: 'Champion' },
   'classement.paliers-chapeau': {
-    fr: 'Les bornes sont resserrées autour de 1000, le point de départ : la grande majorité des joueurs vit entre 800 et 1500, et des paliers larges rendraient la progression invisible. Ton palier change en direct, à chaque combat.',
-    en: 'The thresholds are tight around 1000, the starting point: the vast majority of players live between 800 and 1500, and wide tiers would make progress invisible. Your tier changes live, with every fight.',
+    fr: 'Tout le monde démarre à 1400, en Argent. Un palier tous les 100 points de 1500 à 2000, puis Grand Maître jusqu’à 2999 et Champion à partir de 3000. Ton palier change en direct, à chaque combat.',
+    en: 'Everyone starts at 1400, in Silver. A new tier every 100 points from 1500 to 2000, then Grandmaster up to 2999 and Champion from 3000. Your tier changes live, with every fight.',
   },
   'classement.antifarm-1': {
     fr: 'Retuer la même personne rapporte de moins en moins :',

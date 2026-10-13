@@ -13,13 +13,16 @@ export function BadgePalier({
   locale,
   petit = false,
   className = '',
+  saison,
 }: {
   elo: number
   locale: Locale
   petit?: boolean
   className?: string
+  /** La saison de cet Elo (la saison 1 garde son ancien barème). */
+  saison?: number
 }) {
-  const palier = palierDe(elo)
+  const palier = palierDe(elo, saison)
   return (
     <span
       className={`inline-flex items-center gap-1.5 rounded-micro border px-2 py-[3px] font-mono leading-none tracking-[.12em] whitespace-nowrap uppercase ${

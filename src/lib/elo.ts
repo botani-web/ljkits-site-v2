@@ -39,7 +39,7 @@ function sansExclus(alias: string) {
 
 /* Les paliers vivent dans paliers.ts (sans accès base, importable côté navigateur) :
    ces réexports gardent valides tous les imports existants depuis '@/lib/elo'. */
-export { PALIERS, nomPalier, palierDe, resteAvantSuivant, progressionPalier, type Palier } from '@/lib/paliers'
+export { PALIERS, PALIERS_SAISON_1, ELO_DEPART, nomPalier, palierDe, resteAvantSuivant, progressionPalier, type Palier } from '@/lib/paliers'
 
 /**
  * Le nom d'une saison dans la langue demandée.
