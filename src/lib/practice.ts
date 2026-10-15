@@ -24,9 +24,20 @@ import { prisma } from '@/lib/prisma'
 
 export { MODES, estVue, infosMode, type IdMode, type Resultat, type Vue } from '@/lib/practice-commun'
 
-/** Les exclus du classement n'apparaissent nulle part dans les listes. */
+/**
+ * Les exclus du classement n'apparaissent nulle part dans les listes.
+ *
+ * UNE SAISON TERMINÉE EST FIGÉE (15/10/2026) : on n'y retire que les joueurs
+ * qui étaient exclus À SA DATE DE FIN. Un ban de la saison suivante ne réécrit
+ * pas le podium d'une saison close. Même règle que LJElo (Base.EXCLUS).
+ * La table interrogée doit avoir une colonne `saison` (elo_joueur, practice_elo).
+ */
 function horsExclus(alias = ''): string {
-  return `${alias ? `${alias}.` : ''}uuid not in (select uuid from elo_exclusion where actif)`
+  const a = alias ? `${alias}.` : ''
+  return `${a}uuid not in (select x.uuid from elo_exclusion x left join elo_saison s on s.id = ${a}saison
+     where case when s.statut = 'terminee' and s.fin is not null
+                then x.cree_le <= s.fin and (x.levee_le is null or x.levee_le > s.fin)
+                else x.actif end)`
 }
 
 function pourcentage(part: number, total: number): number {

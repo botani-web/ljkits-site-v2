@@ -31,9 +31,14 @@ import { prisma } from '@/lib/prisma'
  * mais `mieux` dans le sous-calcul du rang.
  */
 function sansExclus(alias: string) {
+  // Saison terminée = figée (15/10/2026) : seuls les exclus à sa date de fin en sortent.
   return Prisma.sql`AND NOT EXISTS (
     SELECT 1 FROM elo_exclusion x
-     WHERE x.uuid = ${Prisma.raw(alias)}.uuid AND x.actif
+      LEFT JOIN elo_saison s ON s.id = ${Prisma.raw(alias)}.saison
+     WHERE x.uuid = ${Prisma.raw(alias)}.uuid
+       AND CASE WHEN s.statut = 'terminee' AND s.fin IS NOT NULL
+                THEN x.cree_le <= s.fin AND (x.levee_le IS NULL OR x.levee_le > s.fin)
+                ELSE x.actif END
   )`
 }
 
@@ -289,7 +294,11 @@ export async function lireFicheJoueur(
            j.serie, j.record_serie, j.derniere_maj,
            (l.uuid IS NOT NULL) AS lie,
            EXISTS (SELECT 1 FROM elo_exclusion x
-                    WHERE x.uuid = j.uuid AND x.actif) AS exclu,
+                     LEFT JOIN elo_saison s ON s.id = j.saison
+                    WHERE x.uuid = j.uuid
+                      AND CASE WHEN s.statut = 'terminee' AND s.fin IS NOT NULL
+                               THEN x.cree_le <= s.fin AND (x.levee_le IS NULL OR x.levee_le > s.fin)
+                               ELSE x.actif END) AS exclu,
            (SELECT count(*) + 1
               FROM elo_joueur mieux
               JOIN elo_liaison ml ON ml.uuid = mieux.uuid
