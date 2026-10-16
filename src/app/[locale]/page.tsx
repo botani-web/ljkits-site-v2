@@ -2,497 +2,393 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 
 import { CompteRebours } from '@/components/accueil/CompteRebours'
-import { NombreEnLigne } from '@/components/accueil/EnLigne'
-import { BoutonIpGeant } from '@/components/public/CopieIp'
+import { BoutonCopieIp } from '@/components/public/CopieIp'
 import { IconeDiscord } from '@/components/public/IconeDiscord'
 import { PagePublique } from '@/components/public/PagePublique'
-import { LienFleche } from '@/components/ui/Badge'
-import { classesBouton } from '@/components/ui/Bouton'
-import { CadreTable } from '@/components/ui/CadreTable'
-import { Enveloppe } from '@/components/ui/Enveloppe'
-import { EtatVide } from '@/components/ui/EtatVide'
-import { CaseCloisonnee, GrilleCloisonnee } from '@/components/ui/GrilleCloisonnee'
-import { BlocFinal, Section } from '@/components/ui/Section'
-import { lireSaisonCourante } from '@/lib/elo'
-import { formaterOuverture, formaterOuvertureEnPhrase } from '@/lib/format'
-import { estLocale, LANGUE_DEFAUT, lien, t, type CleTexte, type Locale } from '@/lib/i18n'
-import { nomPalier, palierDe } from '@/lib/paliers'
+import {
+  BadgeGrade,
+  Conteneur,
+  Elo,
+  IconeMode,
+  LienVoirTout,
+  NomPalier,
+  Panneau,
+  Tete,
+  TitreSection,
+} from '@/components/s2/Briques'
+import { LigneMatchNeutre } from '@/components/s2/LignesMatch'
+import { NombreEnLigne } from '@/components/accueil/EnLigne'
+import { cheminClassement, cheminFlux } from '@/lib/chemins-s2'
+import { formaterDateHeure } from '@/lib/format'
+import { estLocale, LANGUE_DEFAUT, lien, type Locale } from '@/lib/i18n'
+import { type CleS2, ts } from '@/lib/i18n-s2'
+import { gradesEnCache } from '@/lib/joueurs'
 import {
   lireChiffresCache,
   lireClassementCache,
+  lireDerniersMatchsCache,
   lireLeadersParModeCache,
-  type ChiffresSaison,
-  type LeaderMode,
   type LigneClassement,
 } from '@/lib/practice'
-import { cheminProfil, MODES, urlTete } from '@/lib/practice-commun'
+import { cheminProfil, modesDeSaison, urlCorps } from '@/lib/practice-commun'
 import { lireReglages } from '@/lib/reglages'
-import { CASHPRIZE, euros, saisonDu } from '@/lib/saison'
-import { CLASSEMENT_OUVERT, IMAGE_OG } from '@/lib/site'
+import { cashprizeDe, euros, OUVERTURES_PUBLIQUES, saisonDu, saisonParDefaut } from '@/lib/saison'
+import { lireSaisonsCache } from '@/lib/saisons'
+import { IMAGE_OG } from '@/lib/site'
 
 /**
- * L'ACCUEIL — VERSION COURTE (04/10/2026).
+ * L'ACCUEIL (refonte S2, 16/10/2026).
  *
- * Cinq blocs, et rien d'autre : la cagnotte et le compte à rebours dans le
- * hero, les chiffres du serveur, le classement en direct, les modes, l'appel
- * final. La page faisait dix sections et répétait trois fois le cashprize ;
- * un joueur qui arrive doit comprendre en un écran et pouvoir se connecter.
+ * Ce qu'un joueur veut savoir en arrivant, dans cet ordre : c'est quoi, comment
+ * je rejoins (IP + joueurs en ligne), qu'est-ce qu'on gagne (cashprize et top 3
+ * en direct), à quoi on joue (les modes et leur n°1), ce qui se passe (derniers
+ * matchs, top global), qui a gagné la saison d'avant.
  *
- * Ce qui en est sorti vit déjà ailleurs : les étapes et les garanties dans le
- * règlement, les paliers et les derniers matchs sur /classement, les kits en
- * jeu. Rien n'est perdu, tout est à un clic.
- *
- * Les chiffres bougent à chaque match : la page est régénérée au plus toutes
- * les minutes (quelques SELECT légers, ceux du classement). Le compte à
- * rebours et les joueurs en ligne, eux, vivent dans le navigateur.
+ * Avant l'ouverture publique d'une saison, l'accueil parle déjà d'elle (compte
+ * à rebours, modes, cashprize) mais montre les matchs et le top de la saison
+ * précédente plutôt que des tableaux vides. Gardé 30 s par le CDN.
  */
-export const revalidate = 60
+export const revalidate = 30
 
-/** Combien de joueurs l'aperçu du classement montre. */
-const TAILLE_TOP = 8
+type Params = { params: Promise<{ locale: string }> }
 
-const MEDAILLES = ['var(--color-or)', 'var(--color-argent)', 'var(--color-bronze)'] as const
-const PLACES: CleTexte[] = ['ac.place-1', 'ac.place-2', 'ac.place-3']
-
-type Props = { params: Promise<{ locale: string }> }
-
-async function lireLocale(params: Props['params']): Promise<Locale> {
-  const { locale } = await params
-  return estLocale(locale) ? locale : LANGUE_DEFAUT
-}
-
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const locale = await lireLocale(params)
-  const cagnotte = euros(CASHPRIZE.total, locale)
-  const titre = t(locale, 'ac.meta-titre').replace('{c}', cagnotte)
-  const description = t(locale, 'ac.meta-desc').replace('{c}', cagnotte)
+export async function generateMetadata({ params }: Params): Promise<Metadata> {
+  const { locale: brut } = await params
+  const locale: Locale = estLocale(brut) ? brut : LANGUE_DEFAUT
+  const titre = ts(locale, 'a.meta-titre')
+  const description = ts(locale, 'a.meta-desc', { c: euros(cashprizeDe(saisonDu().numero).total, locale) })
   return {
     title: { absolute: titre },
     description,
-    alternates: { languages: { en: '/en', fr: '/fr' } },
+    alternates: { canonical: lien(locale, '/') },
     openGraph: { title: titre, description, images: IMAGE_OG },
   }
 }
 
-export default async function Accueil({ params }: Props) {
-  const locale = await lireLocale(params)
+export default async function Accueil({ params }: Params) {
+  const { locale: brut } = await params
+  const locale: Locale = estLocale(brut) ? brut : LANGUE_DEFAUT
 
-  const [saisonBase, reglages] = await Promise.all([lireSaisonCourante(), lireReglages()])
+  // La saison mise en vitrine (celle du calendrier) et celle dont on montre les données.
+  const vitrine = saisonDu()
+  const ouverture = OUVERTURES_PUBLIQUES[vitrine.numero]
+  const avantOuverture = ouverture != null && Date.parse(ouverture) > Date.now()
+  const saisonDonnees = saisonParDefaut()
+  const cashprize = cashprizeDe(vitrine.numero)
+  const modes = modesDeSaison(vitrine.numero)
 
-  // Hors saison ouverte (ou classement du site fermé), les blocs en direct
-  // disparaissent au lieu d'afficher des cadres vides. La cagnotte reste.
-  let top: LigneClassement[] = []
-  let chiffres: ChiffresSaison | null = null
-  let leaders: LeaderMode[] = []
-  if (saisonBase && CLASSEMENT_OUVERT) {
-    ;[top, chiffres, leaders] = await Promise.all([
-      lireClassementCache(saisonBase.id, 'global', TAILLE_TOP),
-      lireChiffresCache(saisonBase.id),
-      lireLeadersParModeCache(saisonBase.id),
-    ])
-  }
-
-  const saison = saisonDu()
-  const cagnotte = euros(CASHPRIZE.total, locale)
-  const prix = CASHPRIZE.podium.map((montant) => euros(montant, locale))
-  const clotureCourte = formaterOuverture(saison.fin, locale)
-  const clotureEnPhrase = formaterOuvertureEnPhrase(saison.fin, locale)
-  const numero = String(saison.numero)
-
-  const eloTroisieme = top[2]?.elo ?? 0
+  const [reglages, saisons, chiffres, leaders, derniers, topDonnees] = await Promise.all([
+    lireReglages(),
+    lireSaisonsCache(),
+    avantOuverture ? null : lireChiffresCache(vitrine.numero),
+    avantOuverture ? [] : lireLeadersParModeCache(vitrine.numero),
+    lireDerniersMatchsCache(saisonDonnees, 8),
+    lireClassementCache(saisonDonnees, 'global', 10),
+  ])
+  // Les champions : la dernière saison terminée.
+  const terminee = saisons.find((s) => s.terminee && s.aDesMatchs)
+  const champions = terminee ? (terminee.id === saisonDonnees ? topDonnees : await lireClassementCache(terminee.id, 'global', 3)) : []
+  const grades = await gradesEnCache([
+    ...new Set([
+      ...derniers.flatMap((m) => [m.gagnant, m.perdant]),
+      ...topDonnees.map((j) => j.uuid),
+      ...champions.slice(0, 3).map((j) => j.uuid),
+    ]),
+  ])
+  const podiumVitrine = avantOuverture || saisonDonnees !== vitrine.numero ? [] : topDonnees.slice(0, 3)
+  const leaderDe = new Map(leaders.map((l) => [l.mode, l]))
+  const echeance = avantOuverture ? new Date(ouverture) : vitrine.fin
 
   return (
     <PagePublique locale={locale}>
-      {/* ═══════════════════════════ HERO ═══════════════════════════ */}
-      <header className="halo-hero pt-[clamp(40px,6vw,88px)] pb-[clamp(44px,6vw,84px)]">
-        <Enveloppe>
-          <div className="grid items-center gap-[clamp(36px,5vw,72px)] lg:grid-cols-[minmax(0,1fr)_minmax(0,450px)]">
+      <main>
+        {/* ═══════════════ HERO ═══════════════ */}
+        <section className="relative overflow-hidden border-b border-bord">
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-0 [background:radial-gradient(50%_80%_at_20%_10%,rgba(254,147,1,.13),transparent_70%),radial-gradient(40%_70%_at_90%_80%,rgba(233,40,19,.10),transparent_70%)]"
+          />
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-0 opacity-[.35] [background-image:linear-gradient(rgba(46,34,69,.5)_1px,transparent_1px),linear-gradient(90deg,rgba(46,34,69,.5)_1px,transparent_1px)] [background-size:44px_44px] [mask-image:radial-gradient(70%_70%_at_30%_30%,black,transparent)]"
+          />
+          <Conteneur className="relative grid gap-10 py-12 sm:py-16 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)] lg:items-center lg:py-20">
             <div>
-              <p className="inline-flex items-center gap-2.5 rounded-micro border border-bord bg-charbon/70 px-3 py-1.5 font-mono text-[10.5px] font-bold tracking-[.18em] text-soupe uppercase">
-                <span aria-hidden className="pastille-statut" />
-                {t(locale, 'ac.etiquette').replace('{n}', numero)}
+              <p className="inline-flex items-center gap-2 rounded-full border border-or/30 bg-or/[.07] px-3 py-1 text-[12.5px] font-semibold text-or">
+                <span className={`size-1.5 rounded-full ${avantOuverture ? 'bg-or' : 'bg-vert'}`} aria-hidden />
+                {avantOuverture
+                  ? ts(locale, 'a.kicker-ouverture', { n: vitrine.numero, d: formaterDateHeure(new Date(ouverture), locale) })
+                  : ts(locale, 'a.kicker-live', { n: vitrine.numero })}
               </p>
-
-              <h1 className="mt-5.5 font-titre text-[clamp(38px,6.2vw,74px)] leading-[.94] tracking-[-.02em] text-balance">
-                {t(locale, 'ac.h1-1')}
+              <h1 className="mt-5 text-[46px] leading-[.98] font-extrabold tracking-[-.035em] text-creme sm:text-[64px] lg:text-[72px]">
+                {ts(locale, 'a.titre-1')}
                 <br />
-                {t(locale, 'ac.h1-2')}{' '}
-                <span className="text-or [text-shadow:0_0_42px_rgb(253_192_3/.35)]">{cagnotte}</span>.
+                <span className="bg-gradient-to-b from-or to-soupe bg-clip-text text-transparent">{ts(locale, 'a.titre-2')}</span>
               </h1>
-
-              <p className="mt-5.5 max-w-[54ch] text-[clamp(16px,1.9vw,19px)] text-gris">
-                {avecGras(t(locale, 'ac.chapo'), cagnotte)}
+              <p className="mt-5 max-w-[50ch] text-[16.5px] leading-relaxed text-gris sm:text-[17.5px]">
+                {ts(locale, 'a.chapeau', { c: euros(cashprize.total, locale) })}
               </p>
-
-              <div className="mt-8 flex flex-wrap items-stretch gap-2.75">
-                <BoutonIpGeant className="max-[560px]:w-full max-[560px]:justify-center" />
+              <div className="mt-7 flex flex-wrap items-center gap-3">
+                <BoutonCopieIp
+                  aria-label={`${ts(locale, 'nav.copier')} — ${reglages.ip}`}
+                  className="group inline-flex h-13 items-center gap-3 rounded-[8px] bg-gradient-to-b from-or to-soupe px-5 text-encre shadow-[0_10px_30px_-10px_rgba(254,147,1,.8)] transition-[filter] hover:brightness-110"
+                >
+                  <span className="font-mono text-[17px] font-bold">{reglages.ip}</span>
+                  <span className="rounded-[5px] bg-encre/15 px-2 py-1 text-[12px] font-bold">
+                    <NombreEnLigne /> {ts(locale, 'a.en-ligne')}
+                  </span>
+                </BoutonCopieIp>
                 <a
                   href={reglages.discord}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className={classesBouton({ variante: 'plein', taille: 'grande', className: 'max-[560px]:w-full' })}
+                  className="inline-flex h-13 items-center gap-2.5 rounded-[8px] border border-bord bg-charbon px-5 text-[15px] font-semibold text-creme hover:border-[#5865f2] hover:bg-[#5865f2]/15"
                 >
-                  <IconeDiscord className="size-4 shrink-0 fill-current" />
-                  {t(locale, 'commande.rejoindre-discord')}
+                  <IconeDiscord className="size-5 fill-[#8b95ff]" />
+                  {ts(locale, 'a.rejoindre-discord')}
                 </a>
               </div>
-
-              <div className="mt-5 flex flex-wrap items-center gap-x-6 gap-y-2">
-                <LienFleche href={lien(locale, '/classement')}>{t(locale, 'ac.voir-classement')}</LienFleche>
-                <span className="font-mono text-[11px] tracking-[.06em] text-gris">{t(locale, 'ac.garanties')}</span>
-              </div>
+              <p className="mt-4 text-[13px] text-gris">{ts(locale, 'pied.versions')} · {ts(locale, 'nav.copier')}</p>
             </div>
 
-            {/* La cagnotte : le montant, qui le toucherait aujourd'hui, et quand. */}
-            <aside
-              aria-labelledby="cagnotte-titre"
-              className="relative overflow-hidden rounded-bloc border border-or/35 bg-charbon/90 shadow-[0_34px_90px_-34px_rgb(253_192_3/.4)] backdrop-blur"
-            >
-              <span aria-hidden className="absolute inset-x-0 top-0 h-px bg-[linear-gradient(90deg,transparent,var(--color-or),transparent)]" />
-              <span
-                aria-hidden
-                className="pointer-events-none absolute -top-24 -right-16 size-72 rounded-full bg-[radial-gradient(circle,rgb(253_192_3/.16),transparent_68%)]"
-              />
-
-              <div className="relative px-5.5 pt-5.5 pb-5 sm:px-7">
-                <div className="flex items-center justify-between gap-3">
-                  <p id="cagnotte-titre" className="font-mono text-[11px] font-bold tracking-[.22em] text-or uppercase">
-                    {t(locale, 'ac.cagnotte-etiquette').replace('{n}', numero)}
-                  </p>
-                  <span className="inline-flex items-center gap-2 font-mono text-[10px] tracking-[.16em] text-vert uppercase">
-                    <span aria-hidden className="pastille-statut" />
-                    {t(locale, 'ac.live')}
-                  </span>
+            {/* La cagnotte de la saison et le top 3 en direct. */}
+            <Panneau className="relative overflow-hidden p-5 sm:p-6">
+              <div aria-hidden className="pointer-events-none absolute -top-24 -right-20 size-64 rounded-full bg-or/10 blur-3xl" />
+              <div className="relative flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-[13px] font-semibold text-gris">{ts(locale, 'a.cagnotte', { n: vitrine.numero })}</p>
+                  <p className="mt-1 font-titre text-[48px] leading-none text-or">{euros(cashprize.total, locale)}</p>
                 </div>
-                <p className="mt-3.5 font-titre text-[clamp(64px,10vw,108px)] leading-[.86] text-or [text-shadow:0_0_48px_rgb(253_192_3/.35)]">
-                  {cagnotte}
-                </p>
-                <p className="mt-3 text-[14px] text-gris">{t(locale, 'ac.cagnotte-sous')}</p>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/marque/logo-192.webp" alt="" width={64} height={64} className="rounded-[12px] shadow-[0_8px_24px_rgba(0,0,0,.5)]" />
               </div>
-
-              <ol className="relative border-y border-bord bg-nuit/40">
-                {prix.map((montant, index) => (
-                  <LigneCagnotte
-                    key={index}
-                    place={t(locale, PLACES[index])}
-                    couleur={MEDAILLES[index]}
-                    ligne={top[index]}
-                    montant={montant}
-                    locale={locale}
-                  />
-                ))}
-              </ol>
-
-              <div className="relative px-5.5 pt-4.5 pb-5.5 sm:px-7">
-                <p className="mb-2.5 font-mono text-[10.5px] font-bold tracking-[.18em] text-gris uppercase">
-                  {t(locale, 'ac.cloture-dans')}
-                </p>
-                <CompteRebours fin={saison.fin.toISOString()} dateLisible={clotureEnPhrase} />
-                <p className="mt-3 font-mono text-[11px] text-gris">
-                  {t(locale, 'ac.cloture-le').replace('{d}', clotureCourte)}
-                </p>
-              </div>
-            </aside>
-          </div>
-        </Enveloppe>
-      </header>
-
-      {/* ═════════════════════════ LES CHIFFRES ═════════════════════════ */}
-      {chiffres && (
-        <GrilleCloisonnee pleineLargeur colonnes="grid-cols-2 lg:grid-cols-4">
-          <Chiffre libelle={t(locale, 'ac.chiffre-en-ligne')} vivant>
-            <NombreEnLigne />
-          </Chiffre>
-          <Chiffre libelle={t(locale, 'ac.chiffre-classes')}>{chiffres.joueurs}</Chiffre>
-          <Chiffre libelle={t(locale, 'ac.chiffre-matchs')}>{chiffres.matchs}</Chiffre>
-          <Chiffre libelle={t(locale, 'ac.chiffre-24h')}>{chiffres.matchs24h}</Chiffre>
-        </GrilleCloisonnee>
-      )}
-
-      {/* ═══════════════════════ LE CLASSEMENT, EN DIRECT ═══════════════════════ */}
-      {chiffres && (
-        <Section
-          id="classement"
-          etiquette={
-            <span className="inline-flex items-center gap-2">
-              <span aria-hidden className="pastille-statut" />
-              {t(locale, 'ac.podium-etiquette')}
-            </span>
-          }
-          titre={
-            <>
-              {t(locale, 'ac.podium-titre-1')} <span className="text-or">{t(locale, 'ac.podium-titre-2')}</span>
-            </>
-          }
-          chapeau={t(locale, 'ac.podium-chapeau').replace('{c}', cagnotte)}
-        >
-          {top.length === 0 ? (
-            <EtatVide message={t(locale, 'ac.podium-vide')} />
-          ) : (
-            <>
-              <CadreTable>
-                <ol>
-                  {top.map((ligne, index) => (
-                    <li key={ligne.uuid}>
-                      <Link
-                        href={lien(locale, cheminProfil(ligne.pseudo))}
-                        className="relative grid grid-cols-[34px_minmax(0,1fr)_auto_auto] items-center gap-3 border-b border-bord px-4 py-3.25 transition-colors last:border-b-0 hover:bg-braise sm:gap-4 sm:px-5"
-                      >
-                        <span
-                          className={`relative font-mono text-[12.5px] ${
-                            index < 3 ? 'font-bold text-or' : 'text-gris'
-                          }`}
-                        >
-                          {String(ligne.rang).padStart(2, '0')}
-                        </span>
-
-                        <span className="relative flex min-w-0 items-center gap-2.5">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img
-                            src={urlTete(ligne.pseudo, 32)}
-                            alt=""
-                            width={26}
-                            height={26}
-                            loading="lazy"
-                            className="shrink-0 rounded-micro [image-rendering:pixelated]"
-                          />
-                          <span className="min-w-0">
-                            <span className="block truncate text-[15px] leading-tight font-semibold">{ligne.pseudo}</span>
-                            <span
-                              className="block font-mono text-[10.5px] max-[460px]:hidden"
-                              style={{ color: palierDe(ligne.elo).couleur }}
-                            >
-                              {nomPalier(palierDe(ligne.elo), locale)}
-                            </span>
-                          </span>
-                        </span>
-
-                        <span
-                          className="relative font-mono text-[14px] font-bold tabular-nums"
-                          style={{ color: palierDe(ligne.elo).couleur }}
-                        >
-                          {ligne.elo}
-                        </span>
-
-                        {/* Les trois premiers affichent ce qu'ils touchent, les suivants
-                            ce qui leur manque pour y entrer. */}
-                        <span className="relative min-w-[70px] text-right font-mono text-[11.5px] sm:min-w-[86px]">
-                          {index < 3 ? (
-                            <span className="font-bold text-or">{prix[index]}</span>
-                          ) : (
-                            <EcartAuPodium ecart={eloTroisieme - ligne.elo} locale={locale} />
-                          )}
-                        </span>
-                      </Link>
+              <ol className="relative mt-5 grid gap-2">
+                {[0, 1, 2].map((i) => {
+                  const j = podiumVitrine[i]
+                  const couleur = ['#fdc003', '#c9c3d4', '#c08a4a'][i]
+                  return (
+                    <li key={i} className="flex items-center gap-3 rounded-[6px] border border-bord bg-nuit/60 px-3 py-2.5">
+                      <span className="w-6 font-titre text-[17px]" style={{ color: couleur }}>
+                        {i + 1}
+                      </span>
+                      {j ? (
+                        <Link href={lien(locale, cheminProfil(j.pseudo))} className="flex min-w-0 flex-1 items-center gap-2 hover:text-or">
+                          <Tete pseudo={j.pseudo} taille={24} />
+                          <span className="truncate font-semibold">{j.pseudo}</span>
+                          <Elo valeur={j.elo} className="ml-auto text-[13.5px]" />
+                        </Link>
+                      ) : (
+                        <span className="flex-1 text-[14px] text-gris">{ts(locale, 'c.place-libre')}</span>
+                      )}
+                      <span className="w-12 text-right font-mono text-[14px] font-bold text-creme">{euros(cashprize.podium[i], locale)}</span>
                     </li>
-                  ))}
-                </ol>
-              </CadreTable>
+                  )
+                })}
+              </ol>
+              <div className="relative mt-5">
+                <p className="mb-2 text-[12.5px] font-semibold text-gris">
+                  {ts(locale, avantOuverture ? 'a.cagnotte-ouvre' : 'a.cagnotte-fin')}
+                </p>
+                <CompteRebours fin={echeance.toISOString()} dateLisible={formaterDateHeure(echeance, locale)} compact />
+              </div>
+              <p className="relative mt-4 text-[12px] leading-relaxed text-gris/80">{ts(locale, 'a.cagnotte-note')}</p>
+            </Panneau>
+          </Conteneur>
+        </section>
 
-              <LienFleche href={lien(locale, '/classement')} className="mt-4.5">
-                {t(locale, 'classement.complet')}
-              </LienFleche>
-            </>
-          )}
-        </Section>
-      )}
-
-      {/* ═════════════════════════ LES MODES ═════════════════════════ */}
-      <Section
-        id="modes"
-        etiquette={t(locale, 'ac.modes-etiquette')}
-        titre={
-          <>
-            {t(locale, 'ac.modes-titre-1')} <span className="text-or">{t(locale, 'ac.modes-titre-2')}</span>
-          </>
-        }
-        chapeau={t(locale, 'ac.modes-chapeau')}
-      >
-        <ul className="grid gap-3.5 sm:grid-cols-2 lg:grid-cols-4">
-          {MODES.map((mode) => {
-            const leader = leaders.find((l) => l.mode === mode.id)
-            const classes = chiffres?.classesParMode[mode.id] ?? 0
-            return (
-              <li key={mode.id}>
+        {/* ═══════════════ LES MODES ═══════════════ */}
+        <Conteneur className="pt-14">
+          <TitreSection
+            titre={ts(locale, 'a.modes-titre')}
+            sous={ts(locale, 'a.modes-sous')}
+            droite={<LienVoirTout href={lien(locale, '/classement')}>{ts(locale, 'nav.classements')}</LienVoirTout>}
+          />
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+            {modes.map((m) => {
+              const leader = leaderDe.get(m.id)
+              const classes = chiffres?.classesParMode[m.id] ?? 0
+              return (
                 <Link
-                  href={lien(locale, `/classement?mode=${mode.id}`)}
-                  className="group relative flex h-full flex-col overflow-hidden rounded-carte border border-bord bg-charbon p-6 transition-[border-color,transform,background] duration-[.18s] hover:-translate-y-0.5 hover:border-(--teinte) hover:bg-braise"
-                  style={{ ['--teinte' as string]: mode.couleur }}
+                  key={m.id}
+                  href={lien(locale, cheminClassement(vitrine.numero, m.id, saisonDonnees))}
+                  className="group relative overflow-hidden rounded-[8px] border border-bord bg-charbon p-4 transition-colors hover:bg-braise"
                 >
-                  <span aria-hidden className="absolute inset-x-0 top-0 h-[3px]" style={{ background: mode.couleur }} />
                   <span
                     aria-hidden
-                    className="pointer-events-none absolute -top-20 -right-20 size-48 rounded-full opacity-60 transition-opacity group-hover:opacity-100"
-                    style={{ background: `radial-gradient(circle, ${mode.couleur}26, transparent 70%)` }}
+                    className="pointer-events-none absolute -top-10 -right-10 size-28 rounded-full opacity-25 blur-2xl transition-opacity group-hover:opacity-45"
+                    style={{ backgroundColor: m.couleur }}
                   />
-                  <div className="relative flex items-baseline justify-between gap-3">
-                    <h3 className="font-titre text-[23px] leading-none" style={{ color: mode.couleur }}>
-                      {mode.nom}
-                    </h3>
-                    {classes > 0 && (
-                      <span className="font-mono text-[10.5px] tracking-[.1em] text-gris uppercase">
-                        {t(locale, 'ac.mode-classes').replace('{n}', String(classes))}
-                      </span>
-                    )}
-                  </div>
-                  <p className="relative mt-3.5 flex-1 text-[14.5px] text-gris">{t(locale, DESCRIPTIONS_MODES[mode.id])}</p>
-                  <div className="relative mt-5 flex items-center gap-2.5 border-t border-bord pt-4">
+                  <span className="relative flex items-center gap-3">
+                    <span className="grid size-11 place-items-center rounded-[8px] border border-bord bg-nuit/70">
+                      <IconeMode mode={m.id} taille={28} />
+                    </span>
+                    <span className="min-w-0">
+                      <span className="block text-[16px] font-bold text-creme">{m.nom}</span>
+                      <span className="text-[12.5px] text-gris">{ts(locale, 'a.mode-classes', { n: classes })}</span>
+                    </span>
+                  </span>
+                  <span className="relative mt-4 flex items-center gap-2 border-t border-bord/70 pt-3 text-[13px]">
+                    <span className="text-[11px] font-bold tracking-[.08em] text-or uppercase">{ts(locale, 'a.mode-leader')}</span>
                     {leader ? (
                       <>
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                          src={urlTete(leader.pseudo, 32)}
-                          alt=""
-                          width={26}
-                          height={26}
-                          loading="lazy"
-                          className="shrink-0 rounded-micro [image-rendering:pixelated]"
-                        />
-                        <span className="min-w-0 flex-1">
-                          <span className="block font-mono text-[9.5px] tracking-[.16em] text-or uppercase">
-                            {t(locale, 'ac.numero-1')}
-                          </span>
-                          <span className="block truncate text-[14px] font-semibold">{leader.pseudo}</span>
-                        </span>
-                        <span className="font-mono text-[13px] font-bold tabular-nums" style={{ color: palierDe(leader.elo).couleur }}>
-                          {leader.elo}
-                        </span>
+                        <Tete pseudo={leader.pseudo} taille={20} />
+                        <span className="min-w-0 flex-1 truncate font-semibold text-creme">{leader.pseudo}</span>
+                        <Elo valeur={leader.elo} className="text-[13px]" />
                       </>
                     ) : (
-                      <span className="font-mono text-[11px] text-gris">{t(locale, 'ac.mode-personne')}</span>
+                      <span className="text-gris">{ts(locale, 'a.mode-vide')}</span>
                     )}
-                  </div>
+                  </span>
                 </Link>
-              </li>
-            )
-          })}
-        </ul>
-      </Section>
+              )
+            })}
+          </div>
+        </Conteneur>
 
-      {/* ═════════════════════════════ APPEL ═════════════════════════════ */}
-      <BlocFinal
-        etiquette={t(locale, 'ac.final-etiquette').replace('{n}', numero).replace('{d}', clotureEnPhrase)}
-        titre={
-          <>
-            {t(locale, 'ac.final-1')} <span className="text-or">{t(locale, 'ac.final-2')}</span>.
-          </>
-        }
-        chapeau={t(locale, 'ac.final-chapeau')}
-      >
-        <div className="flex flex-wrap items-stretch justify-center gap-2.75">
-          <BoutonIpGeant className="max-[560px]:w-full max-[560px]:justify-center" />
-          <a
-            href={reglages.discord}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={classesBouton({ variante: 'vide', taille: 'grande', className: 'max-[560px]:w-full' })}
-          >
-            <IconeDiscord className="size-4 shrink-0 fill-current" />
-            {t(locale, 'commande.rejoindre-discord')}
-          </a>
-        </div>
-        <p className="mt-4 font-mono text-[11.5px] text-gris">{t(locale, 'ac.final-ip')}</p>
-      </BlocFinal>
+        {/* ═══════════════ CE QUI SE PASSE ═══════════════ */}
+        <Conteneur className="grid gap-6 pt-14 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]">
+          <section>
+            <TitreSection
+              titre={ts(locale, 'a.derniers-matchs')}
+              sous={ts(locale, 'c.saison', { n: saisonDonnees })}
+              droite={<LienVoirTout href={lien(locale, cheminFlux(null))}>{ts(locale, 'c.voir-tout')}</LienVoirTout>}
+            />
+            <Panneau className="overflow-hidden">
+              {derniers.length === 0 ? (
+                <p className="px-4 py-10 text-center text-[14px] text-gris">{ts(locale, 'f.vide')}</p>
+              ) : (
+                derniers.map((m) => <LigneMatchNeutre key={m.id} m={m} locale={locale} grades={grades} compacte />)
+              )}
+            </Panneau>
+          </section>
+          <section>
+            <TitreSection
+              titre={ts(locale, 'a.top-global')}
+              sous={ts(locale, 'c.saison', { n: saisonDonnees })}
+              droite={<LienVoirTout href={lien(locale, cheminClassement(saisonDonnees, 'global', saisonDonnees))}>{ts(locale, 'c.voir-tout')}</LienVoirTout>}
+            />
+            <Panneau className="overflow-hidden">
+              {topDonnees.map((j) => (
+                <Link
+                  key={j.uuid}
+                  href={lien(locale, cheminProfil(j.pseudo))}
+                  className="group flex items-center gap-3 border-b border-bord/60 px-4 py-2 last:border-0 hover:bg-braise/70"
+                >
+                  <span
+                    className="w-6 font-mono text-[13px] font-bold text-gris"
+                    style={j.rang <= 3 ? { color: ['#fdc003', '#c9c3d4', '#c08a4a'][j.rang - 1] } : undefined}
+                  >
+                    {j.rang}
+                  </span>
+                  <Tete pseudo={j.pseudo} taille={24} />
+                  <span className="min-w-0 flex-1 truncate font-semibold text-creme group-hover:text-or">{j.pseudo}</span>
+                  <BadgeGrade grade={grades.get(j.uuid)} />
+                  <Elo valeur={j.elo} className="w-12 text-right text-[14px]" />
+                </Link>
+              ))}
+            </Panneau>
+          </section>
+        </Conteneur>
+
+        {/* ═══════════════ LES CHAMPIONS ═══════════════ */}
+        {terminee && champions.length > 0 && (
+          <Conteneur className="pt-14">
+            <TitreSection titre={ts(locale, 'a.temple', { n: terminee.id })} sous={ts(locale, 'a.temple-sous')} />
+            <Champions lignes={champions.slice(0, 3)} locale={locale} saison={terminee.id} grades={grades} />
+          </Conteneur>
+        )}
+
+        {/* ═══════════════ POURQUOI ═══════════════ */}
+        <Conteneur className="pt-14">
+          <TitreSection titre={ts(locale, 'a.pourquoi')} />
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {(
+              [
+                ['a.f1-titre', 'a.f1-texte', 'items-diamond_sword'],
+                ['a.f2-titre', 'a.f2-texte', 'items-iron_sword'],
+                ['a.f3-titre', 'a.f3-texte', 'items-ender_pearl'],
+                ['a.f4-titre', 'a.f4-texte', 'items-mushroom_stew'],
+              ] as [CleS2, CleS2, string][]
+            ).map(([titre, texte, icone]) => (
+              <Panneau key={titre} className="p-5">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={`/items/${icone}.png`} alt="" width={28} height={28} loading="lazy" className="[image-rendering:pixelated]" />
+                <h3 className="mt-3 text-[16px] font-bold text-creme">{ts(locale, titre)}</h3>
+                <p className="mt-1.5 text-[14px] leading-relaxed text-gris">{ts(locale, texte)}</p>
+              </Panneau>
+            ))}
+          </div>
+        </Conteneur>
+
+        {/* ═══════════════ APPEL FINAL ═══════════════ */}
+        <Conteneur className="pt-14">
+          <Panneau className="relative overflow-hidden px-6 py-10 text-center sm:py-12">
+            <div aria-hidden className="pointer-events-none absolute inset-0 [background:radial-gradient(60%_90%_at_50%_100%,rgba(254,147,1,.16),transparent_70%)]" />
+            <h2 className="relative text-[26px] font-extrabold tracking-[-.02em] text-creme sm:text-[32px]">{ts(locale, 'a.final-titre')}</h2>
+            <p className="relative mx-auto mt-2 max-w-[52ch] text-[15px] text-gris">{ts(locale, 'a.final-texte')}</p>
+            <BoutonCopieIp
+              aria-label={`${ts(locale, 'nav.copier')} — ${reglages.ip}`}
+              className="relative mt-6 inline-flex h-13 items-center rounded-[8px] bg-gradient-to-b from-or to-soupe px-6 font-mono text-[17px] font-bold text-encre hover:brightness-110"
+            >
+              {reglages.ip}
+            </BoutonCopieIp>
+          </Panneau>
+        </Conteneur>
+      </main>
     </PagePublique>
   )
 }
 
-/* -------------------------------------------------------------------------- */
-/* Contenu et composants locaux : ils ne servent qu'à cette page.              */
-/* -------------------------------------------------------------------------- */
-
-/**
- * Met en gras la valeur qui remplace `jeton` dans une phrase traduite.
- * Le dictionnaire garde la phrase entière — l'ordre des mots change d'une
- * langue à l'autre — et c'est ici qu'on la coupe autour du jeton.
- */
-function avecGras(phrase: string, valeur: string, jeton = '{c}', classes = 'font-semibold text-creme') {
-  const [avant, ...apres] = phrase.split(jeton)
-  if (apres.length === 0) return phrase
-  return (
-    <>
-      {avant}
-      <b className={classes}>{valeur}</b>
-      {apres.join(valeur)}
-    </>
-  )
-}
-
-const DESCRIPTIONS_MODES: Record<(typeof MODES)[number]['id'], CleTexte> = {
-  hg: 'ac.mode-hg',
-  digger: 'ac.mode-digger',
-  boxing: 'ac.mode-boxing',
-  ironsoup: 'ac.mode-ironsoup',
-}
-
-/** Une ligne de la cagnotte du hero : la place, qui l'occupe, ce qu'elle rapporte. */
-function LigneCagnotte({
-  place,
-  couleur,
-  ligne,
-  montant,
+function Champions({
+  lignes,
   locale,
+  saison,
+  grades,
 }: {
-  place: string
-  couleur: string
-  ligne: LigneClassement | undefined
-  montant: string
+  lignes: LigneClassement[]
   locale: Locale
+  saison: number
+  grades: Map<string, import('@/lib/grades-commun').Grade>
 }) {
+  // Ordre d'estrade : 2e, 1er, 3e.
+  const ordre = [1, 0, 2].filter((i) => lignes[i])
+  const prix = cashprizeDe(saison).podium
+  const couleurs = ['#fdc003', '#c9c3d4', '#c08a4a']
   return (
-    <li className="grid grid-cols-[40px_minmax(0,1fr)_auto] items-center gap-3 border-b border-bord px-5.5 py-3 last:border-b-0 sm:px-7">
-      <span className="font-titre text-[17px] leading-none" style={{ color: couleur }}>
-        {place}
-      </span>
-      {ligne ? (
-        <Link href={lien(locale, cheminProfil(ligne.pseudo))} className="flex min-w-0 items-center gap-2.5 transition-colors hover:text-or">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={urlTete(ligne.pseudo, 32)}
-            alt=""
-            width={28}
-            height={28}
-            className="shrink-0 rounded-micro [image-rendering:pixelated]"
-          />
-          <span className="min-w-0">
-            <span className="block truncate text-[15px] leading-tight font-semibold">{ligne.pseudo}</span>
-            <span className="block font-mono text-[11px] tabular-nums" style={{ color: palierDe(ligne.elo).couleur }}>
-              {ligne.elo} Elo
+    <div className="grid grid-cols-3 items-end gap-2 sm:gap-4">
+      {ordre.map((i) => {
+        const j = lignes[i]
+        return (
+          <Link
+            key={j.uuid}
+            href={lien(locale, `${cheminProfil(j.pseudo)}/saison-${saison}`)}
+            className="group flex flex-col items-center rounded-[8px] border bg-charbon px-2 pt-4 pb-4 text-center transition-colors hover:bg-braise sm:px-4"
+            style={{ borderColor: `${couleurs[i]}55` }}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={urlCorps(j.pseudo, 240)}
+              alt=""
+              width={80}
+              height={180}
+              loading="lazy"
+              className={`w-auto drop-shadow-[0_10px_18px_rgba(0,0,0,.55)] ${i === 0 ? 'h-[150px] sm:h-[200px]' : 'h-[120px] sm:h-[160px]'}`}
+            />
+            <span className="mt-3 font-titre text-[22px] leading-none" style={{ color: couleurs[i] }}>
+              #{i + 1}
             </span>
-          </span>
-        </Link>
-      ) : (
-        <span className="font-mono text-[12px] text-gris italic">{t(locale, 'ac.place-libre')}</span>
-      )}
-      <span className="rounded-micro border border-or/45 bg-or/10 px-2.5 py-1 font-mono text-[14px] font-bold text-or tabular-nums">
-        {montant}
-      </span>
-    </li>
-  )
-}
-
-/** Ce qui sépare un joueur de la 3e place — ou l'égalité, quand il n'y a rien. */
-function EcartAuPodium({ ecart, locale }: { ecart: number; locale: Locale }) {
-  if (ecart <= 0) {
-    return <span className="text-gris">{t(locale, 'ac.egalite')}</span>
-  }
-  return (
-    <>
-      <span className="text-oni">−{ecart}</span>{' '}
-      <span className="text-gris max-[460px]:hidden">{t(locale, 'ac.du-podium')}</span>
-    </>
-  )
-}
-
-/** Une case du bandeau de chiffres. `vivant` = la pastille verte des données en direct. */
-function Chiffre({ libelle, vivant = false, children }: { libelle: string; vivant?: boolean; children: React.ReactNode }) {
-  return (
-    <CaseCloisonnee className="px-gouttiere py-6">
-      <p className="flex items-center gap-2.5 font-titre text-[clamp(26px,3.6vw,40px)] leading-none tabular-nums">
-        {vivant && <span aria-hidden className="pastille-statut" />}
-        {children}
-      </p>
-      <p className="mt-2.5 font-mono text-[11px] tracking-[.08em] text-gris">{libelle}</p>
-    </CaseCloisonnee>
+            <span className="mt-2 flex max-w-full items-center gap-1.5">
+              <span className="truncate text-[14px] font-bold text-creme group-hover:text-or sm:text-[16px]">{j.pseudo}</span>
+              <BadgeGrade grade={grades.get(j.uuid)} className="hidden sm:inline-flex" />
+            </span>
+            <span className="mt-1 flex flex-wrap items-baseline justify-center gap-x-2">
+              <Elo valeur={j.elo} className="text-[15px]" />
+              <NomPalier elo={j.elo} locale={locale} className="hidden sm:inline" />
+            </span>
+            <span className="mt-1.5 rounded-[4px] bg-or/12 px-1.5 py-0.5 font-mono text-[12px] font-bold text-or">{euros(prix[i], locale)}</span>
+          </Link>
+        )
+      })}
+    </div>
   )
 }

@@ -109,7 +109,7 @@ export function ToastCopie() {
       role="status"
       aria-live="polite"
       className={`fixed bottom-6.5 left-1/2 z-[200] -translate-x-1/2 rounded-carte bg-soupe px-5.5 py-3.5 font-mono text-[12.5px] font-bold tracking-[.06em] text-encre shadow-[0_16px_40px_rgba(0,0,0,.6)] transition-transform duration-300 ${
-        visible ? 'translate-y-0' : 'pointer-events-none translate-y-[150%]'
+        visible ? 'translate-y-0' : 'pointer-events-none invisible translate-y-[150%]'
       }`}
     >
       {t(locale, 'commun.adresse-copiee')} {ip}

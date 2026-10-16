@@ -12,8 +12,42 @@ import { SITE } from '@/lib/site'
  * serait annoncée une heure trop tôt.
  */
 
-/** Le montant et sa répartition. À garder d'accord avec LJElo `saison.cashprize` et LJPractice `leaderboard.cashprize`. */
-export const CASHPRIZE = { total: 150, podium: [75, 50, 25] } as const
+/**
+ * Le montant et sa répartition, saison par saison. À garder d'accord avec LJElo
+ * `saison.cashprize` et LJPractice `leaderboard.cashprize`.
+ * Saison 1 : 150€ (75/50/25). Saison 2 : 100€ (50/30/20, décidé le 11/10/2026).
+ */
+const CASHPRIZES: Record<number, { total: number; podium: readonly [number, number, number] }> = {
+  1: { total: 150, podium: [75, 50, 25] },
+  2: { total: 100, podium: [50, 30, 20] },
+}
+
+/** Le cashprize d'une saison ; une saison pas encore décrite reprend le dernier connu. */
+export function cashprizeDe(saison: number): { total: number; podium: readonly [number, number, number] } {
+  const connues = Object.keys(CASHPRIZES).map(Number)
+  return CASHPRIZES[saison] ?? CASHPRIZES[Math.max(...connues)]
+}
+
+/** Le cashprize de la saison en cours (avis, accueil). */
+export const CASHPRIZE = cashprizeDe(2)
+
+/**
+ * L'OUVERTURE PUBLIQUE d'une saison, quand elle diffère du calendrier de LJElo.
+ *
+ * La saison 2 existe en base depuis le 12/10 (clôture automatique de la 1), mais le
+ * serveur n'ouvre aux joueurs que le samedi 17/10 à 14h30. Avant cette heure, le site
+ * montre la saison 1 par défaut et un compte à rebours vers l'ouverture.
+ */
+export const OUVERTURES_PUBLIQUES: Record<number, string> = {
+  2: '2026-10-17T14:30:00+02:00',
+}
+
+/** La saison affichée par défaut à cet instant : la plus récente dont l'ouverture publique est passée. */
+export function saisonParDefaut(maintenant = Date.now()): number {
+  let numero = saisonDu(maintenant).numero
+  while (numero > 1 && OUVERTURES_PUBLIQUES[numero] && Date.parse(OUVERTURES_PUBLIQUES[numero]) > maintenant) numero--
+  return numero
+}
 
 /** « 150€ » en français, « €150 » en anglais — comme en jeu. */
 export function euros(montant: number, locale: 'fr' | 'en'): string {

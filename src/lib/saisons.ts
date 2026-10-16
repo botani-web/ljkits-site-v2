@@ -1,6 +1,7 @@
 import { unstable_cache } from 'next/cache'
 
 import { prisma } from '@/lib/prisma'
+import { saisonParDefaut } from '@/lib/saison'
 
 /**
  * LES SAISONS CONSULTABLES (12/10/2026, fin de la saison 1).
@@ -49,4 +50,31 @@ export function choisirSaison(saisons: Saison[], demande: string | undefined): S
     if (trouvee) return trouvee
   }
   return saisons.find((s) => s.aDesMatchs) ?? saisons[0] ?? null
+}
+
+/**
+ * LA SAISON D'UNE PAGE DE LA REFONTE (16/10/2026).
+ *
+ * `parDefaut` : celle qu'on montre sans rien demander — la plus récente dont
+ * l'ouverture PUBLIQUE est passée (saison.ts), pas la plus récente en base : la
+ * saison 2 existe depuis le 12/10 mais n'ouvre aux joueurs que le 17/10.
+ * `demandee` absente de la base → null (la page répond 404).
+ */
+export async function contexteSaison(demandee: number | null): Promise<{
+  saisons: Saison[]
+  saison: number
+  parDefaut: number
+  terminee: boolean
+} | null> {
+  const saisons = await lireSaisonsCache()
+  const ouvertes = saisons.filter((s) => s.id <= saisonParDefaut())
+  const parDefaut = ouvertes[0]?.id ?? saisonParDefaut()
+  const saison = demandee ?? parDefaut
+  if (demandee != null && !saisons.some((s) => s.id === demandee)) return null
+  return {
+    saisons: ouvertes.length ? ouvertes : saisons,
+    saison,
+    parDefaut,
+    terminee: saisons.find((s) => s.id === saison)?.terminee ?? false,
+  }
 }

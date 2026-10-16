@@ -90,7 +90,8 @@ export const CLASSEMENT_OUVERT = true
  * tout le reste affiche la page « Season 2 is coming ». /admin et /api ne sont
  * jamais concernés. Pour la couper sans toucher au code : NEXT_PUBLIC_MAINTENANCE=0.
  */
-export const MAINTENANCE = process.env.NEXT_PUBLIC_MAINTENANCE !== '0'
+// 16/10/2026 : la saison 2 ouvre — maintenance coupée par défaut, rallumable avec NEXT_PUBLIC_MAINTENANCE=1.
+export const MAINTENANCE = process.env.NEXT_PUBLIC_MAINTENANCE === '1'
 
 /** Les sections qui restent ouvertes pendant la maintenance. */
-export const OUVERTS_EN_MAINTENANCE = ['classement', 'joueur', 'maintenance', 'ljscan', 'verif']
+export const OUVERTS_EN_MAINTENANCE = ['classement', 'joueur', 'match', 'matchs', 'maintenance', 'ljscan', 'verif']

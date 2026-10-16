@@ -94,7 +94,8 @@
     Les barres d'outils de /kits, /classement et /boutique s'y arriment par
     `top-nav` : c'est le seul endroit à corriger si le rembourrage change.
   */
-  --spacing-nav: 69px;
+  /* 16/10/2026 : barre de la refonte S2, 64 px + 1 px de filet. */
+  --spacing-nav: 65px;
 
   /* --- largeurs de contenu (namespace --container-* → classes max-w-*) --- */
   --container-contenu: 1240px;

@@ -14,7 +14,7 @@ import { MAINTENANCE, OUVERTS_EN_MAINTENANCE } from '@/lib/site'
  * Tout ce qui n'est pas public — /admin, /api, /connexion, les fichiers —
  * est laissé tranquille par le `matcher` en bas.
  */
-const PUBLIQUES = ['classement', 'boutique', 'reglement', 'recrutement', 'joueur', 'partenaire', 'ljscan', 'suggestions']
+const PUBLIQUES = ['classement', 'boutique', 'reglement', 'recrutement', 'joueur', 'match', 'matchs', 'partenaire', 'ljscan', 'suggestions', 'avis']
 
 /**
  * /ljscan SUIT LA LANGUE DU NAVIGATEUR, contrairement au reste du site.
@@ -35,6 +35,27 @@ export function middleware(requete: NextRequest) {
   // n'est pas le classement ou un profil affiche la page de maintenance.
   const prefixe = LANGUES.find((l) => pathname === `/${l}` || pathname.startsWith(`/${l}/`))
   if (prefixe) {
+    // Refonte S2 (16/10/2026) : la saison et le mode passent dans le chemin. Les
+    // anciennes adresses `?mode=`/`?saison=` (partagées sur Discord) y sont renvoyées.
+    const parametres = requete.nextUrl.searchParams
+    const morceaux = pathname.split('/')
+    const saisonDemandee = parametres.get('saison')
+    const modeDemande = parametres.get('mode')
+    if ((saisonDemandee || modeDemande) && morceaux[2] === 'classement' && morceaux.length === 3) {
+      const url = requete.nextUrl.clone()
+      url.search = ''
+      url.pathname = [pathname, saisonDemandee && /^\d{1,3}$/.test(saisonDemandee) ? `saison-${saisonDemandee}` : '', modeDemande && modeDemande !== 'global' && /^[a-z]{1,20}$/.test(modeDemande) ? modeDemande : '']
+        .filter(Boolean)
+        .join('/')
+      return NextResponse.redirect(url, 308)
+    }
+    if (saisonDemandee && /^\d{1,3}$/.test(saisonDemandee) && morceaux[2] === 'joueur' && morceaux.length === 4) {
+      const url = requete.nextUrl.clone()
+      url.search = ''
+      url.pathname = `${pathname}/saison-${saisonDemandee}`
+      return NextResponse.redirect(url, 308)
+    }
+
     if (MAINTENANCE) {
       const section = pathname.split('/')[2] ?? ''
       if (!OUVERTS_EN_MAINTENANCE.includes(section)) {

@@ -1,11 +1,11 @@
 import { FournisseurReglages } from '@/components/public/ContexteReglages'
-import { Footer } from '@/components/public/Footer'
-import { Nav } from '@/components/public/Nav'
+import { NavS2 } from '@/components/s2/NavS2'
+import { PiedS2 } from '@/components/s2/PiedS2'
 import type { Locale } from '@/lib/i18n'
 import { lireReglages } from '@/lib/reglages'
 
 /**
- * Enveloppe commune aux quatre pages publiques : barre de navigation en haut,
+ * Enveloppe commune aux pages publiques (barre et pied de la refonte S2 depuis le 16/10/2026) : barre de navigation en haut,
  * contenu, pied de page. Les pages d'administration ne l'utilisent pas.
  *
  * C'est aussi ici que les réglages sont lus une fois et mis à disposition des
@@ -22,9 +22,9 @@ export async function PagePublique({
 
   return (
     <FournisseurReglages reglages={reglages}>
-      <Nav />
+      <NavS2 />
       {children}
-      <Footer locale={locale} />
+      <PiedS2 locale={locale} />
     </FournisseurReglages>
   )
 }
