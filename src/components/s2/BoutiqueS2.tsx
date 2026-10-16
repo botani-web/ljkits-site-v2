@@ -9,6 +9,7 @@ import { useLocale } from '@/hooks/useLocale'
 import { formaterEuros } from '@/lib/format'
 import { type CleS2, ts } from '@/lib/i18n-s2'
 import { ecrirePseudoStocke, lirePseudoStocke, pseudoValide } from '@/lib/panier'
+import { prixPromo } from '@/lib/promo'
 import { urlTete } from '@/lib/practice-commun'
 
 /**
@@ -20,9 +21,13 @@ import { urlTete } from '@/lib/practice-commun'
  * le bouton Payer emmène DIRECTEMENT sur la page de paiement Tebex, dans le même
  * onglet — pas de panier, pas d'étape intermédiaire.
  *
- * Les grades : LJ++ est une amélioration de LJ+. On lit dans LuckPerms ce que le
- * pseudo possède déjà : LJ++ coûte 10 € à qui a LJ+, et 35 € (les deux d'un
- * coup) aux autres. Le serveur revérifie tout dans creerCommande.
+ * Les grades : LJ+ 25 €, LJ++ 10 € — et LJ++ EXIGE d'avoir déjà LJ+ (décision
+ * du 16/10/2026 : « soit bien clair là-dessus »). On lit dans LuckPerms ce que le
+ * pseudo possède : sans LJ+, le bouton de LJ++ renvoie vers LJ+. Le serveur
+ * revérifie tout dans creerCommande.
+ *
+ * La PROMO (réglée dans /admin/promo) n'est qu'un AFFICHAGE : prix barré, prix
+ * réduit, total réduit dans la confirmation. Le prix payé est celui de Tebex.
  */
 
 export type ProduitBoutique = {
@@ -46,7 +51,16 @@ export type ProduitBoutique = {
 type Possede = { connu: boolean; plus: boolean; plusPlus: boolean }
 type Achat = { libelle: string; articles: { type: 'PACK' | 'GRADE'; slug: string }[]; prix: number; produit: ProduitBoutique }
 
-export function BoutiqueS2({ produits, rayon }: { produits: ProduitBoutique[]; rayon: 'coins' | 'grades' }) {
+export function BoutiqueS2({
+  produits,
+  rayon,
+  promo = 0,
+}: {
+  produits: ProduitBoutique[]
+  rayon: 'coins' | 'grades'
+  /** Réduction AFFICHÉE en %, 0 = aucune (la vraie est appliquée par Tebex). */
+  promo?: number
+}) {
   const locale = useLocale()
   const [pseudo, setPseudo] = useState<string | null>(null)
   const [saisie, setSaisie] = useState('')
@@ -108,21 +122,14 @@ export function BoutiqueS2({ produits, rayon }: { produits: ProduitBoutique[]; r
     setAchat(commeAchat(p))
   }
 
-  /** LJ++ sans LJ+ : les deux d'un coup. */
   function commeAchat(p: ProduitBoutique): Achat {
-    if (p.slug === 'ljplusplus' && !possede?.plus) {
-      const plus = produits.find((x) => x.slug === 'ljplus')
-      return {
-        libelle: 'LJ+ + LJ++',
-        articles: [
-          { type: 'GRADE', slug: 'ljplus' },
-          { type: 'GRADE', slug: 'ljplusplus' },
-        ],
-        prix: p.prixCentimes + (plus?.prixCentimes ?? 0),
-        produit: p,
-      }
-    }
     return { libelle: p.nom, articles: [{ type: p.type, slug: p.slug }], prix: p.prixCentimes, produit: p }
+  }
+
+  /** « Prendre LJ+ d'abord » depuis la carte LJ++ : on ouvre l'achat de LJ+. */
+  function acheterLjPlus() {
+    const plus = produits.find((x) => x.slug === 'ljplus')
+    if (plus) acheter(plus)
   }
 
   return (
@@ -186,7 +193,7 @@ export function BoutiqueS2({ produits, rayon }: { produits: ProduitBoutique[]; r
       {rayon === 'coins' ? (
         <div className="apparition-grille mt-6 grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-5">
           {produits.map((p) => (
-            <CartePack key={p.slug} p={p} onAcheter={() => acheter(p)} />
+            <CartePack key={p.slug} p={p} promo={promo} onAcheter={() => acheter(p)} />
           ))}
         </div>
       ) : (
@@ -195,21 +202,59 @@ export function BoutiqueS2({ produits, rayon }: { produits: ProduitBoutique[]; r
             <CarteGrade
               key={p.slug}
               p={p}
+              promo={promo}
+              pseudo={pseudo}
               possede={possede}
-              prixAffiche={commeAchat(p).prix}
               onAcheter={() => acheter(p)}
+              onAcheterLjPlus={acheterLjPlus}
             />
           ))}
         </div>
       )}
 
-      {achat && pseudo && <Confirmation achat={achat} pseudo={pseudo} onFermer={() => setAchat(null)} />}
+      {achat && pseudo && <Confirmation achat={achat} pseudo={pseudo} promo={promo} onFermer={() => setAchat(null)} />}
     </>
   )
 }
 
-function BoutonAcheter({ prix, etat, onClick }: { prix: number; etat: 'ok' | 'possede' | 'bientot'; onClick: () => void }) {
+/** Le prix, barré puis réduit pendant une promo (affichage seulement). */
+function Prix({ centimes, promo, className = '' }: { centimes: number; promo: number; className?: string }) {
+  if (promo <= 0) return <span className={className}>{formaterEuros(centimes)}</span>
+  return (
+    <span className="inline-flex flex-wrap items-baseline gap-x-2">
+      <span className={className}>{formaterEuros(prixPromo(centimes, promo))}</span>
+      <span className="text-[18px] font-bold text-gris line-through decoration-oni decoration-2">{formaterEuros(centimes)}</span>
+    </span>
+  )
+}
+
+type EtatBouton = 'ok' | 'possede' | 'bientot' | 'requis'
+
+function BoutonAcheter({
+  prix,
+  promo,
+  etat,
+  onClick,
+  onRequis,
+}: {
+  prix: number
+  promo: number
+  etat: EtatBouton
+  onClick: () => void
+  onRequis?: () => void
+}) {
   const locale = useLocale()
+  if (etat === 'requis') {
+    return (
+      <button
+        type="button"
+        onClick={onRequis}
+        className="mt-4 flex h-11 w-full items-center justify-center gap-2 rounded-[8px] border-2 border-or/70 text-[14.5px] font-extrabold text-or transition-colors hover:bg-or hover:text-encre"
+      >
+        {ts(locale, 'b.prendre-plus-dabord')}
+      </button>
+    )
+  }
   if (etat !== 'ok') {
     return (
       <span className="mt-4 flex h-11 w-full items-center justify-center rounded-[8px] border border-bord text-[14px] font-semibold text-gris">
@@ -223,12 +268,12 @@ function BoutonAcheter({ prix, etat, onClick }: { prix: number; etat: 'ok' | 'po
       onClick={onClick}
       className="reflet mt-4 flex h-11 w-full items-center justify-center gap-2 rounded-[8px] bg-gradient-to-b from-or to-soupe text-[15px] font-extrabold text-encre shadow-[0_8px_22px_-10px_rgba(254,147,1,.9)] transition-[filter,transform] hover:brightness-110 active:scale-[.98]"
     >
-      {ts(locale, 'b.acheter')} · {formaterEuros(prix)}
+      {ts(locale, 'b.acheter')} · {formaterEuros(prixPromo(prix, promo))}
     </button>
   )
 }
 
-function CartePack({ p, onAcheter }: { p: ProduitBoutique; onAcheter: () => void }) {
+function CartePack({ p, promo, onAcheter }: { p: ProduitBoutique; promo: number; onAcheter: () => void }) {
   const locale = useLocale()
   return (
     <div
@@ -241,6 +286,9 @@ function CartePack({ p, onAcheter }: { p: ProduitBoutique; onAcheter: () => void
           {ts(locale, 'b.meilleur')}
         </span>
       )}
+      {promo > 0 && (
+        <span className="absolute top-2 right-2 rounded-full bg-oni px-1.5 py-0.5 text-[10.5px] font-extrabold text-white">-{promo}%</span>
+      )}
       <IconeCoins niveau={p.niveau ?? 1} taille={84} className="transition-transform duration-300 group-hover:scale-110" />
       <p className="mt-2 font-mono text-[22px] leading-none font-extrabold text-or tabular-nums">
         {(p.coins ?? 0).toLocaleString(locale === 'fr' ? 'fr-FR' : 'en-US')}
@@ -249,26 +297,35 @@ function CartePack({ p, onAcheter }: { p: ProduitBoutique; onAcheter: () => void
       <p className={`mt-1.5 h-5 text-[12px] font-bold ${p.bonus ? 'text-vert' : 'text-transparent'}`}>
         {p.bonus ? ts(locale, 'b.bonus', { n: p.bonus }) : '·'}
       </p>
-      <BoutonAcheter prix={p.prixCentimes} etat={p.payable ? 'ok' : 'bientot'} onClick={onAcheter} />
+      {promo > 0 && (
+        <p className="text-[12px] text-gris line-through decoration-oni/80">{formaterEuros(p.prixCentimes)}</p>
+      )}
+      <BoutonAcheter prix={p.prixCentimes} promo={promo} etat={p.payable ? 'ok' : 'bientot'} onClick={onAcheter} />
     </div>
   )
 }
 
 function CarteGrade({
   p,
+  promo,
+  pseudo,
   possede,
-  prixAffiche,
   onAcheter,
+  onAcheterLjPlus,
 }: {
   p: ProduitBoutique
+  promo: number
+  pseudo: string | null
   possede: Possede | null
-  prixAffiche: number
   onAcheter: () => void
+  onAcheterLjPlus: () => void
 }) {
   const locale = useLocale()
   const plusPlus = p.slug === 'ljplusplus'
   const dejaLa = plusPlus ? possede?.plusPlus : possede?.plus
-  const etat = dejaLa ? 'possede' : p.payable ? 'ok' : 'bientot'
+  // LJ++ sans LJ+ (pseudo connu et vérifié) : on renvoie vers LJ+.
+  const manquePlus = plusPlus && pseudo != null && possede != null && !possede.plus
+  const etat: EtatBouton = dejaLa ? 'possede' : !p.payable ? 'bientot' : manquePlus ? 'requis' : 'ok'
   return (
     <div
       className={`relative flex flex-col overflow-hidden rounded-[12px] border bg-charbon p-5 sm:p-6 ${plusPlus ? 'border-soupe/60' : 'border-or/35'}`}
@@ -278,11 +335,12 @@ function CarteGrade({
         className="pointer-events-none absolute -top-16 -right-16 size-56 rounded-full opacity-25 blur-3xl"
         style={{ backgroundColor: p.couleur }}
       />
-      {plusPlus && (
-        <span className="absolute top-4 right-4 rounded-full bg-soupe px-2.5 py-0.5 text-[11px] font-extrabold text-encre">
-          {ts(locale, 'b.complet')}
-        </span>
-      )}
+      <div className="absolute top-4 right-4 flex flex-col items-end gap-1.5">
+        {promo > 0 && <span className="rounded-full bg-oni px-2.5 py-0.5 text-[11.5px] font-extrabold text-white">-{promo}%</span>}
+        {plusPlus && (
+          <span className="rounded-full bg-soupe px-2.5 py-0.5 text-[11px] font-extrabold text-encre">{ts(locale, 'b.complet')}</span>
+        )}
+      </div>
       <div className="relative flex items-center gap-4">
         <span className="grid size-16 place-items-center rounded-[12px] border border-bord bg-nuit/70">
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -295,14 +353,24 @@ function CarteGrade({
           <p className="mt-1 text-[13px] text-gris">{ts(locale, 'b.a-vie')}</p>
         </div>
       </div>
-      <p className="relative mt-5 flex items-baseline gap-2">
-        <span className="text-[38px] leading-none font-extrabold tracking-[-.02em] text-creme tabular-nums">{formaterEuros(prixAffiche)}</span>
-        {plusPlus && (
-          <span className="text-[13px] text-gris">
-            {possede?.plus ? ts(locale, 'b.plusplus-amelio') : ts(locale, 'b.plusplus-avec')}
-          </span>
-        )}
+
+      <p className="relative mt-5">
+        <Prix centimes={p.prixCentimes} promo={promo} className="text-[38px] leading-none font-extrabold tracking-[-.02em] text-creme tabular-nums" />
       </p>
+
+      {plusPlus && (
+        <div className="relative mt-4 flex gap-2.5 rounded-[8px] border border-or/50 bg-or/10 px-3.5 py-3">
+          <span className="text-[18px] leading-none" aria-hidden>
+            ⚠
+          </span>
+          <div className="text-[13.5px] leading-snug">
+            <p className="font-extrabold text-or">{ts(locale, 'b.requis-titre')}</p>
+            <p className="mt-0.5 text-creme/90">{ts(locale, 'b.requis-texte')}</p>
+            {manquePlus && <p className="mt-1 font-semibold text-soupe">{ts(locale, 'b.requis-toi', { p: pseudo })}</p>}
+          </div>
+        </div>
+      )}
+
       <ul className="cascade-defilement cascade relative mt-5 flex-1 space-y-2">
         {(p.avantages ?? []).map((a) => (
           <li key={a} className="flex gap-2.5 text-[14.5px] text-creme/90">
@@ -313,13 +381,13 @@ function CarteGrade({
           </li>
         ))}
       </ul>
-      <BoutonAcheter prix={prixAffiche} etat={etat} onClick={onAcheter} />
+      <BoutonAcheter prix={p.prixCentimes} promo={promo} etat={etat} onClick={onAcheter} onRequis={onAcheterLjPlus} />
     </div>
   )
 }
 
 /** La confirmation : ce qu'on achète, pour qui, combien — puis direct chez Tebex. */
-function Confirmation({ achat, pseudo, onFermer }: { achat: Achat; pseudo: string; onFermer: () => void }) {
+function Confirmation({ achat, pseudo, promo, onFermer }: { achat: Achat; pseudo: string; promo: number; onFermer: () => void }) {
   const locale = useLocale()
   const dialogue = useRef<HTMLDialogElement>(null)
   const [etat, envoyer, enCours] = useActionState<EtatCommande, FormData>(creerCommande, ETAT_VIDE)
@@ -376,8 +444,9 @@ function Confirmation({ achat, pseudo, onFermer }: { achat: Achat; pseudo: strin
         </div>
         <div className="mt-4 flex items-baseline justify-between">
           <span className="text-[14px] text-gris">{ts(locale, 'b.total')}</span>
-          <span className="text-[30px] font-extrabold tracking-[-.02em] text-or tabular-nums">{formaterEuros(achat.prix)}</span>
+          <Prix centimes={achat.prix} promo={promo} className="text-[30px] font-extrabold tracking-[-.02em] text-or tabular-nums" />
         </div>
+        {promo > 0 && <p className="mt-1 text-right text-[12.5px] font-semibold text-vert">{ts(locale, 'b.promo-appliquee', { n: promo })}</p>}
 
         <form action={envoyer} className="mt-4">
           <input type="hidden" name="pseudoMinecraft" value={pseudo} />
@@ -388,7 +457,7 @@ function Confirmation({ achat, pseudo, onFermer }: { achat: Achat; pseudo: strin
             className="reflet flex h-13 w-full items-center justify-center gap-2 rounded-[10px] bg-gradient-to-b from-or to-soupe text-[17px] font-extrabold text-encre shadow-[0_10px_28px_-10px_rgba(254,147,1,.9)] hover:brightness-110 disabled:cursor-wait disabled:opacity-80"
           >
             {occupe && <span className="size-4 animate-spin rounded-full border-2 border-encre/30 border-t-encre" aria-hidden />}
-            {occupe ? ts(locale, 'b.redirection') : ts(locale, 'b.payer', { p: formaterEuros(achat.prix) })}
+            {occupe ? ts(locale, 'b.redirection') : ts(locale, 'b.payer', { p: formaterEuros(prixPromo(achat.prix, promo)) })}
           </button>
         </form>
         {etat.erreur && <p className="mt-3 rounded-[6px] bg-rouge/10 px-3 py-2 text-[13.5px] font-semibold text-rouge">{etat.erreur}</p>}

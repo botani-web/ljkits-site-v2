@@ -309,8 +309,15 @@ const TEXTES = {
   },
   'b.a-vie': { fr: 'à vie · paiement unique', en: 'lifetime · one-time payment' },
   'b.complet': { fr: 'Le plus complet', en: 'Most complete' },
-  'b.plusplus-avec': { fr: 'LJ+ inclus (25 € + 10 €)', en: 'LJ+ included (€25 + €10)' },
-  'b.plusplus-amelio': { fr: 'Amélioration de ton LJ+', en: 'Upgrade of your LJ+' },
+  'b.requis-titre': { fr: 'Il faut déjà avoir LJ+', en: 'You must already own LJ+' },
+  'b.requis-texte': {
+    fr: 'LJ++ est une amélioration de LJ+ : achète d’abord LJ+ (25 €), puis LJ++ (10 €).',
+    en: 'LJ++ is an upgrade of LJ+: buy LJ+ first (€25), then LJ++ (€10).',
+  },
+  'b.requis-toi': { fr: '{p} n’a pas encore LJ+.', en: '{p} doesn’t have LJ+ yet.' },
+  'b.prendre-plus-dabord': { fr: 'Acheter LJ+ d’abord', en: 'Buy LJ+ first' },
+  'b.promo-fin': { fr: 'Jusqu’au {d}', en: 'Until {d}' },
+  'b.promo-appliquee': { fr: '-{n} % appliqués au paiement', en: '{n}% off applied at checkout' },
   'b.grades-note': {
     fr: 'Les grades sont cosmétiques et à vie. Ils ne donnent aucun avantage en ranked.',
     en: 'Ranks are cosmetic and lifetime. They give no advantage in ranked.',

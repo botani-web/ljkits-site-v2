@@ -11,6 +11,7 @@ import { useStatutServeur } from '@/components/public/StatutServeur'
 import { RechercheNav } from '@/components/s2/RechercheNav'
 import { estLocale, LANGUE_DEFAUT, lien, type Locale } from '@/lib/i18n'
 import { type CleS2, ts } from '@/lib/i18n-s2'
+import { promoEnCours } from '@/lib/promo'
 
 /**
  * LA BARRE DE NAVIGATION DE LA REFONTE (16/10/2026).
@@ -51,7 +52,9 @@ function estActif(href: string, chemin: string) {
 export function NavS2() {
   const chemin = usePathname()
   const locale = langueDe(chemin)
-  const { ip, discord } = useReglages()
+  const { ip, discord, promo } = useReglages()
+  // La bulle de promo (réglée dans /admin/promo) : affichage seulement, cf. promo.ts.
+  const bulle = promoEnCours(promo) && promo.bulle ? promo.bulle : null
   const statut = useStatutServeur(true)
   const [ouvert, setOuvert] = useState(false)
 
@@ -75,19 +78,21 @@ export function NavS2() {
             // La boutique est mise en avant, à l'orange du site (16/10/2026).
             if (l.href === '/boutique') {
               return (
-                <Link
-                  key={l.href}
-                  href={href}
-                  aria-current={actif ? 'page' : undefined}
-                  className={`reflet ml-1 inline-flex items-center gap-1.5 rounded-[6px] border px-3 py-[7px] text-[14.5px] font-bold transition-colors ${
-                    actif
-                      ? 'border-soupe bg-soupe text-encre'
-                      : 'border-soupe/45 bg-soupe/12 text-soupe hover:border-soupe hover:bg-soupe hover:text-encre'
-                  }`}
-                >
-                  <IconePanier />
-                  {ts(locale, l.cle)}
-                </Link>
+                <span key={l.href} className="relative ml-1 inline-flex">
+                  <Link
+                    href={href}
+                    aria-current={actif ? 'page' : undefined}
+                    className={`reflet inline-flex items-center gap-1.5 rounded-[6px] border px-3 py-[7px] text-[14.5px] font-bold transition-colors ${
+                      actif
+                        ? 'border-soupe bg-soupe text-encre'
+                        : 'border-soupe/45 bg-soupe/12 text-soupe hover:border-soupe hover:bg-soupe hover:text-encre'
+                    }`}
+                  >
+                    <IconePanier />
+                    {ts(locale, l.cle)}
+                  </Link>
+                  {bulle && <BullePromo texte={bulle} />}
+                </span>
               )
             }
             return (
@@ -144,11 +149,12 @@ export function NavS2() {
             aria-expanded={ouvert}
             aria-controls="panneau-nav"
             aria-label={ts(locale, 'nav.menu')}
-            className="inline-flex size-10 items-center justify-center rounded-[6px] border border-bord text-creme min-[900px]:hidden"
+            className="relative inline-flex size-10 items-center justify-center rounded-[6px] border border-bord text-creme min-[900px]:hidden"
           >
             <svg viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden>
               {ouvert ? <path d="M6 6l12 12M18 6L6 18" /> : <path d="M4 7h16M4 12h16M4 17h16" />}
             </svg>
+            {bulle && !ouvert && <span className="absolute -top-1 -right-1 size-2.5 rounded-full bg-oni ring-2 ring-nuit" aria-hidden />}
           </button>
         </div>
       </div>
@@ -173,6 +179,9 @@ export function NavS2() {
                 >
                   {l.href === '/boutique' && <IconePanier />}
                   {ts(locale, l.cle)}
+                  {l.href === '/boutique' && bulle && (
+                    <span className="ml-auto rounded-full bg-oni px-2 py-0.5 text-[12px] font-extrabold text-white">{bulle}</span>
+                  )}
                 </Link>
               )
             })}
@@ -214,5 +223,14 @@ function IconePanier() {
       <path d="M4 7h12l-1 10H5z" />
       <path d="M7.5 7V5.5a2.5 2.5 0 0 1 5 0V7" />
     </svg>
+  )
+}
+
+/** La bulle de promo, accrochée au coin du bouton Boutique. */
+function BullePromo({ texte }: { texte: string }) {
+  return (
+    <span className="bulle-promo pointer-events-none absolute -top-2.5 -right-3 rounded-full bg-oni px-1.5 py-[2px] text-[10.5px] leading-none font-extrabold whitespace-nowrap text-white shadow-[0_4px_12px_rgba(233,40,19,.55)] ring-2 ring-nuit">
+      {texte}
+    </span>
   )
 }

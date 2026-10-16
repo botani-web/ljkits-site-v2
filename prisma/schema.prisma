@@ -481,6 +481,21 @@ model Reglages {
   /// une page introuvable donnerait l'impression d'un site cassé.
   recrutementMessageFerme String @default("Le recrutement est fermé pour le moment. Les ouvertures sont annoncées sur le Discord — passe y jeter un œil.") @db.Text
 
+  /// LA PROMO DE LA BOUTIQUE (16/10/2026) — AFFICHAGE SEULEMENT.
+  /// Le site montre le prix barré et le prix réduit, la bulle à côté du lien
+  /// Boutique et le bandeau ; la vraie réduction est faite par Tebex (une
+  /// « sale » créée dans le panel Tebex). Rien ici ne change ce qui est payé.
+  promoActive       Boolean   @default(false)
+  promoPourcentage  Int       @default(0)
+  /// "grades" | "coins" | "tout"
+  promoRayon        String    @default("grades")
+  /// Fin de la promo : passée cette date, elle disparaît seule du site.
+  promoFin          DateTime?
+  /// Le texte de la bulle à côté de « Boutique » dans la barre (ex. "-20%").
+  promoBulle        String    @default("")
+  promoTexte        String    @default("")
+  promoTexteEn      String    @default("")
+
   updatedAt DateTime @updatedAt
 
   @@map("reglages")

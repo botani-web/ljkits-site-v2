@@ -22,6 +22,8 @@ const nextConfig: NextConfig = {
       { source: '/kits/:chemin*', destination: '/', permanent: true },
       { source: '/:langue(en|fr)/kits', destination: '/:langue', permanent: true },
       { source: '/:langue(en|fr)/kits/:chemin*', destination: '/:langue', permanent: true },
+      // 16/10/2026 : la boutique s'ouvre sur les grades, /boutique/grades n'a vécu que quelques heures.
+      { source: '/:langue(en|fr)/boutique/grades', destination: '/:langue/boutique', permanent: false },
     ]
   },
 }

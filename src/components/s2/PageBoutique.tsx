@@ -5,13 +5,16 @@ import { Conteneur } from '@/components/s2/Briques'
 import { BoutiqueS2, type ProduitBoutique } from '@/components/s2/BoutiqueS2'
 import { OngletsBoutique } from '@/components/s2/OngletsBoutique'
 import { champ, estLocale, LANGUE_DEFAUT, lien, type Locale } from '@/lib/i18n'
+import { formaterDateHeure } from '@/lib/format'
 import { type CleS2, ts } from '@/lib/i18n-s2'
 import { prisma } from '@/lib/prisma'
+import { promoDuRayon, promoEnCours } from '@/lib/promo'
+import { lireReglages } from '@/lib/reglages'
 import { IMAGE_OG } from '@/lib/site'
 
 /**
  * LA BOUTIQUE (refonte S2, 16/10/2026) : deux rayons, coins et grades, présentés
- * comme les modes du classement (/boutique et /boutique/grades). Plus de grand
+ * comme les modes du classement (/boutique = grades, /boutique/coins). Plus de grand
  * bandeau : le titre, une ligne de réassurance, le pseudo, les articles.
  */
 
@@ -30,7 +33,7 @@ export async function metadataBoutique(brut: string, rayon: Rayon): Promise<Meta
   return {
     title: titre,
     description,
-    alternates: { canonical: lien(locale, rayon === 'coins' ? '/boutique' : '/boutique/grades') },
+    alternates: { canonical: lien(locale, rayon === 'grades' ? '/boutique' : '/boutique/coins') },
     openGraph: { title: titre, description, images: IMAGE_OG },
   }
 }
@@ -75,7 +78,10 @@ async function lireProduits(locale: Locale, rayon: Rayon): Promise<ProduitBoutiq
 
 export async function PageBoutique({ brut, rayon }: { brut: string; rayon: Rayon }) {
   const locale: Locale = estLocale(brut) ? brut : LANGUE_DEFAUT
-  const produits = await lireProduits(locale, rayon)
+  const [produits, { promo }] = await Promise.all([lireProduits(locale, rayon), lireReglages()])
+  // La promo n'est qu'affichée (prix barrés, bandeau) : Tebex applique la vraie réduction.
+  const reduction = promoDuRayon(promo, rayon)
+  const bandeau = promoEnCours(promo) ? (locale === 'en' && promo.texteEn ? promo.texteEn : promo.texte) : ''
 
   return (
     <PagePublique locale={locale}>
@@ -93,12 +99,26 @@ export async function PageBoutique({ brut, rayon }: { brut: string; rayon: Rayon
             </div>
           </div>
 
+          {bandeau && (
+            <div className="entree relative mt-5 overflow-hidden rounded-[10px] border border-oni/50 bg-gradient-to-r from-oni/25 via-soupe/15 to-transparent px-4 py-3.5 sm:px-5">
+              <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[15px] font-extrabold text-creme sm:text-[16px]">
+                <span className="rounded-full bg-oni px-2.5 py-0.5 text-[13px] text-white">-{promo.pourcentage}%</span>
+                {bandeau}
+              </p>
+              {promo.fin && (
+                <p className="mt-1 text-[13px] text-gris">
+                  {ts(locale, 'b.promo-fin', { d: formaterDateHeure(new Date(promo.fin), locale) })}
+                </p>
+              )}
+            </div>
+          )}
+
           <div className="mt-5">
-            <OngletsBoutique actif={rayon} locale={locale} />
+            <OngletsBoutique actif={rayon} locale={locale} promo={promoDuRayon(promo, 'grades')} promoCoins={promoDuRayon(promo, 'coins')} />
           </div>
 
           <div className="mt-6">
-            <BoutiqueS2 produits={produits} rayon={rayon} />
+            <BoutiqueS2 produits={produits} rayon={rayon} promo={reduction} />
           </div>
 
           <p className="mt-5 flex items-start gap-2 text-[13.5px] text-gris">

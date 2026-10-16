@@ -1,6 +1,7 @@
 import { cache } from 'react'
 
 import { prisma } from '@/lib/prisma'
+import { PROMO_VIDE, type Promo, type RayonPromo } from '@/lib/promo'
 import { SITE } from '@/lib/site'
 
 /**
@@ -18,6 +19,8 @@ export type Reglages = {
   recrutementOuvert: boolean
   /** Ce que lit un visiteur quand il est fermé. Jamais un 404. */
   recrutementMessageFerme: string
+  /** La promo de la boutique (affichage seulement, cf. promo.ts). */
+  promo: Promo
 }
 
 /**
@@ -39,6 +42,7 @@ export const REGLAGES_PAR_DEFAUT: Reglages = {
   // s'ouvre pas tout seul.
   recrutementOuvert: false,
   recrutementMessageFerme: MESSAGE_FERME_PAR_DEFAUT,
+  promo: PROMO_VIDE,
 }
 
 /**
@@ -57,5 +61,14 @@ export const lireReglages = cache(async (): Promise<Reglages> => {
     discord: enBase.discord,
     recrutementOuvert: enBase.recrutementOuvert,
     recrutementMessageFerme: enBase.recrutementMessageFerme,
+    promo: {
+      active: enBase.promoActive,
+      pourcentage: enBase.promoPourcentage,
+      rayon: (['grades', 'coins', 'tout'].includes(enBase.promoRayon) ? enBase.promoRayon : 'grades') as RayonPromo,
+      fin: enBase.promoFin ? enBase.promoFin.toISOString() : null,
+      bulle: enBase.promoBulle,
+      texte: enBase.promoTexte,
+      texteEn: enBase.promoTexteEn,
+    },
   }
 })
