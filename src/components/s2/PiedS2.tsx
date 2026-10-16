@@ -17,8 +17,9 @@ export async function PiedS2({ locale }: { locale: Locale }) {
           <div className="sm:col-span-2 lg:col-span-1">
             <Link href={lien(locale, '/')} className="inline-flex items-center gap-2.5">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/marque/logo-96.webp" alt="" width={38} height={38} loading="lazy" className="rounded-[8px]" />
-              <span className="font-titre text-[20px] text-creme">LJKITS</span>
+              <img src="/marque/icone-48.png" alt="" width={40} height={40} loading="lazy" className="rounded-[9px]" />
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/marque/ljkits-96.webp" alt="LJKITS" width={103} height={35} loading="lazy" className="h-[35px] w-auto" />
             </Link>
             <p className="mt-3 max-w-[38ch] text-[14px] leading-relaxed text-gris">{ts(locale, 'pied.baseline')}</p>
             <BoutonCopieIp className="mt-4 inline-flex items-center gap-2 rounded-[6px] border border-bord bg-nuit px-3 py-2 font-mono text-[13.5px] font-bold text-or hover:border-or/60">

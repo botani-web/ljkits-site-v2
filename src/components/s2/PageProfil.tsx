@@ -117,7 +117,7 @@ export async function PageProfil({ pseudo, brut, saison: saisonDemandee }: { pse
               className="mx-auto h-[250px] w-[200px] md:h-[300px] md:w-[230px]"
             />
 
-            <div className="min-w-0">
+            <div className="entree min-w-0">
               <div className="flex flex-wrap items-center gap-2.5">
                 {presence.enLigne ? (
                   <span className="inline-flex items-center gap-1.5 rounded-full bg-vert/12 px-2.5 py-0.5 text-[12px] font-semibold text-vert">
@@ -235,7 +235,7 @@ export async function PageProfil({ pseudo, brut, saison: saisonDemandee }: { pse
             </Conteneur>
 
             <Conteneur className="grid gap-6 pt-7 lg:grid-cols-[minmax(0,1.55fr)_minmax(0,1fr)]">
-              <div className="flex min-w-0 flex-col gap-6">
+              <div className="apparition-grille flex min-w-0 flex-col gap-6">
                 {profil.courbes.some((c) => c.points.length >= 2) && (
                   <section>
                     <h2 className="mb-3 text-[18px] font-bold text-creme">{ts(locale, 'p.progression')}</h2>
@@ -274,7 +274,7 @@ export async function PageProfil({ pseudo, brut, saison: saisonDemandee }: { pse
                 </section>
               </div>
 
-              <aside className="flex min-w-0 flex-col gap-6">
+              <aside className="apparition-grille flex min-w-0 flex-col gap-6">
                 <Records profil={profil} locale={locale} />
                 <Rivaux profil={profil} locale={locale} />
                 <Activite activite={profil.activite} locale={locale} />
@@ -297,7 +297,7 @@ function CartesModes({ profil, saison, locale, parDefaut }: { profil: Profil; sa
     (id, i, liste) => liste.indexOf(id) === i,
   )
   return (
-    <div className="grid grid-cols-1 gap-3 min-[460px]:grid-cols-2 lg:grid-cols-4">
+    <div className="apparition-grille grid grid-cols-1 gap-3 min-[460px]:grid-cols-2 lg:grid-cols-4">
       {ordre.map((id) => {
         const m = joues.get(id)
         const infos = infosMode(id)
@@ -317,7 +317,7 @@ function CartesModes({ profil, saison, locale, parDefaut }: { profil: Profil; sa
           <Link
             key={id}
             href={href}
-            className="group relative overflow-hidden rounded-[8px] border border-bord bg-charbon px-4 py-3.5 transition-colors hover:border-[color:var(--teinte)] hover:bg-braise"
+            className="group relative overflow-hidden rounded-[8px] border border-bord bg-charbon px-4 py-3.5 transition-[background-color,border-color,transform] duration-200 hover:-translate-y-0.5 hover:border-[color:var(--teinte)] hover:bg-braise"
             style={{ ['--teinte' as string]: `${infos.couleur}88` }}
           >
             <span aria-hidden className="absolute inset-x-0 top-0 h-0.5" style={{ backgroundColor: infos.couleur }} />

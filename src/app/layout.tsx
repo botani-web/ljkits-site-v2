@@ -45,19 +45,24 @@ export const metadata: Metadata = {
   },
   description:
     'Soup PvP server on Minecraft Java 1.7 and 1.8. Ranked 1v1, one global Elo, a monthly cashprize. No pay-to-win.',
+  // 16/10/2026 : la tête du logo officiel (masque doré) en icône partout.
   icons: {
-    icon: '/logo-icon.png',
-    apple: '/logo-icon.png',
+    icon: [
+      { url: '/marque/icone-32.png', sizes: '32x32', type: 'image/png' },
+      { url: '/marque/icone-48.png', sizes: '48x48', type: 'image/png' },
+      { url: '/marque/icone-192.png', sizes: '192x192', type: 'image/png' },
+    ],
+    apple: { url: '/marque/icone-180.png', sizes: '180x180' },
   },
   openGraph: {
     type: 'website',
     locale: 'en_GB',
     siteName: 'LJKITS',
     url: SITE.url,
-    images: [{ url: '/og.png', width: 1080, height: 1080 }],
+    images: [{ url: '/marque/og.png', width: 1200, height: 630 }],
   },
   twitter: {
-    card: 'summary',
+    card: 'summary_large_image',
   },
 }
 

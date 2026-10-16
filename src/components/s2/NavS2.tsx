@@ -62,10 +62,9 @@ export function NavS2() {
   return (
     <header className="sticky top-0 z-70 border-b border-bord bg-nuit/90 backdrop-blur-md">
       <div className="mx-auto flex h-16 w-full max-w-[1200px] items-center gap-3 px-4 sm:px-6 lg:gap-6">
-        <Link href={lien(locale, '/')} className="flex shrink-0 items-center gap-2.5" aria-label="LJKITS">
+        <Link href={lien(locale, '/')} className="flex shrink-0 items-center transition-transform hover:scale-[1.04]" aria-label="LJKITS">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/marque/logo-96.webp" alt="" width={34} height={34} className="rounded-[8px]" />
-          <span className="font-titre text-[19px] leading-none tracking-[.02em] text-creme">LJKITS</span>
+          <img src="/marque/ljkits-96.webp" alt="LJKITS" width={97} height={33} className="h-[33px] w-auto drop-shadow-[0_3px_10px_rgba(254,147,1,.25)]" />
         </Link>
 
         <nav className="hidden items-center gap-1 min-[900px]:flex" aria-label="Navigation">

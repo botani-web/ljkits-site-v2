@@ -16,7 +16,7 @@ import {
 } from '@/components/s2/Briques'
 import { OngletsModes, PucesSaison } from '@/components/s2/Selecteurs'
 import { cheminClassement, lireSegmentsClassement, PAR_PAGE } from '@/lib/chemins-s2'
-import { formaterDate } from '@/lib/format'
+import { formaterDate, formaterDateHeure } from '@/lib/format'
 import type { Grade } from '@/lib/grades-commun'
 import { estLocale, LANGUE_DEFAUT, lien, type Locale } from '@/lib/i18n'
 import { ts } from '@/lib/i18n-s2'
@@ -79,7 +79,14 @@ export default async function PageClassement({ params }: Params) {
   const modes = modesDeSaison(saison)
   if (vue !== 'global' && !modes.some((m) => m.id === vue)) notFound()
 
-  const [lignes, chiffres] = await Promise.all([lireClassementCache(saison, vue, 1000), lireChiffresCache(saison)])
+  // Une saison pas encore ouverte au public se montre vide : les matchs de test du staff n'y comptent pas.
+  const ouvertureSaison = OUVERTURES_PUBLIQUES[saison]
+  const pasOuverte = ouvertureSaison != null && Date.parse(ouvertureSaison) > Date.now()
+  const [toutes, chiffres] = await Promise.all([
+    pasOuverte ? Promise.resolve([]) : lireClassementCache(saison, vue, 1000),
+    pasOuverte ? Promise.resolve({ joueurs: 0, matchs: 0, matchs24h: 0, dernierMatch: null, classesParMode: {} as Record<string, number> }) : lireChiffresCache(saison),
+  ])
+  const lignes = toutes
   const pages = Math.max(1, Math.ceil(lignes.length / PAR_PAGE))
   if (page > pages) notFound()
   const visibles = lignes.slice((page - 1) * PAR_PAGE, page * PAR_PAGE)
@@ -110,7 +117,7 @@ export default async function PageClassement({ params }: Params) {
           <Conteneur className="pt-9 pb-6 sm:pt-12">
             <div className="flex flex-wrap items-end justify-between gap-4">
               <div>
-                <h1 className="text-[30px] leading-tight font-extrabold tracking-[-.02em] text-creme sm:text-[38px]">
+                <h1 className="entree text-[30px] leading-tight font-extrabold tracking-[-.02em] text-creme sm:text-[38px]">
                   {ts(locale, 'l.titre')}
                 </h1>
                 <p className="mt-1.5 max-w-[60ch] text-[15px] text-gris">
@@ -138,9 +145,15 @@ export default async function PageClassement({ params }: Params) {
 
         <Conteneur className="pt-6">
           {lignes.length === 0 ? (
-            <Panneau className="px-6 py-14 text-center">
-              <p className="text-[18px] font-bold text-creme">{ts(locale, 'l.vide-titre')}</p>
-              <p className="mx-auto mt-1.5 max-w-[46ch] text-[14.5px] text-gris">{ts(locale, 'l.vide-texte')}</p>
+            <Panneau className="apparition px-6 py-14 text-center">
+              <p className="text-[18px] font-bold text-creme">
+                {pasOuverte
+                  ? ts(locale, 'l.ouvre-titre', { n: saison, d: formaterDateHeure(new Date(ouvertureSaison), locale) })
+                  : ts(locale, 'l.vide-titre')}
+              </p>
+              <p className="mx-auto mt-1.5 max-w-[46ch] text-[14.5px] text-gris">
+                {pasOuverte ? ts(locale, 'l.ouvre-texte', { c: euros(cashprize.total, locale) }) : ts(locale, 'l.vide-texte')}
+              </p>
             </Panneau>
           ) : (
             <>
@@ -193,7 +206,7 @@ function Podium({
   prix: string[] | null
 }) {
   return (
-    <ol className="grid gap-3 sm:grid-cols-3">
+    <ol className="apparition-grille grid gap-3 sm:grid-cols-3">
       {[0, 1, 2].map((i) => {
         const j = lignes[i]
         const rang = RANGS[i]
@@ -209,7 +222,7 @@ function Podium({
           <li key={j.uuid}>
             <Link
               href={lien(locale, cheminProfil(j.pseudo))}
-              className="group relative flex h-full items-end gap-3 overflow-hidden rounded-[8px] border bg-charbon p-4 pt-5 transition-colors hover:bg-braise"
+              className="group relative flex h-full items-end gap-3 overflow-hidden rounded-[8px] border bg-charbon p-4 pt-5 transition-[background-color,transform] duration-200 hover:-translate-y-0.5 hover:bg-braise"
               style={{ borderColor: `${rang.couleur}55` }}
             >
               <span
@@ -268,7 +281,7 @@ function Tableau({
   grades: Map<string, Grade>
 }) {
   return (
-    <Panneau className="overflow-hidden">
+    <Panneau className="apparition overflow-hidden">
       <table className="w-full table-fixed border-collapse text-[14px]">
         <thead>
           <tr className="border-b border-bord text-left text-[11.5px] font-semibold uppercase tracking-[.08em] text-gris">

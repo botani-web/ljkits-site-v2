@@ -68,7 +68,7 @@ export const SITE = {
  * champ par champ. Sans ça, les pages filles partent sans image et les liens
  * partagés sur Discord s'affichent nus.
  */
-export const IMAGE_OG = [{ url: '/og.png', width: 1080, height: 1080 }]
+export const IMAGE_OG = [{ url: '/marque/og.png', width: 1200, height: 630 }]
 
 /**
  * LE CLASSEMENT DU SITE EST FERMÉ (12/09/2026).

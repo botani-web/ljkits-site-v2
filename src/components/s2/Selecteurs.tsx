@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { IconeMode } from '@/components/s2/Briques'
 import { lien, type Locale } from '@/lib/i18n'
 import { ts } from '@/lib/i18n-s2'
+import { OUVERTURES_PUBLIQUES } from '@/lib/saison'
 import type { Saison } from '@/lib/saisons'
 
 /**
@@ -23,22 +24,27 @@ export function PucesSaison({
 }) {
   if (saisons.length < 2) return null
   return (
-    <div className="flex flex-wrap gap-1.5" role="list">
+    <div className="inline-flex rounded-[8px] border border-bord bg-nuit/60 p-1" role="list" aria-label={ts(locale, 'c.saison', { n: '' }).trim()}>
       {saisons.map((s) => {
         const actif = s.id === actuelle
+        const ouverture = OUVERTURES_PUBLIQUES[s.id]
+        const aVenir = ouverture != null && Date.parse(ouverture) > Date.now()
+        const etat = s.terminee ? 'c.terminee' : aVenir ? 'c.bientot' : 'c.en-cours'
         return (
           <Link
             key={s.id}
             role="listitem"
             href={lien(locale, href(s.id))}
             aria-current={actif ? 'page' : undefined}
-            className={`inline-flex h-8 items-center gap-1.5 rounded-full border px-3 text-[13px] font-semibold transition-colors ${
-              actif ? 'border-or/60 bg-or/10 text-or' : 'border-bord text-gris hover:border-gris hover:text-creme'
+            className={`inline-flex h-9 items-center gap-2 rounded-[6px] px-3.5 text-[13.5px] font-bold transition-colors ${
+              actif ? 'bg-gradient-to-b from-or to-soupe text-encre shadow-[0_6px_18px_-8px_rgba(254,147,1,.8)]' : 'text-gris hover:bg-braise hover:text-creme'
             }`}
           >
-            {!s.terminee && <span className="size-1.5 rounded-full bg-vert" aria-hidden />}
+            {!s.terminee && !aVenir && (
+              <span className={`size-1.5 rounded-full ${actif ? 'bg-[#0d7a1f]' : 'bg-vert'}`} aria-hidden />
+            )}
             {ts(locale, 'c.saison', { n: s.id })}
-            <span className="font-normal opacity-70">· {ts(locale, s.terminee ? 'c.terminee' : 'c.en-cours')}</span>
+            <span className={`text-[11.5px] font-semibold ${actif ? 'text-encre/70' : 'opacity-70'}`}>{ts(locale, etat)}</span>
           </Link>
         )
       })}

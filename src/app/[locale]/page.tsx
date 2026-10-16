@@ -114,24 +114,24 @@ export default async function Accueil({ params }: Params) {
           />
           <Conteneur className="relative grid gap-10 py-12 sm:py-16 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)] lg:items-center lg:py-20">
             <div>
-              <p className="inline-flex items-center gap-2 rounded-full border border-or/30 bg-or/[.07] px-3 py-1 text-[12.5px] font-semibold text-or">
+              <p className="entree inline-flex items-center gap-2 rounded-full border border-or/30 bg-or/[.07] px-3 py-1 text-[12.5px] font-semibold text-or">
                 <span className={`size-1.5 rounded-full ${avantOuverture ? 'bg-or' : 'bg-vert'}`} aria-hidden />
                 {avantOuverture
                   ? ts(locale, 'a.kicker-ouverture', { n: vitrine.numero, d: formaterDateHeure(new Date(ouverture), locale) })
                   : ts(locale, 'a.kicker-live', { n: vitrine.numero })}
               </p>
-              <h1 className="mt-5 text-[46px] leading-[.98] font-extrabold tracking-[-.035em] text-creme sm:text-[64px] lg:text-[72px]">
+              <h1 style={{ ['--delai' as string]: '.08s' }} className="entree mt-5 text-[46px] leading-[.98] font-extrabold tracking-[-.035em] text-creme sm:text-[64px] lg:text-[72px]">
                 {ts(locale, 'a.titre-1')}
                 <br />
                 <span className="bg-gradient-to-b from-or to-soupe bg-clip-text text-transparent">{ts(locale, 'a.titre-2')}</span>
               </h1>
-              <p className="mt-5 max-w-[50ch] text-[16.5px] leading-relaxed text-gris sm:text-[17.5px]">
+              <p style={{ ['--delai' as string]: '.16s' }} className="entree mt-5 max-w-[50ch] text-[16.5px] leading-relaxed text-gris sm:text-[17.5px]">
                 {ts(locale, 'a.chapeau', { c: euros(cashprize.total, locale) })}
               </p>
-              <div className="mt-7 flex flex-wrap items-center gap-3">
+              <div style={{ ['--delai' as string]: '.24s' }} className="entree mt-7 flex flex-wrap items-center gap-3">
                 <BoutonCopieIp
                   aria-label={`${ts(locale, 'nav.copier')} — ${reglages.ip}`}
-                  className="group inline-flex h-13 items-center gap-3 rounded-[8px] bg-gradient-to-b from-or to-soupe px-5 text-encre shadow-[0_10px_30px_-10px_rgba(254,147,1,.8)] transition-[filter] hover:brightness-110"
+                  className="reflet group inline-flex h-13 items-center gap-3 rounded-[8px] bg-gradient-to-b from-or to-soupe px-5 text-encre shadow-[0_10px_30px_-10px_rgba(254,147,1,.8)] transition-[filter] hover:brightness-110"
                 >
                   <span className="font-mono text-[17px] font-bold">{reglages.ip}</span>
                   <span className="rounded-[5px] bg-encre/15 px-2 py-1 text-[12px] font-bold">
@@ -148,11 +148,11 @@ export default async function Accueil({ params }: Params) {
                   {ts(locale, 'a.rejoindre-discord')}
                 </a>
               </div>
-              <p className="mt-4 text-[13px] text-gris">{ts(locale, 'pied.versions')} · {ts(locale, 'nav.copier')}</p>
+              <p style={{ ['--delai' as string]: '.3s' }} className="entree mt-4 text-[13px] text-gris">{ts(locale, 'pied.versions')} · {ts(locale, 'nav.copier')}</p>
             </div>
 
             {/* La cagnotte de la saison et le top 3 en direct. */}
-            <Panneau className="relative overflow-hidden p-5 sm:p-6">
+            <Panneau className="entree relative overflow-hidden p-5 shadow-[0_30px_80px_-30px_rgba(254,147,1,.35)] sm:p-6" style={{ ['--delai' as string]: '.2s' }}>
               <div aria-hidden className="pointer-events-none absolute -top-24 -right-20 size-64 rounded-full bg-or/10 blur-3xl" />
               <div className="relative flex items-start justify-between gap-4">
                 <div>
@@ -160,7 +160,7 @@ export default async function Accueil({ params }: Params) {
                   <p className="mt-1 font-titre text-[48px] leading-none text-or">{euros(cashprize.total, locale)}</p>
                 </div>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/marque/logo-192.webp" alt="" width={64} height={64} className="rounded-[12px] shadow-[0_8px_24px_rgba(0,0,0,.5)]" />
+                <img src="/marque/icone-192.png" alt="" width={64} height={64} className="flotte rounded-[14px] shadow-[0_8px_24px_rgba(0,0,0,.5)]" />
               </div>
               <ol className="relative mt-5 grid gap-2">
                 {[0, 1, 2].map((i) => {
@@ -203,7 +203,7 @@ export default async function Accueil({ params }: Params) {
             sous={ts(locale, 'a.modes-sous')}
             droite={<LienVoirTout href={lien(locale, '/classement')}>{ts(locale, 'nav.classements')}</LienVoirTout>}
           />
-          <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+          <div className="apparition-grille grid grid-cols-2 gap-3 md:grid-cols-4">
             {modes.map((m) => {
               const leader = leaderDe.get(m.id)
               const classes = chiffres?.classesParMode[m.id] ?? 0
@@ -211,7 +211,8 @@ export default async function Accueil({ params }: Params) {
                 <Link
                   key={m.id}
                   href={lien(locale, cheminClassement(vitrine.numero, m.id, saisonDonnees))}
-                  className="group relative overflow-hidden rounded-[8px] border border-bord bg-charbon p-4 transition-colors hover:bg-braise"
+                  className="group relative overflow-hidden rounded-[8px] border border-bord bg-charbon p-4 transition-[background-color,transform,border-color] duration-200 hover:-translate-y-0.5 hover:border-[color:var(--teinte)] hover:bg-braise"
+                  style={{ ['--teinte' as string]: `${m.couleur}88` }}
                 >
                   <span
                     aria-hidden
@@ -246,7 +247,7 @@ export default async function Accueil({ params }: Params) {
         </Conteneur>
 
         {/* ═══════════════ CE QUI SE PASSE ═══════════════ */}
-        <Conteneur className="grid gap-6 pt-14 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]">
+        <Conteneur className="apparition-grille grid gap-6 pt-14 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]">
           <section>
             <TitreSection
               titre={ts(locale, 'a.derniers-matchs')}
@@ -301,7 +302,7 @@ export default async function Accueil({ params }: Params) {
         {/* ═══════════════ POURQUOI ═══════════════ */}
         <Conteneur className="pt-14">
           <TitreSection titre={ts(locale, 'a.pourquoi')} />
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="apparition-grille grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {(
               [
                 ['a.f1-titre', 'a.f1-texte', 'items-diamond_sword'],
@@ -322,13 +323,13 @@ export default async function Accueil({ params }: Params) {
 
         {/* ═══════════════ APPEL FINAL ═══════════════ */}
         <Conteneur className="pt-14">
-          <Panneau className="relative overflow-hidden px-6 py-10 text-center sm:py-12">
+          <Panneau className="apparition relative overflow-hidden px-6 py-10 text-center sm:py-12">
             <div aria-hidden className="pointer-events-none absolute inset-0 [background:radial-gradient(60%_90%_at_50%_100%,rgba(254,147,1,.16),transparent_70%)]" />
             <h2 className="relative text-[26px] font-extrabold tracking-[-.02em] text-creme sm:text-[32px]">{ts(locale, 'a.final-titre')}</h2>
             <p className="relative mx-auto mt-2 max-w-[52ch] text-[15px] text-gris">{ts(locale, 'a.final-texte')}</p>
             <BoutonCopieIp
               aria-label={`${ts(locale, 'nav.copier')} — ${reglages.ip}`}
-              className="relative mt-6 inline-flex h-13 items-center rounded-[8px] bg-gradient-to-b from-or to-soupe px-6 font-mono text-[17px] font-bold text-encre hover:brightness-110"
+              className="reflet relative mt-6 inline-flex h-13 items-center rounded-[8px] bg-gradient-to-b from-or to-soupe px-6 font-mono text-[17px] font-bold text-encre hover:brightness-110"
             >
               {reglages.ip}
             </BoutonCopieIp>
@@ -355,14 +356,14 @@ function Champions({
   const prix = cashprizeDe(saison).podium
   const couleurs = ['#fdc003', '#c9c3d4', '#c08a4a']
   return (
-    <div className="grid grid-cols-3 items-end gap-2 sm:gap-4">
+    <div className="apparition-grille grid grid-cols-3 items-end gap-2 sm:gap-4">
       {ordre.map((i) => {
         const j = lignes[i]
         return (
           <Link
             key={j.uuid}
             href={lien(locale, `${cheminProfil(j.pseudo)}/saison-${saison}`)}
-            className="group flex flex-col items-center rounded-[8px] border bg-charbon px-2 pt-4 pb-4 text-center transition-colors hover:bg-braise sm:px-4"
+            className="group flex flex-col items-center rounded-[8px] border bg-charbon px-2 pt-4 pb-4 text-center transition-[background-color,transform] duration-200 hover:-translate-y-1 hover:bg-braise sm:px-4"
             style={{ borderColor: `${couleurs[i]}55` }}
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}

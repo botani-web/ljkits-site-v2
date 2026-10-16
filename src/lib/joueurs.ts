@@ -145,3 +145,30 @@ export async function lireDuel(saison: number, a: string, b: string): Promise<{ 
   )
   return lignes[0] ?? { a: 0, b: 0 }
 }
+
+/**
+ * Les grades payants déjà possédés par un pseudo, lus dans LuckPerms — pour que
+ * la boutique ne vende pas deux fois LJ+ et sache si LJ++ coûte 10 € (LJ+ déjà
+ * là) ou 35 € (les deux). `connu` : le pseudo s'est déjà connecté au serveur.
+ * ronin = LJ+, samourai et shogun = LJ++ (cf. grades-commun.ts).
+ */
+export async function gradesAchetes(pseudo: string): Promise<{ connu: boolean; plus: boolean; plusPlus: boolean }> {
+  if (!/^[A-Za-z0-9_]{3,16}$/.test(pseudo)) return { connu: false, plus: false, plusPlus: false }
+  try {
+    const lignes = await prisma.$queryRawUnsafe<{ groupes: string[] | null }[]>(
+      `select array_agg(substr(up.permission, 7)) filter (where up.permission like 'group.%' and up.value
+                and (up.expiry = 0 or up.expiry > extract(epoch from now()))) as groupes
+         from luckperms.luckperms_players p
+         left join luckperms.luckperms_user_permissions up on up.uuid = p.uuid
+        where lower(p.username) = lower($1)
+        group by p.uuid`,
+      pseudo,
+    )
+    if (lignes.length === 0) return { connu: false, plus: false, plusPlus: false }
+    const groupes = new Set(lignes[0].groupes ?? [])
+    const plusPlus = groupes.has('shogun') || groupes.has('samourai')
+    return { connu: true, plus: plusPlus || groupes.has('ronin'), plusPlus }
+  } catch {
+    return { connu: false, plus: false, plusPlus: false }
+  }
+}

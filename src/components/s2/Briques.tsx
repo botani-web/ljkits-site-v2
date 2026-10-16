@@ -176,7 +176,7 @@ export function TitreSection({
   id?: string
 }) {
   return (
-    <div className="mb-4 flex flex-wrap items-end justify-between gap-x-6 gap-y-2">
+    <div className="apparition mb-4 flex flex-wrap items-end justify-between gap-x-6 gap-y-2">
       <div className="min-w-0">
         <h2 id={id} className="text-[19px] font-bold tracking-[-.01em] text-creme sm:text-[21px]">
           {titre}
@@ -193,12 +193,18 @@ export function Panneau({
   children,
   className = '',
   as: Balise = 'div',
+  style,
 }: {
   children: React.ReactNode
   className?: string
   as?: 'div' | 'section' | 'article' | 'aside'
+  style?: React.CSSProperties
 }) {
-  return <Balise className={`rounded-[8px] border border-bord bg-charbon ${className}`}>{children}</Balise>
+  return (
+    <Balise className={`rounded-[8px] border border-bord bg-charbon ${className}`} style={style}>
+      {children}
+    </Balise>
+  )
 }
 
 /** Une petite statistique : libellé discret au-dessus, valeur en avant. */

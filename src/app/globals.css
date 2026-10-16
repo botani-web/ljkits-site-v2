@@ -541,3 +541,101 @@
     color: var(--color-gris);
   }
 }
+
+/* ==========================================================================
+   REFONTE S2 (16/10/2026) — APPARITIONS
+   Au DÉFILEMENT : `apparition` (un bloc) et `apparition-grille` (chaque enfant,
+   légèrement décalés) sont pilotés par la position dans l'écran
+   (animation-timeline: view()), en CSS pur : rien à charger, aucun
+   clignotement au chargement, et ce qui est déjà à l'écran s'affiche tout de
+   suite. Un navigateur qui ne connaît pas view() affiche tout, simplement.
+   Au CHARGEMENT : `entree`, avec --delai pour l'échelonner.
+   « Réduire les animations » coupe tout (règle de base plus haut).
+   ========================================================================== */
+@keyframes s2-apparition {
+  from {
+    opacity: 0;
+    transform: translateY(26px) scale(0.985);
+    filter: blur(2px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+}
+
+@keyframes s2-entree {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes s2-flotte {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-2deg);
+  }
+  50% {
+    transform: translateY(-6px) rotate(2deg);
+  }
+}
+
+@keyframes s2-reflet {
+  from {
+    transform: translateX(-120%) skewX(-18deg);
+  }
+  to {
+    transform: translateX(260%) skewX(-18deg);
+  }
+}
+
+.entree {
+  animation: s2-entree 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  animation-delay: var(--delai, 0s);
+}
+
+.flotte {
+  animation: s2-flotte 4.5s ease-in-out infinite;
+}
+
+/* Le reflet qui traverse un bouton doré au survol. */
+.reflet {
+  position: relative;
+  overflow: hidden;
+}
+.reflet::after {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 40%;
+  background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.45), transparent);
+  transform: translateX(-120%) skewX(-18deg);
+  pointer-events: none;
+}
+.reflet:hover::after {
+  animation: s2-reflet 0.7s ease-out;
+}
+
+@supports (animation-timeline: view()) {
+  .apparition,
+  .apparition-grille > * {
+    animation: s2-apparition linear both;
+    animation-timeline: view();
+    animation-range: entry 0% entry 45%;
+  }
+  .apparition-grille > :nth-child(4n + 2) {
+    animation-range: entry 4% entry 50%;
+  }
+  .apparition-grille > :nth-child(4n + 3) {
+    animation-range: entry 8% entry 55%;
+  }
+  .apparition-grille > :nth-child(4n + 4) {
+    animation-range: entry 12% entry 60%;
+  }
+}

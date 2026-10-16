@@ -78,7 +78,7 @@ export function RecapMatch({
             </p>
           )}
 
-          <div className="mt-6 grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-end gap-2 sm:gap-6">
+          <div className="entree mt-6 grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-end gap-2 sm:gap-6">
             <Cote c={g} gagnant annule={annule} locale={locale} grade={grades.get(g.uuid)} />
             <div className="flex flex-col items-center pb-6 text-center sm:pb-10">
               <span className="font-titre text-[22px] text-gris/70 sm:text-[30px]">{ts(locale, 'c.vs')}</span>
@@ -97,7 +97,7 @@ export function RecapMatch({
         </Conteneur>
       </section>
 
-      <Conteneur className="grid gap-6 pt-7 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)]">
+      <Conteneur className="apparition-grille grid gap-6 pt-7 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)]">
         {/* ─────────── les chiffres ─────────── */}
         <section aria-labelledby="titre-stats">
           <h2 id="titre-stats" className="mb-3 text-[18px] font-bold text-creme">
@@ -194,7 +194,7 @@ export function RecapMatch({
       {(g.inventaire || p.inventaire) && (
         <Conteneur className="pt-8">
           <h2 className="mb-3 text-[18px] font-bold text-creme">{ts(locale, 'm.inventaires')}</h2>
-          <div className="grid gap-4 lg:grid-cols-2">
+          <div className="apparition-grille grid gap-4 lg:grid-cols-2">
             {[g, p].map((c, k) => (
               <Panneau key={c.uuid + k} className="p-4">
                 <p className="mb-3 flex items-center gap-2 text-[14px] font-semibold">

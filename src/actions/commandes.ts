@@ -5,6 +5,7 @@ import type { Prisma, StatutCommande } from '@prisma/client'
 
 import type { EtatFormulaire } from '@/actions/etat'
 import { exigerAdmin } from '@/actions/garde'
+import { gradesAchetes } from '@/lib/joueurs'
 import { notifierCommande } from '@/lib/notifications'
 import { prisma } from '@/lib/prisma'
 import { SITE } from '@/lib/site'
@@ -119,6 +120,20 @@ export async function creerCommande(
     return {
       erreur:
         'Tu as déjà plusieurs commandes en attente de paiement. Termine-les ou attends une heure avant d’en créer une nouvelle.',
+    }
+  }
+
+  /* ---- les grades LJ+ / LJ++ (16/10/2026) ---- */
+  // LJ++ est une AMÉLIORATION de LJ+ : seul, il exige que le joueur ait déjà
+  // LJ+ en jeu. Et un grade déjà possédé ne se revend pas.
+  const veutPlus = articlesUniques.some((a) => a.type === 'GRADE' && a.slug === 'ljplus')
+  const veutPlusPlus = articlesUniques.some((a) => a.type === 'GRADE' && a.slug === 'ljplusplus')
+  if (veutPlus || veutPlusPlus) {
+    const possede = await gradesAchetes(pseudoMinecraft)
+    if (veutPlus && possede.plus) return { erreur: `${pseudoMinecraft} a déjà le grade LJ+.` }
+    if (veutPlusPlus && possede.plusPlus) return { erreur: `${pseudoMinecraft} a déjà le grade LJ++.` }
+    if (veutPlusPlus && !veutPlus && !possede.plus) {
+      return { erreur: 'LJ++ est une amélioration de LJ+ : il faut d’abord LJ+ (ou prendre les deux ensemble).' }
     }
   }
 

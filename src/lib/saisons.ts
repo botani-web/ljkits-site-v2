@@ -72,7 +72,8 @@ export async function contexteSaison(demandee: number | null): Promise<{
   const saison = demandee ?? parDefaut
   if (demandee != null && !saisons.some((s) => s.id === demandee)) return null
   return {
-    saisons: ouvertes.length ? ouvertes : saisons,
+    // Toutes les saisons en base, la prochaine comprise (marquée « bientôt ») : on peut la choisir.
+    saisons,
     saison,
     parDefaut,
     terminee: saisons.find((s) => s.id === saison)?.terminee ?? false,
