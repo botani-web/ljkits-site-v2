@@ -23,8 +23,9 @@ import { type CleS2, ts } from '@/lib/i18n-s2'
 const LIENS: { href: string; cle: CleS2 }[] = [
   { href: '/classement', cle: 'nav.classements' },
   { href: '/matchs', cle: 'nav.matchs' },
-  { href: '/boutique', cle: 'nav.boutique' },
   { href: '/reglement', cle: 'nav.reglement' },
+  // En dernier, et en orange : c'est le bouton de la barre (16/10/2026).
+  { href: '/boutique', cle: 'nav.boutique' },
 ]
 
 function langueDe(chemin: string): Locale {
