@@ -84,8 +84,26 @@ function heureDeParis(annee: number, mois: number, jour: number, heure: number, 
 /** L'heure d'ouverture de la saison 1, lue telle qu'écrite dans SITE.ouverture (heure de Paris). */
 const [, A, M, J, H, MIN] = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/.exec(SITE.ouverture)!.map(Number)
 
+/**
+ * LES CLÔTURES FIXÉES À LA MAIN (16/10/2026). Sans entrée, une saison dure un
+ * mois (calendrier de LJElo). La saison 2 ferme le dimanche 15 novembre 2026 à
+ * 23h00, heure de Paris (décision de l'utilisateur, écrite dans le règlement).
+ * ⚠ LJElo, le MOTD et l'hologramme de LJCore calculent encore « un mois » : à
+ * aligner avant le 12/11/2026, sinon la saison 2 se clôt en jeu ce jour-là.
+ */
+const CLOTURES: Record<number, string> = {
+  2: '2026-11-15T23:00:00+01:00',
+}
+
+/** Ouverture de la saison n : la clôture de la précédente. */
 function debut(numero: number): number {
-  return heureDeParis(A, M - 1 + (numero - 1), J, H, MIN)
+  return numero <= 1 ? heureDeParis(A, M - 1, J, H, MIN) : fin(numero - 1)
+}
+
+/** Clôture de la saison n : fixée à la main, sinon le calendrier mensuel. */
+function fin(numero: number): number {
+  const fixee = CLOTURES[numero]
+  return fixee ? Date.parse(fixee) : heureDeParis(A, M - 1 + numero, J, H, MIN)
 }
 
 export type Saison = { numero: number; debut: Date; fin: Date }
@@ -93,6 +111,6 @@ export type Saison = { numero: number; debut: Date; fin: Date }
 /** La saison en cours à cet instant. Avant la toute première, c'est la saison 1. */
 export function saisonDu(maintenant = Date.now()): Saison {
   let numero = 1
-  while (numero < 1200 && maintenant >= debut(numero + 1)) numero++
-  return { numero, debut: new Date(debut(numero)), fin: new Date(debut(numero + 1)) }
+  while (numero < 1200 && maintenant >= fin(numero)) numero++
+  return { numero, debut: new Date(debut(numero)), fin: new Date(fin(numero)) }
 }
