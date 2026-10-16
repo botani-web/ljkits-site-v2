@@ -71,13 +71,31 @@ export function NavS2() {
           {LIENS.map((l) => {
             const href = lien(locale, l.href)
             const actif = estActif(href, chemin)
+            // La boutique est mise en avant, à l'orange du site (16/10/2026).
+            if (l.href === '/boutique') {
+              return (
+                <Link
+                  key={l.href}
+                  href={href}
+                  aria-current={actif ? 'page' : undefined}
+                  className={`reflet ml-1 inline-flex items-center gap-1.5 rounded-[6px] border px-3 py-[7px] text-[14.5px] font-bold transition-colors ${
+                    actif
+                      ? 'border-soupe bg-soupe text-encre'
+                      : 'border-soupe/45 bg-soupe/12 text-soupe hover:border-soupe hover:bg-soupe hover:text-encre'
+                  }`}
+                >
+                  <IconePanier />
+                  {ts(locale, l.cle)}
+                </Link>
+              )
+            }
             return (
               <Link
                 key={l.href}
                 href={href}
                 aria-current={actif ? 'page' : undefined}
-                className={`rounded-[6px] px-3 py-2 text-[14.5px] font-semibold transition-colors ${
-                  actif ? 'bg-braise text-creme' : 'text-gris hover:text-creme'
+                className={`relative rounded-[6px] px-3 py-2 text-[14.5px] font-semibold transition-colors ${
+                  actif ? 'bg-braise text-creme' : 'text-gris hover:bg-braise/60 hover:text-creme'
                 }`}
               >
                 {ts(locale, l.cle)}
@@ -144,10 +162,15 @@ export function NavS2() {
                 <Link
                   key={l.href}
                   href={href}
-                  className={`rounded-[6px] px-3 py-3 text-[16px] font-semibold ${
-                    estActif(href, chemin) ? 'bg-braise text-creme' : 'text-gris'
+                  className={`flex items-center gap-2 rounded-[6px] px-3 py-3 text-[16px] font-semibold ${
+                    l.href === '/boutique'
+                      ? 'border border-soupe/50 bg-soupe/12 font-bold text-soupe'
+                      : estActif(href, chemin)
+                        ? 'bg-braise text-creme'
+                        : 'text-gris'
                   }`}
                 >
+                  {l.href === '/boutique' && <IconePanier />}
                   {ts(locale, l.cle)}
                 </Link>
               )
@@ -180,5 +203,15 @@ export function NavS2() {
         </div>
       )}
     </header>
+  )
+}
+
+/** Le petit sac de la boutique. */
+function IconePanier() {
+  return (
+    <svg viewBox="0 0 20 20" className="size-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" aria-hidden>
+      <path d="M4 7h12l-1 10H5z" />
+      <path d="M7.5 7V5.5a2.5 2.5 0 0 1 5 0V7" />
+    </svg>
   )
 }

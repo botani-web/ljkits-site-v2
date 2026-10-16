@@ -639,3 +639,247 @@
     animation-range: entry 12% entry 60%;
   }
 }
+
+/* ==========================================================================
+   REFONTE S2 — MOUVEMENT PARTOUT (16/10/2026, 2e passe)
+   Tout en CSS : transitions de page, cascades, barres qui se remplissent,
+   courbes qui se dessinent, chiffres qui défilent. Rien ne bloque l'affichage :
+   sans support (ou avec « réduire les animations »), on voit l'état final.
+   ========================================================================== */
+
+/* --- la transition entre deux pages (template.tsx rejoue à chaque navigation) --- */
+@keyframes s2-page {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.transition-page main {
+  animation: s2-page 0.42s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+/* Les sections des pages plus anciennes (règlement, recrutement…) apparaissent elles aussi au défilement. */
+@supports (animation-timeline: view()) {
+  .transition-page main > section:not(:first-child) {
+    animation: s2-apparition linear both;
+    animation-timeline: view();
+    animation-range: entry 0% entry 40%;
+  }
+}
+
+/* --- les cascades : chaque enfant arrive un peu après le précédent --- */
+@keyframes s2-ligne {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.cascade > * {
+  animation: s2-ligne 0.45s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+.cascade > :nth-child(1) { animation-delay: 0.05s; }
+.cascade > :nth-child(2) { animation-delay: 0.08s; }
+.cascade > :nth-child(3) { animation-delay: 0.11s; }
+.cascade > :nth-child(4) { animation-delay: 0.14s; }
+.cascade > :nth-child(5) { animation-delay: 0.17s; }
+.cascade > :nth-child(6) { animation-delay: 0.2s; }
+.cascade > :nth-child(7) { animation-delay: 0.23s; }
+.cascade > :nth-child(8) { animation-delay: 0.26s; }
+.cascade > :nth-child(9) { animation-delay: 0.29s; }
+.cascade > :nth-child(10) { animation-delay: 0.32s; }
+.cascade > :nth-child(11) { animation-delay: 0.35s; }
+.cascade > :nth-child(12) { animation-delay: 0.38s; }
+.cascade > :nth-child(n + 13) { animation-delay: 0.4s; }
+/* Au défilement, une cascade hors de l'écran au chargement joue quand elle arrive. */
+@supports (animation-timeline: view()) {
+  /* Les 12 premiers jouent au chargement (cascade), les suivants à leur arrivée à l'écran. */
+  .cascade-defilement > :nth-child(n + 13) {
+    animation: s2-ligne linear both;
+    animation-timeline: view();
+    animation-range: entry 0% entry 70%;
+  }
+}
+
+/* --- les barres qui se remplissent (largeur ou hauteur finale posée en style) --- */
+@keyframes s2-remplir-x {
+  from {
+    transform: scaleX(0);
+  }
+}
+@keyframes s2-remplir-y {
+  from {
+    transform: scaleY(0);
+  }
+}
+.remplir-x {
+  transform-origin: left center;
+  animation: s2-remplir-x 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) 0.15s both;
+}
+.remplir-y {
+  transform-origin: bottom center;
+  animation: s2-remplir-y 0.8s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  animation-delay: calc(var(--i, 0) * 35ms + 0.1s);
+}
+/* Par défaut au chargement ; `au-defilement` les fait jouer quand ils arrivent à l'écran (blocs plus bas). */
+@supports (animation-timeline: view()) {
+  .au-defilement.remplir-x,
+  .au-defilement.remplir-y {
+    animation-timeline: view();
+    animation-range: entry 10% cover 35%;
+    animation-delay: 0s;
+    animation-duration: auto;
+    animation-timing-function: linear;
+  }
+}
+
+/* --- la courbe qui se dessine (pathLength = 1 sur le tracé) --- */
+@keyframes s2-tracer {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+.tracer {
+  stroke-dasharray: 1;
+  animation: s2-tracer 1.6s cubic-bezier(0.4, 0, 0.2, 1) 0.2s both;
+}
+@supports (animation-timeline: view()) {
+  .tracer {
+    animation-timeline: view();
+    animation-range: entry 30% cover 55%;
+    animation-delay: 0s;
+    animation-duration: auto;
+  }
+}
+@keyframes s2-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  70% {
+    transform: scale(1.15);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+.pop {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: s2-pop 0.45s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  animation-delay: var(--delai, 0s);
+}
+
+/* --- les chiffres qui défilent jusqu'à leur valeur (compteur CSS) --- */
+@property --compte {
+  syntax: '<integer>';
+  initial-value: 0;
+  inherits: false;
+}
+@keyframes s2-compte {
+  from {
+    --compte: 0;
+  }
+}
+.compteur {
+  --compte: var(--fin);
+  counter-reset: valeur var(--compte);
+  animation: s2-compte 1.2s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  font-variant-numeric: tabular-nums;
+}
+.compteur::after {
+  content: counter(valeur);
+}
+@supports (animation-timeline: view()) {
+  .au-defilement.compteur {
+    animation-timeline: view();
+    animation-range: entry 0% cover 30%;
+    animation-timing-function: cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+}
+
+/* --- le face-à-face d'un match : chacun entre par son côté --- */
+@keyframes s2-gauche {
+  from {
+    opacity: 0;
+    transform: translateX(-40px);
+  }
+}
+@keyframes s2-droite {
+  from {
+    opacity: 0;
+    transform: translateX(40px);
+  }
+}
+@keyframes s2-choc {
+  0% {
+    opacity: 0;
+    transform: scale(2.2);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(0.9);
+  }
+  100% {
+    transform: none;
+  }
+}
+.depuis-gauche {
+  animation: s2-gauche 0.6s cubic-bezier(0.2, 0.7, 0.2, 1) 0.1s both;
+}
+.depuis-droite {
+  animation: s2-droite 0.6s cubic-bezier(0.2, 0.7, 0.2, 1) 0.1s both;
+}
+.choc {
+  animation: s2-choc 0.55s cubic-bezier(0.2, 0.7, 0.2, 1) 0.45s both;
+}
+
+/* --- la lueur qui respire derrière le n°1 --- */
+@keyframes s2-lueur {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+.lueur {
+  animation: s2-lueur 3.2s ease-in-out infinite;
+}
+
+/* --- le chargement : un reflet qui passe sur des blocs gris --- */
+@keyframes s2-chargement {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}
+.squelette {
+  border-radius: 6px;
+  background: linear-gradient(90deg, rgb(46 34 69 / 0.5) 25%, rgb(70 54 102 / 0.65) 50%, rgb(46 34 69 / 0.5) 75%);
+  background-size: 200% 100%;
+  animation: s2-chargement 1.4s linear infinite;
+}
+
+/* --- les lignes cliquables glissent un peu au survol --- */
+.ligne-survol {
+  transition:
+    background-color 0.15s,
+    transform 0.15s;
+}
+.ligne-survol:hover {
+  transform: translateX(3px);
+}

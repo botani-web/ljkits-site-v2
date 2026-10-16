@@ -62,7 +62,7 @@ export default async function PageFlux({ params }: Params) {
       <main className="pb-6">
         <section className="border-b border-bord bg-[radial-gradient(60%_120%_at_10%_0%,rgba(254,147,1,.09),transparent_70%)]">
           <Conteneur className="pt-9 pb-6 sm:pt-12">
-            <h1 className="text-[30px] leading-tight font-extrabold tracking-[-.02em] text-creme sm:text-[38px]">{ts(locale, 'f.titre')}</h1>
+            <h1 className="entree text-[30px] leading-tight font-extrabold tracking-[-.02em] text-creme sm:text-[38px]">{ts(locale, 'f.titre')}</h1>
             <p className="mt-1.5 text-[15px] text-gris">
               {ts(locale, 'f.sous', { n: NOMBRE })} · {ts(locale, 'c.saison', { n: saison })}
             </p>
@@ -72,7 +72,7 @@ export default async function PageFlux({ params }: Params) {
           </Conteneur>
         </section>
         <Conteneur className="pt-6">
-          <Panneau className="overflow-hidden">
+          <Panneau className="cascade cascade-defilement overflow-hidden">
             {matchs.length === 0 ? (
               <p className="px-4 py-12 text-center text-[14.5px] text-gris">{ts(locale, 'f.vide')}</p>
             ) : (

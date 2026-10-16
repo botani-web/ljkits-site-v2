@@ -59,8 +59,8 @@ export function CourbeElo({
           const dernier = s.points[s.points.length - 1]
           return (
             <g key={s.mode}>
-              <path d={d} fill="none" stroke={couleur} strokeWidth="2.2" strokeLinejoin="round" strokeLinecap="round" opacity=".95" />
-              <circle cx={x(dernier.t)} cy={y(dernier.elo)} r="3.6" fill={couleur}>
+              <path d={d} pathLength={1} className="tracer" fill="none" stroke={couleur} strokeWidth="2.2" strokeLinejoin="round" strokeLinecap="round" opacity=".95" />
+              <circle cx={x(dernier.t)} cy={y(dernier.elo)} r="3.6" fill={couleur} className="pop" style={{ ['--delai' as string]: '1.6s' }}>
                 <title>{`${infosMode(s.mode).nom} · ${dernier.elo}`}</title>
               </circle>
             </g>

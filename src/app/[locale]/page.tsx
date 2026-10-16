@@ -7,6 +7,7 @@ import { IconeDiscord } from '@/components/public/IconeDiscord'
 import { PagePublique } from '@/components/public/PagePublique'
 import {
   BadgeGrade,
+  Compteur,
   Conteneur,
   Elo,
   IconeMode,
@@ -157,12 +158,16 @@ export default async function Accueil({ params }: Params) {
               <div className="relative flex items-start justify-between gap-4">
                 <div>
                   <p className="text-[13px] font-semibold text-gris">{ts(locale, 'a.cagnotte', { n: vitrine.numero })}</p>
-                  <p className="mt-1 font-titre text-[48px] leading-none text-or">{euros(cashprize.total, locale)}</p>
+                  <p className="mt-1 font-titre text-[48px] leading-none text-or">
+                    {locale === 'en' && '€'}
+                    <Compteur valeur={cashprize.total} />
+                    {locale === 'fr' && '€'}
+                  </p>
                 </div>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src="/marque/icone-192.png" alt="" width={64} height={64} className="flotte rounded-[14px] shadow-[0_8px_24px_rgba(0,0,0,.5)]" />
               </div>
-              <ol className="relative mt-5 grid gap-2">
+              <ol className="cascade relative mt-5 grid gap-2">
                 {[0, 1, 2].map((i) => {
                   const j = podiumVitrine[i]
                   const couleur = ['#fdc003', '#c9c3d4', '#c08a4a'][i]
@@ -225,7 +230,9 @@ export default async function Accueil({ params }: Params) {
                     </span>
                     <span className="min-w-0">
                       <span className="block text-[16px] font-bold text-creme">{m.nom}</span>
-                      <span className="text-[12.5px] text-gris">{ts(locale, 'a.mode-classes', { n: classes })}</span>
+                      <span className="text-[12.5px] text-gris">
+                        <Compteur valeur={classes} defilement /> {ts(locale, 'a.mode-classes-mot')}
+                      </span>
                     </span>
                   </span>
                   <span className="relative mt-4 flex items-center gap-2 border-t border-bord/70 pt-3 text-[13px]">
@@ -254,7 +261,7 @@ export default async function Accueil({ params }: Params) {
               sous={ts(locale, 'c.saison', { n: saisonDonnees })}
               droite={<LienVoirTout href={lien(locale, cheminFlux(null))}>{ts(locale, 'c.voir-tout')}</LienVoirTout>}
             />
-            <Panneau className="overflow-hidden">
+            <Panneau className="cascade-defilement overflow-hidden">
               {derniers.length === 0 ? (
                 <p className="px-4 py-10 text-center text-[14px] text-gris">{ts(locale, 'f.vide')}</p>
               ) : (
@@ -268,12 +275,12 @@ export default async function Accueil({ params }: Params) {
               sous={ts(locale, 'c.saison', { n: saisonDonnees })}
               droite={<LienVoirTout href={lien(locale, cheminClassement(saisonDonnees, 'global', saisonDonnees))}>{ts(locale, 'c.voir-tout')}</LienVoirTout>}
             />
-            <Panneau className="overflow-hidden">
+            <Panneau className="cascade-defilement overflow-hidden">
               {topDonnees.map((j) => (
                 <Link
                   key={j.uuid}
                   href={lien(locale, cheminProfil(j.pseudo))}
-                  className="group flex items-center gap-3 border-b border-bord/60 px-4 py-2 last:border-0 hover:bg-braise/70"
+                  className="ligne-survol group flex items-center gap-3 border-b border-bord/60 px-4 py-2 last:border-0 hover:bg-braise/70"
                 >
                   <span
                     className="w-6 font-mono text-[13px] font-bold text-gris"
@@ -383,7 +390,7 @@ function Champions({
               <BadgeGrade grade={grades.get(j.uuid)} className="hidden sm:inline-flex" />
             </span>
             <span className="mt-1 flex flex-wrap items-baseline justify-center gap-x-2">
-              <Elo valeur={j.elo} className="text-[15px]" />
+              <Elo valeur={j.elo} className="text-[15px]" anime defilement />
               <NomPalier elo={j.elo} locale={locale} className="hidden sm:inline" />
             </span>
             <span className="mt-1.5 rounded-[4px] bg-or/12 px-1.5 py-0.5 font-mono text-[12px] font-bold text-or">{euros(prix[i], locale)}</span>

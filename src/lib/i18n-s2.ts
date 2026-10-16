@@ -97,7 +97,7 @@ const TEXTES = {
     fr: 'Même kit pour tout le monde, adversaire à ±100 Elo. Clique un mode pour son classement.',
     en: 'Same kit for everyone, opponents within ±100 Elo. Pick a mode to see its leaderboard.',
   },
-  'a.mode-classes': { fr: '{n} classés', en: '{n} ranked' },
+  'a.mode-classes-mot': { fr: 'classés', en: 'ranked' },
   'a.mode-leader': { fr: 'N°1', en: '#1' },
   'a.mode-vide': { fr: 'Personne encore', en: 'Nobody yet' },
   'a.derniers-matchs': { fr: 'Derniers matchs', en: 'Latest matches' },

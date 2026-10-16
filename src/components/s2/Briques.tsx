@@ -59,11 +59,43 @@ export function Tete({ pseudo, taille = 24, className = '' }: { pseudo: string; 
   )
 }
 
-/** Un Elo, toujours à la couleur de son palier (règle du jeu, cf. Palier.java). */
-export function Elo({ valeur, className = '' }: { valeur: number; className?: string }) {
+/**
+ * Un nombre qui défile de 0 à sa valeur quand il arrive à l'écran (compteur CSS,
+ * globals.css). La vraie valeur reste dans le texte pour les lecteurs d'écran et
+ * le copier-coller ; sans support, c'est elle qu'on voit, directement.
+ */
+export function Compteur({
+  valeur,
+  className = '',
+  defilement = false,
+}: {
+  valeur: number
+  className?: string
+  /** Plus bas dans la page : défile quand il arrive à l'écran plutôt qu'au chargement. */
+  defilement?: boolean
+}) {
+  return (
+    <span className={`compteur ${defilement ? 'au-defilement' : ''} ${className}`} style={{ ['--fin' as string]: Math.round(valeur) }}>
+      <span className="sr-only">{valeur}</span>
+    </span>
+  )
+}
+
+/** Un Elo, toujours à la couleur de son palier (règle du jeu, cf. Palier.java). `anime` : il défile en arrivant. */
+export function Elo({
+  valeur,
+  className = '',
+  anime = false,
+  defilement = false,
+}: {
+  valeur: number
+  className?: string
+  anime?: boolean
+  defilement?: boolean
+}) {
   return (
     <span className={`font-mono font-bold tabular-nums ${className}`} style={{ color: palierDe(valeur).couleur }}>
-      {valeur}
+      {anime ? <Compteur valeur={valeur} defilement={defilement} /> : valeur}
     </span>
   )
 }
@@ -123,7 +155,7 @@ export function LienJoueur({
 export function Forme({ resultats, locale }: { resultats: Resultat[]; locale: Locale }) {
   if (resultats.length === 0) return <span className="text-gris/60">—</span>
   return (
-    <span className="inline-flex gap-[3px]" aria-label={resultats.join(' ')}>
+    <span className="cascade inline-flex gap-[3px]" aria-label={resultats.join(' ')}>
       {[...resultats].reverse().map((r, i) => (
         <span
           key={i}
@@ -156,7 +188,7 @@ export function BarreWinrate({ valeur, className = '' }: { valeur: number; class
   return (
     <span className={`relative block h-1 overflow-hidden rounded-full bg-bord ${className}`}>
       <span
-        className={`absolute inset-y-0 left-0 rounded-full ${valeur >= 50 ? 'bg-vert' : 'bg-rouge/80'}`}
+        className={`remplir-x absolute inset-y-0 left-0 rounded-full ${valeur >= 50 ? 'bg-vert' : 'bg-rouge/80'}`}
         style={{ width: `${Math.max(2, Math.min(100, valeur))}%` }}
       />
     </span>

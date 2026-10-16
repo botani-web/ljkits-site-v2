@@ -226,8 +226,8 @@ function Podium({
               style={{ borderColor: `${rang.couleur}55` }}
             >
               <span
-                className="pointer-events-none absolute inset-0 opacity-70"
-                style={{ background: `radial-gradient(80% 90% at 15% 100%, ${rang.couleur}1c, transparent 70%)` }}
+                className={`pointer-events-none absolute inset-0 opacity-70 ${i === 0 ? 'lueur' : ''}`}
+                style={{ background: `radial-gradient(80% 90% at 15% 100%, ${rang.couleur}${i === 0 ? '2e' : '1c'}, transparent 70%)` }}
                 aria-hidden
               />
               {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -237,7 +237,7 @@ function Podium({
                 width={60}
                 height={135}
                 loading={i === 0 ? 'eager' : 'lazy'}
-                className="relative -mb-4 h-[112px] w-auto shrink-0 drop-shadow-[0_8px_14px_rgba(0,0,0,.5)]"
+                className="relative -mb-4 h-[112px] w-auto shrink-0 drop-shadow-[0_8px_14px_rgba(0,0,0,.5)] transition-transform duration-300 group-hover:-translate-y-1 group-hover:scale-105"
               />
               <div className="relative min-w-0 flex-1">
                 <div className="flex items-center gap-2">
@@ -253,7 +253,7 @@ function Podium({
                   <BadgeGrade grade={grades.get(j.uuid)} />
                 </div>
                 <div className="mt-0.5 flex items-baseline gap-2">
-                  <Elo valeur={j.elo} className="text-[22px]" />
+                  <Elo valeur={j.elo} className="text-[22px]" anime />
                   <NomPalier elo={j.elo} locale={locale} />
                 </div>
                 <div className="mt-1 text-[12.5px] text-gris">
@@ -296,14 +296,14 @@ function Tableau({
             </th>
           </tr>
         </thead>
-        <tbody>
+        <tbody className="cascade cascade-defilement">
           {lignes.map((j) => (
-            <tr key={j.uuid} className="border-b border-bord/60 last:border-0 hover:bg-braise/60">
+            <tr key={j.uuid} className="border-b border-bord/60 transition-colors last:border-0 hover:bg-braise/60">
               <td className="py-2 pl-4 font-mono text-[13px] font-bold text-gris tabular-nums">
                 <span style={j.rang <= 3 ? { color: RANGS[j.rang - 1].couleur } : undefined}>{j.rang}</span>
               </td>
               <td className="py-2">
-                <Link href={lien(locale, cheminProfil(j.pseudo))} className="group flex min-w-0 items-center gap-2.5">
+                <Link href={lien(locale, cheminProfil(j.pseudo))} className="ligne-survol group flex min-w-0 items-center gap-2.5">
                   <Tete pseudo={j.pseudo} taille={26} />
                   <span className="truncate font-semibold text-creme group-hover:text-or">{j.pseudo}</span>
                   <BadgeGrade grade={grades.get(j.uuid)} />

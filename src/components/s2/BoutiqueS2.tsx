@@ -303,7 +303,7 @@ function CarteGrade({
           </span>
         )}
       </p>
-      <ul className="relative mt-5 flex-1 space-y-2">
+      <ul className="cascade-defilement cascade relative mt-5 flex-1 space-y-2">
         {(p.avantages ?? []).map((a) => (
           <li key={a} className="flex gap-2.5 text-[14.5px] text-creme/90">
             <span className="mt-0.5 font-bold" style={{ color: p.couleur }} aria-hidden>

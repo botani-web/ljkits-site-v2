@@ -29,7 +29,7 @@ export function LigneMatchNeutre({
   return (
     <Link
       href={lien(locale, cheminMatchCourt(m.id))}
-      className="group grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 border-b border-bord/60 px-3.5 py-2.5 last:border-0 hover:bg-braise/70 sm:px-4"
+      className="ligne-survol group grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 border-b border-bord/60 px-3.5 py-2.5 last:border-0 hover:bg-braise/70 sm:px-4"
     >
       <span className="grid size-8 place-items-center rounded-[6px] bg-nuit/70" title={infosMode(m.mode).nom}>
         <IconeMode mode={m.mode} taille={18} />
@@ -62,7 +62,7 @@ export function LigneMatchProfil({ m, locale }: { m: MatchProfil; locale: Locale
   return (
     <Link
       href={lien(locale, cheminMatchCourt(m.id))}
-      className="group relative grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 border-b border-bord/60 py-2.5 pr-3.5 pl-4 last:border-0 hover:bg-braise/70 sm:grid-cols-[auto_minmax(0,1fr)_auto_auto]"
+      className="ligne-survol group relative grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 border-b border-bord/60 py-2.5 pr-3.5 pl-4 last:border-0 hover:bg-braise/70 sm:grid-cols-[auto_minmax(0,1fr)_auto_auto]"
     >
       <span
         aria-hidden

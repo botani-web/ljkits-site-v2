@@ -9,6 +9,7 @@ import {
   BadgeGrade,
   BarreWinrate,
   Chiffre,
+  Compteur,
   Conteneur,
   Elo,
   Forme,
@@ -117,8 +118,8 @@ export async function PageProfil({ pseudo, brut, saison: saisonDemandee }: { pse
               className="mx-auto h-[250px] w-[200px] md:h-[300px] md:w-[230px]"
             />
 
-            <div className="entree min-w-0">
-              <div className="flex flex-wrap items-center gap-2.5">
+            <div className="min-w-0">
+              <div className="entree flex flex-wrap items-center gap-2.5">
                 {presence.enLigne ? (
                   <span className="inline-flex items-center gap-1.5 rounded-full bg-vert/12 px-2.5 py-0.5 text-[12px] font-semibold text-vert">
                     <span className="pastille-statut !size-1.5" aria-hidden />
@@ -136,12 +137,12 @@ export async function PageProfil({ pseudo, brut, saison: saisonDemandee }: { pse
                 )}
               </div>
 
-              <h1 className="mt-2 flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1">
+              <h1 className="entree mt-2 flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1" style={{ ['--delai' as string]: '.06s' }}>
                 <span className="truncate text-[32px] leading-tight font-extrabold tracking-[-.02em] text-creme sm:text-[42px]">{f.pseudo}</span>
                 <BadgeGrade grade={grade} className="!h-6 !px-2 !text-[12px]" />
               </h1>
 
-              <ul className="mt-2 flex flex-wrap gap-x-5 gap-y-1 text-[13.5px] text-gris">
+              <ul className="cascade mt-2 flex flex-wrap gap-x-5 gap-y-1 text-[13.5px] text-gris">
                 {g && g.rang > 0 && (
                   <li>
                     <Link
@@ -167,7 +168,7 @@ export async function PageProfil({ pseudo, brut, saison: saisonDemandee }: { pse
               </ul>
 
               {f.saisons.length > 0 && (
-                <div className="mt-4">
+                <div className="entree mt-4" style={{ ['--delai' as string]: '.18s' }}>
                   <PucesSaison
                     saisons={f.saisons}
                     actuelle={saison}
@@ -178,25 +179,25 @@ export async function PageProfil({ pseudo, brut, saison: saisonDemandee }: { pse
               )}
 
               {g && (
-                <Panneau className="mt-5 grid grid-cols-2 gap-x-4 gap-y-4 px-4 py-4 sm:grid-cols-3 lg:grid-cols-6">
+                <Panneau className="cascade mt-5 grid grid-cols-2 gap-x-4 gap-y-4 px-4 py-4 sm:grid-cols-3 lg:grid-cols-6">
                   <Chiffre libelle={ts(locale, 'p.elo-global')} sous={<NomPalier elo={g.elo} locale={locale} />}>
-                    <Elo valeur={g.elo} className="text-[26px]" />
+                    <Elo valeur={g.elo} className="text-[26px]" anime />
                   </Chiffre>
                   <Chiffre libelle={ts(locale, 'c.pic')}>
-                    <Elo valeur={g.eloMax} />
+                    <Elo valeur={g.eloMax} anime />
                   </Chiffre>
                   <Chiffre libelle={ts(locale, 'c.matchs')} sous={<Forme resultats={profil!.forme.slice(0, 5)} locale={locale} />}>
-                    <span className="font-mono">{g.matchs}</span>
+                    <span className="font-mono"><Compteur valeur={g.matchs} /></span>
                   </Chiffre>
                   <Chiffre libelle={`${ts(locale, 'c.v')} / ${ts(locale, 'c.d')}`}>
                     <span className="font-mono">
-                      <span className="text-vert">{g.victoires}</span>
+                      <span className="text-vert"><Compteur valeur={g.victoires} /></span>
                       <span className="text-gris"> / </span>
-                      <span className="text-rouge">{g.defaites}</span>
+                      <span className="text-rouge"><Compteur valeur={g.defaites} /></span>
                     </span>
                   </Chiffre>
                   <Chiffre libelle={ts(locale, 'c.winrate')} sous={<BarreWinrate valeur={g.winrate} className="mt-1.5 w-20" />}>
-                    <span className="font-mono">{g.winrate}%</span>
+                    <span className="font-mono"><Compteur valeur={g.winrate} />%</span>
                   </Chiffre>
                   <Chiffre libelle={ts(locale, 'p.temps-ranked')} sous={`${ts(locale, 'c.meilleure-serie')} ${g.recordSerie}`}>
                     <span className="font-mono">{formaterTempsJeu(profil!.temps.total)}</span>
@@ -250,7 +251,7 @@ export async function PageProfil({ pseudo, brut, saison: saisonDemandee }: { pse
                     {ts(locale, 'p.historique')}{' '}
                     <span className="text-[14px] font-normal text-gris">({profil.totaux.matchs})</span>
                   </h2>
-                  <Panneau className="overflow-hidden">
+                  <Panneau className="cascade cascade-defilement overflow-hidden">
                     {profil.historique.length === 0 ? (
                       <p className="px-4 py-8 text-center text-[14px] text-gris">{ts(locale, 'p.historique-vide')}</p>
                     ) : (
@@ -330,7 +331,7 @@ function CartesModes({ profil, saison, locale, parDefaut }: { profil: Profil; sa
                 </span>
               </span>
               <span className="text-right">
-                <Elo valeur={m.elo} className="block text-[20px] leading-tight" />
+                <Elo valeur={m.elo} className="block text-[20px] leading-tight" anime />
                 <NomPalier elo={m.elo} locale={locale} />
               </span>
             </span>
@@ -391,7 +392,7 @@ function Records({ profil, locale }: { profil: Profil; locale: Locale }) {
   return (
     <section>
       <h2 className="mb-3 text-[18px] font-bold text-creme">{ts(locale, 'p.records')}</h2>
-      <Panneau className="divide-y divide-bord/60">
+      <Panneau className="cascade-defilement cascade divide-y divide-bord/60">
         {lignes.map((l) => (
           <div key={l.libelle} className="flex items-center justify-between gap-3 px-4 py-2.5">
             <span className="min-w-0">
@@ -412,12 +413,12 @@ function Rivaux({ profil, locale }: { profil: Profil; locale: Locale }) {
   return (
     <section>
       <h2 className="mb-3 text-[18px] font-bold text-creme">{ts(locale, 'p.rivaux')}</h2>
-      <div className="grid grid-cols-2 gap-3">
+      <div className="cascade grid grid-cols-2 gap-3">
         {nemesis && <CarteRival r={nemesis} titre={ts(locale, 'p.nemesis')} couleur="text-rouge" locale={locale} />}
         {victime && <CarteRival r={victime} titre={ts(locale, 'p.victime')} couleur="text-vert" locale={locale} />}
       </div>
       {faceAFace.length > 0 && (
-        <Panneau className="mt-3 overflow-hidden">
+        <Panneau className="cascade-defilement mt-3 overflow-hidden">
           <p className="border-b border-bord px-4 py-2 text-[11.5px] font-semibold tracking-[.08em] text-gris uppercase">
             {ts(locale, 'p.face-a-face')}
           </p>
@@ -425,7 +426,7 @@ function Rivaux({ profil, locale }: { profil: Profil; locale: Locale }) {
             <Link
               key={r.uuid}
               href={lien(locale, cheminProfil(r.pseudo))}
-              className="flex items-center gap-2.5 border-b border-bord/60 px-4 py-2 text-[14px] last:border-0 hover:bg-braise/60"
+              className="ligne-survol flex items-center gap-2.5 border-b border-bord/60 px-4 py-2 text-[14px] last:border-0 hover:bg-braise/60"
             >
               <Tete pseudo={r.pseudo} taille={20} />
               <span className="min-w-0 flex-1 truncate font-semibold text-creme">{r.pseudo}</span>
@@ -466,7 +467,7 @@ function Activite({ activite, locale }: { activite: Profil['activite']; locale: 
       <h2 className="mb-3 text-[18px] font-bold text-creme">{ts(locale, 'p.activite')}</h2>
       <Panneau className="px-4 pt-4 pb-3">
         <div className="flex h-20 items-end gap-1">
-          {activite.map((a) => {
+          {activite.map((a, i) => {
             const jour = new Date(`${a.jour}T12:00:00Z`).toLocaleDateString(locale === 'fr' ? 'fr-FR' : 'en-GB', {
               day: 'numeric',
               month: 'short',
@@ -475,8 +476,8 @@ function Activite({ activite, locale }: { activite: Profil['activite']; locale: 
               <span
                 key={a.jour}
                 title={ts(locale, 'p.activite-aria', { n: a.matchs, d: jour })}
-                className={`flex-1 rounded-t-[3px] ${a.matchs ? 'bg-or/80' : 'bg-bord'}`}
-                style={{ height: `${a.matchs ? Math.max(8, (a.matchs / max) * 100) : 4}%` }}
+                className={`remplir-y au-defilement flex-1 rounded-t-[3px] transition-colors hover:bg-or ${a.matchs ? 'bg-or/80' : 'bg-bord'}`}
+                style={{ height: `${a.matchs ? Math.max(8, (a.matchs / max) * 100) : 4}%`, ['--i' as string]: i }}
               />
             )
           })}

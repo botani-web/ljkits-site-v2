@@ -78,16 +78,20 @@ export function RecapMatch({
             </p>
           )}
 
-          <div className="entree mt-6 grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-end gap-2 sm:gap-6">
-            <Cote c={g} gagnant annule={annule} locale={locale} grade={grades.get(g.uuid)} />
-            <div className="flex flex-col items-center pb-6 text-center sm:pb-10">
+          <div className="mt-6 grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-end gap-2 sm:gap-6">
+            <div className="depuis-gauche min-w-0">
+              <Cote c={g} gagnant annule={annule} locale={locale} grade={grades.get(g.uuid)} />
+            </div>
+            <div className="choc flex flex-col items-center pb-6 text-center sm:pb-10">
               <span className="font-titre text-[22px] text-gris/70 sm:text-[30px]">{ts(locale, 'c.vs')}</span>
               <span className="mt-1 font-mono text-[15px] font-bold text-creme sm:text-[18px]">{formaterDuree(m.duree)}</span>
             </div>
-            <Cote c={p} gagnant={false} annule={annule} locale={locale} grade={grades.get(p.uuid)} />
+            <div className="depuis-droite min-w-0">
+              <Cote c={p} gagnant={false} annule={annule} locale={locale} grade={grades.get(p.uuid)} />
+            </div>
           </div>
 
-          <dl className="mt-7 grid grid-cols-2 gap-2 sm:grid-cols-4">
+          <dl className="cascade mt-7 grid grid-cols-2 gap-2 sm:grid-cols-4">
             <Info libelle={ts(locale, 'm.fin')} valeur={t(locale, cleRaison(m.raison))} />
             <Info libelle={ts(locale, 'm.duree')} valeur={formaterDuree(m.duree)} />
             <Info libelle={ts(locale, 'm.carte')} valeur={m.carte ?? '—'} />
@@ -103,7 +107,7 @@ export function RecapMatch({
           <h2 id="titre-stats" className="mb-3 text-[18px] font-bold text-creme">
             {ts(locale, 'm.stats')}
           </h2>
-          <Panneau className="overflow-hidden">
+          <Panneau className="cascade-defilement cascade overflow-hidden">
             <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)_minmax(0,1fr)] items-center gap-3 border-b border-bord px-4 py-2.5 text-[12.5px] font-semibold">
               <span className="truncate text-vert">{g.pseudo}</span>
               <span />
@@ -127,7 +131,7 @@ export function RecapMatch({
                       <span className="block text-[12px] font-medium text-gris">{ts(locale, l.cle)}</span>
                       {connus && (
                         <span aria-hidden className="mt-1.5 flex h-1.5 overflow-hidden rounded-full bg-bord">
-                          <span className="h-full bg-vert/80" style={{ width: `${partA}%` }} />
+                          <span className="remplir-x h-full bg-vert/80" style={{ width: `${partA}%` }} />
                           <span className="h-full flex-1 bg-rouge/70" />
                         </span>
                       )}
@@ -259,7 +263,7 @@ function Cote({
       <span className="mt-1 flex flex-wrap items-baseline justify-center gap-x-2 text-[14px]">
         <span className="font-mono text-gris tabular-nums">{c.eloAvant}</span>
         <span className="text-gris">→</span>
-        <Elo valeur={c.eloApres} className="text-[17px]" />
+        <Elo valeur={c.eloApres} className="text-[17px]" anime />
         <Delta valeur={c.delta} annule={annule} className="text-[14px]" />
       </span>
       <NomPalier elo={c.eloApres} locale={locale} className="mt-0.5" />
