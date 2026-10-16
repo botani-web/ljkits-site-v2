@@ -371,10 +371,12 @@ const DICO = {
     fr: 'L’esprit du règlement en une phrase',
     en: 'The spirit of the rules, in one sentence',
   },
-  'reglement.phrase-avant': { fr: 'Joue au soup comme en', en: 'Play soup like it is' },
+  // 16/10/2026 : la phrase « soup comme en 2014 » ne collait plus au practice de la saison 2.
+  'reglement.phrase-avant': { fr: 'Gagne', en: 'Win' },
+  'reglement.phrase-accent': { fr: 'à la loyale', en: 'fair and square' },
   'reglement.phrase-apres': {
-    fr: ', sans pourrir le jeu des autres.',
-    en: ', without ruining anyone else’s game.',
+    fr: ', et laisse les autres en faire autant.',
+    en: ', and let everyone else do the same.',
   },
   'reglement.meta-description': {
     fr: 'Le règlement du serveur Minecraft PvP Soup LJKITS : triche, respect, stats, bugs, chat, sanctions.',

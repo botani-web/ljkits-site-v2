@@ -122,7 +122,7 @@ export default async function PageReglement({
           <div className="hachures mx-auto max-w-lecture rounded-bloc border border-oni/40 p-[clamp(26px,4vw,40px)] text-center">
             <Etiquette className="text-oni">{t(locale, 'reglement.esprit')}</Etiquette>
             <p className="mt-4 font-titre text-[clamp(19px,2.8vw,28px)] leading-tight">
-              {t(locale, 'reglement.phrase-avant')} <span className="text-or">2014</span>
+              {t(locale, 'reglement.phrase-avant')} <span className="text-or">{t(locale, 'reglement.phrase-accent')}</span>
               {t(locale, 'reglement.phrase-apres')}
             </p>
           </div>
