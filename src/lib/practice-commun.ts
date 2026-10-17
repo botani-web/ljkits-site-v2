@@ -12,7 +12,7 @@ import type { CleTexte } from '@/lib/i18n'
  * Les modes classés, dans l'ordre du menu en jeu. La couleur sert aux courbes et aux pastilles,
  * l'icône est la texture 1.8.9 de l'item du menu (public/items, cf. ladders.yml de LJPractice).
  *
- * SAISON 2 (16/10/2026) : huit modes ranked ; Boxing et Iron Soup ne sont plus classés
+ * SAISON 2 (16/10/2026) : huit modes ranked, sept depuis le 17/10 (BuildUHC retire) ; Boxing et Iron Soup ne sont plus classés
  * mais restent ici pour lire la saison 1. `saisons` dit dans quelles saisons le mode
  * était classé — c'est ce qui décide des onglets du classement.
  */
@@ -21,7 +21,8 @@ export const MODES = [
   { id: 'digger', nom: 'Digger', couleur: '#c08a4a', icone: 'blocks-dragon_egg', saisons: [1, 2] },
   { id: 'caveuhc', nom: 'CaveUHC', couleur: '#9aa3ad', icone: 'blocks-stone', saisons: [2] },
   { id: 'uhc', nom: 'UHC', couleur: '#fdc003', icone: 'items-apple_golden', saisons: [2] },
-  { id: 'builduhc', nom: 'BuildUHC', couleur: '#fe7a2f', icone: 'items-bucket_lava', saisons: [2] },
+  // 17/10/2026 : BuildUHC retire du ranked des le premier jour (aucun match classe) -> plus classe en saison 2
+  { id: 'builduhc', nom: 'BuildUHC', couleur: '#fe7a2f', icone: 'items-bucket_lava', saisons: [] as number[] },
   { id: 'nodebuff', nom: 'NoDebuff', couleur: '#e05bb6', icone: 'items-potion_bottle_splash', saisons: [2] },
   { id: 'archer', nom: 'Archer', couleur: '#5be06b', icone: 'items-bow_standby', saisons: [2] },
   { id: 'skywars', nom: 'SkyWars', couleur: '#4fd6e0', icone: 'items-ender_pearl', saisons: [2] },

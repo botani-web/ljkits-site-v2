@@ -72,16 +72,16 @@ const TEXTES = {
   /* ---------- accueil ---------- */
   'a.meta-titre': { fr: 'LJKITS — Practice compétitif 1.7 / 1.8', en: 'LJKITS — Competitive Practice 1.7 / 1.8' },
   'a.meta-desc': {
-    fr: 'Serveur practice 1v1 sur Minecraft 1.7 et 1.8 : 8 modes classés, un Elo par mode, {c} de cashprize chaque saison.',
-    en: 'Minecraft 1.7 & 1.8 practice server: 8 ranked modes, one Elo per mode, {c} cashprize every season.',
+    fr: 'Serveur practice 1v1 sur Minecraft 1.7 et 1.8 : 7 modes classés, un Elo par mode, {c} de cashprize chaque saison.',
+    en: 'Minecraft 1.7 & 1.8 practice server: 7 ranked modes, one Elo per mode, {c} cashprize every season.',
   },
   'a.kicker-ouverture': { fr: 'Saison {n} · ouverture le {d}', en: 'Season {n} · opens {d}' },
   'a.kicker-live': { fr: 'Saison {n} en cours', en: 'Season {n} is live' },
   'a.titre-1': { fr: 'Practice', en: 'Competitive' },
   'a.titre-2': { fr: 'compétitif.', en: 'practice.' },
   'a.chapeau': {
-    fr: 'Du 1v1 classé sur 1.7 et 1.8. Huit modes, un Elo par mode, et {c} pour le top 3 de chaque saison.',
-    en: 'Ranked 1v1 on 1.7 and 1.8. Eight modes, one Elo per mode, and {c} for the top 3 every season.',
+    fr: 'Du 1v1 classé sur 1.7 et 1.8. Sept modes, un Elo par mode, et {c} pour le top 3 de chaque saison.',
+    en: 'Ranked 1v1 on 1.7 and 1.8. Seven modes, one Elo per mode, and {c} for the top 3 every season.',
   },
   'a.en-ligne': { fr: 'en ligne', en: 'online' },
   'a.rejoindre-discord': { fr: 'Rejoindre le Discord', en: 'Join the Discord' },
