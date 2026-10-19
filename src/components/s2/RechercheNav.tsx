@@ -6,10 +6,10 @@ import { useEffect, useId, useRef, useState } from 'react'
 import { useLocale } from '@/hooks/useLocale'
 import { lien } from '@/lib/i18n'
 import { ts } from '@/lib/i18n-s2'
-import { palierDe } from '@/lib/paliers'
+import { type EtatPalier, palierAffiche } from '@/lib/paliers'
 import { cheminProfil, urlTete } from '@/lib/practice-commun'
 
-type Trouve = { uuid: string; pseudo: string; elo: number; saison: number }
+type Trouve = { uuid: string; pseudo: string; elo: number; saison: number; etatPalier?: EtatPalier | null }
 
 /**
  * La recherche de joueur de la barre de navigation (16/10/2026).
@@ -169,7 +169,7 @@ export function RechercheNav({ className = '', autoFocus = false }: { className?
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={urlTete(j.pseudo, 48)} alt="" width={22} height={22} className="rounded-[3px] [image-rendering:pixelated]" />
               <span className="min-w-0 flex-1 truncate font-semibold text-creme">{j.pseudo}</span>
-              <span className="font-mono text-[12.5px] font-bold" style={{ color: palierDe(j.elo).couleur }}>
+              <span className="font-mono text-[12.5px] font-bold" style={{ color: palierAffiche(j.elo, j.etatPalier).couleur }}>
                 {j.elo}
               </span>
               <span className="w-7 text-right font-mono text-[10.5px] text-gris">{ts(locale, 'c.saison-courte', { n: j.saison })}</span>

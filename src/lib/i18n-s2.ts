@@ -64,6 +64,8 @@ const TEXTES = {
   'c.place-libre': { fr: 'Place à prendre', en: 'Up for grabs' },
   'c.voir-tout': { fr: 'Tout voir', en: 'View all' },
   'c.non-classe': { fr: 'Non classé', en: 'Unranked' },
+  'c.promo': { fr: '▲ promo', en: '▲ promo' },
+  'c.relegation': { fr: '▼ relégation', en: '▼ demotion' },
   'c.annule': { fr: 'Annulé', en: 'Voided' },
   'c.secondes': { fr: '{n} s', en: '{n}s' },
   'c.vs': { fr: 'VS', en: 'VS' },

@@ -1,5 +1,6 @@
 import { unstable_cache } from 'next/cache'
 
+import type { EtatPalier } from '@/lib/paliers'
 import { MODES, type Resultat, type Vue } from '@/lib/practice-commun'
 import { prisma } from '@/lib/prisma'
 
@@ -44,6 +45,41 @@ function pourcentage(part: number, total: number): number {
   return total > 0 ? Math.round((part * 100) / total) : 0
 }
 
+/* ================================================================
+ *  PROMOTIONS ET RELÉGATIONS EN COURS (19/10/2026)
+ *
+ *  LJElo recopie dans `elo_palier_etat` l'état d'attente de chaque joueur
+ *  (cf. paliers.ts). Requête À PART, jamais jointe aux autres : tant que la
+ *  table n'existe pas (ou en cas d'erreur), aucun état, et le site affiche
+ *  exactement les paliers d'avant. Après un échec, on ne la réessaie qu'au
+ *  bout de 5 minutes, pour ne pas payer un aller-retour en erreur à chaque page.
+ *  Une saison terminée n'a plus d'attente : ses paliers restent ceux de l'Elo.
+ * ================================================================ */
+
+let etatsIndisponiblesJusqua = 0
+
+/** La clé d'un état : un joueur et un ladder ('global' pour l'Elo global). */
+export function cleEtat(uuid: string, ladder: string): string {
+  return `${uuid}/${ladder}`
+}
+
+export async function lireEtatsPaliers(saison: number, uuids: string[]): Promise<Map<string, EtatPalier>> {
+  if (uuids.length === 0 || Date.now() < etatsIndisponiblesJusqua) return new Map()
+  try {
+    const lignes = await prisma.$queryRawUnsafe<{ uuid: string; ladder: string; statut: string; palier: number }[]>(
+      `select uuid, ladder, statut, palier from elo_palier_etat
+        where saison = $1 and uuid = any($2)
+          and not exists (select 1 from elo_saison s where s.id = $1 and (s.statut = 'terminee' or s.fin < now()))`,
+      saison,
+      uuids,
+    )
+    return new Map(lignes.map((l) => [cleEtat(l.uuid, l.ladder), { statut: l.statut, palier: Number(l.palier) }]))
+  } catch {
+    etatsIndisponiblesJusqua = Date.now() + 5 * 60_000
+    return new Map()
+  }
+}
+
 
 /* ================================================================
  *  LE CLASSEMENT
@@ -65,9 +101,11 @@ export type LigneClassement = {
   /** Les 5 derniers résultats, le plus récent d'abord. */
   forme: Resultat[]
   /** Vue globale seulement : l'Elo de chacun de ses modes. */
-  modes: { mode: string; elo: number }[]
+  modes: { mode: string; elo: number; etatPalier?: EtatPalier | null }[]
   /** Temps passé en match ranked dans la vue, en secondes (12/10/2026). */
   temps: number
+  /** Promotion, relégation ou palier global en attente (elo_palier_etat), pour l'Elo de la vue. */
+  etatPalier?: EtatPalier | null
 }
 
 type BrutClassement = {
@@ -113,10 +151,11 @@ export async function lireClassement(saison: number, vue: Vue, limite = 500): Pr
 
   if (lignes.length === 0) return []
   const uuids = lignes.map((l) => l.uuid)
-  const [formes, modes, temps] = await Promise.all([
+  const [formes, modes, temps, etats] = await Promise.all([
     lireFormes(saison, uuids, vue === 'global' ? null : vue),
     vue === 'global' ? lireModesDesJoueurs(saison, uuids) : Promise.resolve(new Map<string, { mode: string; elo: number }[]>()),
     lireTempsDeJeu(saison, uuids, vue === 'global' ? null : vue),
+    lireEtatsPaliers(saison, uuids),
   ])
 
   return lignes.map((l, index) => ({
@@ -124,8 +163,9 @@ export async function lireClassement(saison: number, vue: Vue, limite = 500): Pr
     rang: index + 1,
     winrate: pourcentage(l.victoires, l.matchs),
     forme: formes.get(l.uuid) ?? [],
-    modes: modes.get(l.uuid) ?? [],
+    modes: (modes.get(l.uuid) ?? []).map((m) => ({ ...m, etatPalier: etats.get(cleEtat(l.uuid, m.mode)) ?? null })),
     temps: temps.get(l.uuid) ?? 0,
+    etatPalier: etats.get(cleEtat(l.uuid, vue)) ?? null,
   }))
 }
 
@@ -414,6 +454,7 @@ export type StatsMode = {
   serie: number
   recordSerie: number
   derniereMaj: Date
+  etatPalier?: EtatPalier | null
 }
 
 export type MatchProfil = {
@@ -458,6 +499,7 @@ export type Profil = {
     winrate: number
     serie: number
     recordSerie: number
+    etatPalier?: EtatPalier | null
   } | null
   modes: StatsMode[]
   /** Les matchs les plus récents d'abord (au plus HISTORIQUE_MAX). */
@@ -531,7 +573,7 @@ export async function lireProfil(saison: number, recherche: string): Promise<Pro
   const uuid = trouve[0]?.uuid
   if (!uuid) return null
 
-  const [pseudos, exclusion, liaison, globaux, modesBruts, bruts] = await Promise.all([
+  const [pseudos, exclusion, liaison, globaux, modesBruts, bruts, etats] = await Promise.all([
     prisma.$queryRawUnsafe<{ pseudo: string }[]>(
       `select pseudo from practice_elo where uuid = $1 order by derniere_maj desc limit 1`,
       uuid,
@@ -574,6 +616,7 @@ export async function lireProfil(saison: number, recherche: string): Promise<Pro
       uuid,
       MATCHS_LUS_MAX,
     ),
+    lireEtatsPaliers(saison, [uuid]),
   ])
 
   const matchs: MatchProfil[] = bruts.map((b) => {
@@ -601,10 +644,16 @@ export async function lireProfil(saison: number, recherche: string): Promise<Pro
 
   const ordreModes = new Map<string, number>(MODES.map((m, i) => [m.id, i]))
   const modes: StatsMode[] = modesBruts
-    .map((m) => ({ ...m, winrate: pourcentage(m.victoires, m.matchs) }))
+    .map((m) => ({ ...m, winrate: pourcentage(m.victoires, m.matchs), etatPalier: etats.get(cleEtat(uuid, m.mode)) ?? null }))
     .sort((a, b) => (ordreModes.get(a.mode) ?? 99) - (ordreModes.get(b.mode) ?? 99))
 
-  const global = globaux[0] ? { ...globaux[0], winrate: pourcentage(globaux[0].victoires, globaux[0].matchs) } : null
+  const global = globaux[0]
+    ? {
+        ...globaux[0],
+        winrate: pourcentage(globaux[0].victoires, globaux[0].matchs),
+        etatPalier: etats.get(cleEtat(uuid, 'global')) ?? null,
+      }
+    : null
 
   return {
     uuid,

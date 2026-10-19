@@ -841,6 +841,8 @@ const DICO = {
   'pr.forme': { fr: 'Forme récente', en: 'Recent form' },
   'pr.v': { fr: 'V', en: 'W' },
   'pr.d': { fr: 'D', en: 'L' },
+  'pr.promo': { fr: '▲ promo', en: '▲ promo' },
+  'pr.relegation': { fr: '▼ relégation', en: '▼ demotion' },
   'pr.victoire': { fr: 'Victoire', en: 'Win' },
   'pr.defaite': { fr: 'Défaite', en: 'Loss' },
 

@@ -1,7 +1,7 @@
 import Link from 'next/link'
 
 import { lien, t, type Locale } from '@/lib/i18n'
-import { palierDe } from '@/lib/paliers'
+import { palierAffiche } from '@/lib/paliers'
 import { cheminProfil } from '@/lib/practice-commun'
 import type { LigneClassement } from '@/lib/practice'
 
@@ -36,7 +36,7 @@ export function Podium({
     <ol className="grid items-end gap-4 lg:grid-cols-3">
       {podium.map((ligne, index) => {
         const medaille = MEDAILLES[index]
-        const palier = palierDe(ligne.elo)
+        const palier = palierAffiche(ligne.elo, ligne.etatPalier)
         const prix = cashprize?.[index]
         return (
           <li key={ligne.uuid} className={medaille.ordre}>
@@ -77,7 +77,7 @@ export function Podium({
                     <p className="truncate font-titre text-[22px] leading-none transition-colors group-hover:text-or">
                       {ligne.pseudo}
                     </p>
-                    <BadgePalier elo={ligne.elo} locale={locale} className="mt-2.5" />
+                    <BadgePalier elo={ligne.elo} etat={ligne.etatPalier} locale={locale} className="mt-2.5" />
                   </div>
                   <p className="font-titre text-[34px] leading-none tabular-nums" style={{ color: palier.couleur }}>
                     {ligne.elo}

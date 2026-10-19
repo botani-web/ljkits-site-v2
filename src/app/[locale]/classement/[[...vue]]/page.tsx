@@ -253,8 +253,8 @@ function Podium({
                   <BadgeGrade grade={grades.get(j.uuid)} />
                 </div>
                 <div className="mt-0.5 flex items-baseline gap-2">
-                  <Elo valeur={j.elo} className="text-[22px]" anime />
-                  <NomPalier elo={j.elo} locale={locale} />
+                  <Elo valeur={j.elo} etat={j.etatPalier} className="text-[22px]" anime />
+                  <NomPalier elo={j.elo} etat={j.etatPalier} locale={locale} />
                 </div>
                 <div className="mt-1 text-[12.5px] text-gris">
                   <span className="text-vert">{j.victoires}</span> {ts(locale, 'c.v')} ·{' '}
@@ -310,8 +310,8 @@ function Tableau({
                 </Link>
               </td>
               <td className="py-2 pr-4 text-right whitespace-nowrap sm:pr-2">
-                <Elo valeur={j.elo} className="text-[15px]" />
-                <NomPalier elo={j.elo} locale={locale} className="ml-2 hidden xl:inline" />
+                <Elo valeur={j.elo} etat={j.etatPalier} className="text-[15px]" />
+                <NomPalier elo={j.elo} etat={j.etatPalier} locale={locale} className="ml-2 hidden xl:inline" />
               </td>
               <td className="hidden py-2 text-right font-mono text-[13px] whitespace-nowrap tabular-nums sm:table-cell">
                 <span className="text-vert">{j.victoires}</span>
@@ -331,7 +331,7 @@ function Tableau({
                     {j.modes.slice(0, 4).map((m) => (
                       <span key={m.mode} className="inline-flex items-center gap-1" title={infosMode(m.mode).nom}>
                         <IconeMode mode={m.mode} taille={14} />
-                        <Elo valeur={m.elo} className="text-[12px]" />
+                        <Elo valeur={m.elo} etat={m.etatPalier} className="text-[12px]" />
                       </span>
                     ))}
                   </span>

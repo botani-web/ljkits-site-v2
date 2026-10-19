@@ -40,6 +40,38 @@ export function palierDe(elo: number): Palier {
   return trouve
 }
 
+/**
+ * L'ÉTAT DE PALIER RECOPIÉ PAR LE PLUGIN (table `elo_palier_etat`, 19/10/2026).
+ *
+ *   - 'promotion'  : l'Elo a passé le seuil de `palier` (index VISÉ), mais il
+ *                    faut gagner un match pour le valider ; on affiche encore
+ *                    le palier d'en dessous ;
+ *   - 'relegation' : l'Elo est passé sous le seuil de `palier` (index PROTÉGÉ),
+ *                    il faut gagner un match pour y rester ; on l'affiche encore ;
+ *   - 'global'     : `palier` est directement le palier global affiché.
+ *
+ * Pas d'état = le palier normal de l'Elo. Seul le palier ACTUEL en dépend :
+ * l'historique (Elo après un match, courbes, saisons passées) reste à palierDe.
+ */
+export type EtatPalier = { statut: string; palier: number }
+
+/** Le palier à afficher pour l'Elo actuel d'un joueur, compte tenu de son état en jeu. */
+export function palierAffiche(elo: number, etat?: EtatPalier | null): Palier {
+  const normal = palierDe(elo)
+  if (!etat || !Number.isInteger(etat.palier) || etat.palier < 0 || etat.palier >= PALIERS.length) return normal
+  const atteint = PALIERS.indexOf(normal)
+  if (etat.statut === 'promotion') return etat.palier > 0 && atteint >= etat.palier ? PALIERS[etat.palier - 1] : normal
+  if (etat.statut === 'relegation') return atteint < etat.palier ? PALIERS[etat.palier] : normal
+  if (etat.statut === 'global') return PALIERS[etat.palier]
+  return normal
+}
+
+/** Le marqueur à poser à côté du palier d'un mode : seulement si l'état change vraiment l'affichage. */
+export function statutAffiche(elo: number, etat?: EtatPalier | null): 'promotion' | 'relegation' | null {
+  if (!etat || (etat.statut !== 'promotion' && etat.statut !== 'relegation')) return null
+  return palierAffiche(elo, etat) !== palierDe(elo) ? etat.statut : null
+}
+
 /** Ce qu'il reste avant le palier suivant, ou null au palier maximum. */
 export function resteAvantSuivant(elo: number): { palier: Palier; reste: number } | null {
   for (const palier of PALIERS) {

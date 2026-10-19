@@ -3,7 +3,7 @@ import Link from 'next/link'
 import type { Grade } from '@/lib/grades-commun'
 import { lien, type Locale } from '@/lib/i18n'
 import { ts } from '@/lib/i18n-s2'
-import { nomPalier, palierDe } from '@/lib/paliers'
+import { type EtatPalier, nomPalier, palierAffiche, statutAffiche } from '@/lib/paliers'
 import { cheminProfil, infosMode, type Resultat, urlTete } from '@/lib/practice-commun'
 
 /**
@@ -81,31 +81,52 @@ export function Compteur({
   )
 }
 
-/** Un Elo, toujours à la couleur de son palier (règle du jeu, cf. Palier.java). `anime` : il défile en arrivant. */
+/**
+ * Un Elo, toujours à la couleur de son palier (règle du jeu, cf. Palier.java). `anime` : il défile en arrivant.
+ * `etat` : seulement pour un Elo ACTUEL (promotion ou relégation en cours) ; un Elo passé n'en a pas.
+ */
 export function Elo({
   valeur,
+  etat,
   className = '',
   anime = false,
   defilement = false,
 }: {
   valeur: number
+  etat?: EtatPalier | null
   className?: string
   anime?: boolean
   defilement?: boolean
 }) {
   return (
-    <span className={`font-mono font-bold tabular-nums ${className}`} style={{ color: palierDe(valeur).couleur }}>
+    <span className={`font-mono font-bold tabular-nums ${className}`} style={{ color: palierAffiche(valeur, etat).couleur }}>
       {anime ? <Compteur valeur={valeur} defilement={defilement} /> : valeur}
     </span>
   )
 }
 
-/** Le nom du palier, en petites capitales, à la couleur du palier. */
-export function NomPalier({ elo, locale, className = '' }: { elo: number; locale: Locale; className?: string }) {
-  const palier = palierDe(elo)
+/** Le nom du palier, en petites capitales, à la couleur du palier ; suivi de « ▲ promo » / « ▼ relégation » si un match est en jeu. */
+export function NomPalier({
+  elo,
+  etat,
+  locale,
+  className = '',
+}: {
+  elo: number
+  etat?: EtatPalier | null
+  locale: Locale
+  className?: string
+}) {
+  const palier = palierAffiche(elo, etat)
+  const statut = statutAffiche(elo, etat)
   return (
     <span className={`text-[11px] font-semibold uppercase tracking-[.08em] ${className}`} style={{ color: palier.couleur }}>
       {nomPalier(palier, locale)}
+      {statut && (
+        <span className={`ml-1.5 normal-case tracking-normal ${statut === 'promotion' ? 'text-or' : 'text-rouge'}`}>
+          {ts(locale, statut === 'promotion' ? 'c.promo' : 'c.relegation')}
+        </span>
+      )}
     </span>
   )
 }

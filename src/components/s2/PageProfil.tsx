@@ -26,7 +26,7 @@ import { formaterDate } from '@/lib/format'
 import { estLocale, LANGUE_DEFAUT, lien, type Locale } from '@/lib/i18n'
 import { ts } from '@/lib/i18n-s2'
 import { gradesEnCache, lirePresence, saisonsJouees, trouverJoueur } from '@/lib/joueurs'
-import { palierDe } from '@/lib/paliers'
+import { palierAffiche } from '@/lib/paliers'
 import { lireArchiveJoueur, lireProfil, type Profil, type Rival } from '@/lib/practice'
 import { cheminProfil, formaterDuree, formaterTempsJeu, infosMode, modesDeSaison, tempsRelatif } from '@/lib/practice-commun'
 import { contexteSaison, lireSaisonsCache } from '@/lib/saisons'
@@ -97,7 +97,7 @@ export async function PageProfil({ pseudo, brut, saison: saisonDemandee }: { pse
   const { profil, presence, grade, saison } = f
   const g = profil?.global ?? null
   const eloGlobal = g?.elo ?? null
-  const halo = eloGlobal != null ? palierDe(eloGlobal).couleur : '#fdc003'
+  const halo = eloGlobal != null ? palierAffiche(eloGlobal, g?.etatPalier).couleur : '#fdc003'
 
   return (
     <PagePublique locale={locale}>
@@ -180,8 +180,8 @@ export async function PageProfil({ pseudo, brut, saison: saisonDemandee }: { pse
 
               {g && (
                 <Panneau className="cascade mt-5 grid grid-cols-2 gap-x-4 gap-y-4 px-4 py-4 sm:grid-cols-3 lg:grid-cols-6">
-                  <Chiffre libelle={ts(locale, 'p.elo-global')} sous={<NomPalier elo={g.elo} locale={locale} />}>
-                    <Elo valeur={g.elo} className="text-[26px]" anime />
+                  <Chiffre libelle={ts(locale, 'p.elo-global')} sous={<NomPalier elo={g.elo} etat={g.etatPalier} locale={locale} />}>
+                    <Elo valeur={g.elo} etat={g.etatPalier} className="text-[26px]" anime />
                   </Chiffre>
                   <Chiffre libelle={ts(locale, 'c.pic')}>
                     <Elo valeur={g.eloMax} anime />
@@ -331,8 +331,8 @@ function CartesModes({ profil, saison, locale, parDefaut }: { profil: Profil; sa
                 </span>
               </span>
               <span className="text-right">
-                <Elo valeur={m.elo} className="block text-[20px] leading-tight" anime />
-                <NomPalier elo={m.elo} locale={locale} />
+                <Elo valeur={m.elo} etat={m.etatPalier} className="block text-[20px] leading-tight" anime />
+                <NomPalier elo={m.elo} etat={m.etatPalier} locale={locale} />
               </span>
             </span>
             <span className="mt-3 flex items-center justify-between gap-2 text-[12.5px]">

@@ -5,7 +5,7 @@ import { useMemo, useState } from 'react'
 
 import { Filtre } from '@/components/ui/Pilule'
 import { lien, t, type Locale } from '@/lib/i18n'
-import { palierDe } from '@/lib/paliers'
+import { palierAffiche } from '@/lib/paliers'
 import { cheminProfil, infosMode, urlTete } from '@/lib/practice-commun'
 import type { LigneClassement } from '@/lib/practice'
 
@@ -106,7 +106,7 @@ export function TableauClassement({
         ) : (
           <ol>
             {visibles.slice(0, affiches).map((ligne) => {
-              const palier = palierDe(ligne.elo)
+              const palier = palierAffiche(ligne.elo, ligne.etatPalier)
               return (
                 <li key={ligne.uuid} className="border-b border-bord last:border-b-0">
                   <Link
@@ -135,13 +135,13 @@ export function TableauClassement({
                           {ligne.pseudo}
                         </span>
                         <span className="mt-1 flex flex-wrap items-center gap-x-2.5 gap-y-1">
-                          <BadgePalier elo={ligne.elo} locale={locale} petit />
+                          <BadgePalier elo={ligne.elo} etat={ligne.etatPalier} locale={locale} petit />
                           {global &&
                             ligne.modes.map((m) => (
                               <span key={m.mode} className="hidden items-center gap-1 font-mono text-[10px] text-gris sm:inline-flex">
                                 <span aria-hidden className="size-1.5 rounded-full" style={{ background: infosMode(m.mode).couleur }} />
                                 {infosMode(m.mode).nom}
-                                <span className="tabular-nums" style={{ color: palierDe(m.elo).couleur }}>
+                                <span className="tabular-nums" style={{ color: palierAffiche(m.elo, m.etatPalier).couleur }}>
                                   {m.elo}
                                 </span>
                               </span>

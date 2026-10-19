@@ -1,5 +1,5 @@
 import { t, type Locale } from '@/lib/i18n'
-import { nomPalier, palierDe } from '@/lib/paliers'
+import { type EtatPalier, nomPalier, palierAffiche, palierDe, statutAffiche } from '@/lib/paliers'
 import { infosMode, type Resultat } from '@/lib/practice-commun'
 
 /**
@@ -7,19 +7,22 @@ import { infosMode, type Resultat } from '@/lib/practice-commun'
  * elles s'affichent aussi bien dans une page serveur que dans un composant client.
  */
 
-/** Le palier d'un Elo, dans sa couleur. */
+/** Le palier d'un Elo, dans sa couleur ; `etat` : promotion ou relégation en cours (Elo actuel seulement). */
 export function BadgePalier({
   elo,
+  etat,
   locale,
   petit = false,
   className = '',
 }: {
   elo: number
+  etat?: EtatPalier | null
   locale: Locale
   petit?: boolean
   className?: string
 }) {
-  const palier = palierDe(elo)
+  const palier = palierAffiche(elo, etat)
+  const statut = statutAffiche(elo, etat)
   return (
     <span
       className={`inline-flex items-center gap-1.5 rounded-micro border px-2 py-[3px] font-mono leading-none tracking-[.12em] whitespace-nowrap uppercase ${
@@ -29,6 +32,11 @@ export function BadgePalier({
     >
       <span aria-hidden className="size-[5px] rotate-45" style={{ background: palier.couleur }} />
       {nomPalier(palier, locale)}
+      {statut && (
+        <span className={`normal-case tracking-normal ${statut === 'promotion' ? 'text-or' : 'text-rouge'}`}>
+          {t(locale, statut === 'promotion' ? 'pr.promo' : 'pr.relegation')}
+        </span>
+      )}
     </span>
   )
 }

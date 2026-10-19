@@ -1,6 +1,8 @@
 import { unstable_cache } from 'next/cache'
 
 import { gradeDe, type Grade } from '@/lib/grades-commun'
+import type { EtatPalier } from '@/lib/paliers'
+import { cleEtat, lireEtatsPaliers } from '@/lib/practice'
 import { prisma } from '@/lib/prisma'
 
 /**
@@ -70,7 +72,7 @@ export async function lirePresence(uuid: string): Promise<Presence> {
   }
 }
 
-export type JoueurTrouve = { uuid: string; pseudo: string; elo: number; saison: number }
+export type JoueurTrouve = { uuid: string; pseudo: string; elo: number; saison: number; etatPalier?: EtatPalier | null }
 
 /**
  * La recherche de la barre de navigation : TOUTES saisons confondues, pour qu'un
@@ -79,7 +81,7 @@ export type JoueurTrouve = { uuid: string; pseudo: string; elo: number; saison: 
  */
 export async function rechercherPartout(saisie: string, limite = 8): Promise<JoueurTrouve[]> {
   const motif = saisie.replace(/[\\%_]/g, (c) => `\\${c}`)
-  return prisma.$queryRawUnsafe<JoueurTrouve[]>(
+  const trouves = await prisma.$queryRawUnsafe<JoueurTrouve[]>(
     `select uuid, pseudo, elo, saison from (
         select distinct on (p.uuid) p.uuid, p.pseudo, coalesce(j.elo, p.elo)::int as elo, p.saison, p.derniere_maj
           from practice_elo p
@@ -92,6 +94,11 @@ export async function rechercherPartout(saisie: string, limite = 8): Promise<Jou
     motif,
     limite,
   )
+  // L'Elo affiché est le global : son palier peut attendre une promotion ou une relégation (une lecture par saison trouvée).
+  const saisons = [...new Set(trouves.map((j) => j.saison))]
+  const etats = await Promise.all(saisons.map((s) => lireEtatsPaliers(s, trouves.filter((j) => j.saison === s).map((j) => j.uuid))))
+  const parSaison = new Map(saisons.map((s, i) => [s, etats[i]]))
+  return trouves.map((j) => ({ ...j, etatPalier: parSaison.get(j.saison)?.get(cleEtat(j.uuid, 'global')) ?? null }))
 }
 
 export const lireGradesCache = unstable_cache(

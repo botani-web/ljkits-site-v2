@@ -180,7 +180,7 @@ export default async function Accueil({ params }: Params) {
                         <Link href={lien(locale, cheminProfil(j.pseudo))} className="flex min-w-0 flex-1 items-center gap-2 hover:text-or">
                           <Tete pseudo={j.pseudo} taille={24} />
                           <span className="truncate font-semibold">{j.pseudo}</span>
-                          <Elo valeur={j.elo} className="ml-auto text-[13.5px]" />
+                          <Elo valeur={j.elo} etat={j.etatPalier} className="ml-auto text-[13.5px]" />
                         </Link>
                       ) : (
                         <span className="flex-1 text-[14px] text-gris">{ts(locale, 'c.place-libre')}</span>
@@ -291,7 +291,7 @@ export default async function Accueil({ params }: Params) {
                   <Tete pseudo={j.pseudo} taille={24} />
                   <span className="min-w-0 flex-1 truncate font-semibold text-creme group-hover:text-or">{j.pseudo}</span>
                   <BadgeGrade grade={grades.get(j.uuid)} />
-                  <Elo valeur={j.elo} className="w-12 text-right text-[14px]" />
+                  <Elo valeur={j.elo} etat={j.etatPalier} className="w-12 text-right text-[14px]" />
                 </Link>
               ))}
             </Panneau>

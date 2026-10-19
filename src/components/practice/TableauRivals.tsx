@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { useState } from 'react'
 
 import { lien, t, type Locale } from '@/lib/i18n'
-import { palierDe } from '@/lib/paliers'
+import { palierAffiche } from '@/lib/paliers'
 import { cheminProfil, formaterTempsJeu, urlTete } from '@/lib/practice-commun'
 import type { LigneClassement } from '@/lib/practice'
 
@@ -70,10 +70,10 @@ export function TableauRivals({ lignes, locale }: { lignes: LigneClassement[]; l
                         style={couleurRang ? { boxShadow: `0 0 0 2px ${couleurRang}` } : undefined}
                       />
                       <span className="truncate font-semibold transition-colors group-hover:text-or">{l.pseudo}</span>
-                      <BadgePalier elo={l.elo} locale={locale} petit />
+                      <BadgePalier elo={l.elo} etat={l.etatPalier} locale={locale} petit />
                     </Link>
                   </td>
-                  <td className="px-3 py-3 text-right font-titre text-[18px] tabular-nums" style={{ color: palierDe(l.elo).couleur }}>
+                  <td className="px-3 py-3 text-right font-titre text-[18px] tabular-nums" style={{ color: palierAffiche(l.elo, l.etatPalier).couleur }}>
                     {l.elo}
                   </td>
                   <td className="px-3 py-3 text-right font-mono text-[13px] tabular-nums">{l.matchs}</td>
