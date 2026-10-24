@@ -1402,3 +1402,33 @@ model SaisonArchive {
   @@id([saison, cle])
   @@map("saison_archive")
 }
+
+/// Un événement (24/10/2026, tournoi HG Run du soir) : ses manches sont les parties du HG Run
+/// (tables hgrun_partie / hgrun_joueur du plugin, lues en SQL brut) jouées entre `debut` et `fin`,
+/// sauf celles de `exclues` (tests, manche boguée). Le classement est calculé à la lecture avec
+/// le barème de l'événement : points[place - 1] + pointsKill × kills.
+model Evenement {
+  id            Int      @id @default(autoincrement())
+  slug          String   @unique
+  nom           String
+  nomEn         String   @default("") @map("nom_en")
+  description   String   @default("")
+  descriptionEn String   @default("") @map("description_en")
+  /// Le jeu dont on lit les parties ; seul « hgrun » existe pour l'instant.
+  jeu           String   @default("hgrun")
+  debut         DateTime @db.Timestamptz(6)
+  fin           DateTime @db.Timestamptz(6)
+  /// Le total affiché (« 35 € ») et le détail, une ligne par prix (« Top 3 — 30 € »).
+  cashprize     String   @default("")
+  prix          String   @default("")
+  prixEn        String   @default("") @map("prix_en")
+  points        Int[]    @default([20, 15, 12, 10, 8, 6, 5, 4, 3, 2, 1, 1, 1, 1, 1])
+  pointsKill    Int      @default(2) @map("points_kill")
+  /// Identifiants hgrun_partie qui ne comptent pas.
+  exclues       BigInt[] @default([])
+  publie        Boolean  @default(true)
+  creeLe        DateTime @default(now()) @map("cree_le")
+  majLe         DateTime @updatedAt @map("maj_le")
+
+  @@map("evenement")
+}

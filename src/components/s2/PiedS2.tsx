@@ -30,6 +30,7 @@ export async function PiedS2({ locale }: { locale: Locale }) {
           <Colonne titre={ts(locale, 'pied.jeu')}>
             <Lien href={lien(locale, '/classement')}>{ts(locale, 'nav.classements')}</Lien>
             <Lien href={lien(locale, '/matchs')}>{ts(locale, 'nav.matchs')}</Lien>
+            <Lien href={lien(locale, '/evenements')}>{ts(locale, 'nav.evenements')}</Lien>
             <Lien href={lien(locale, '/boutique')}>{ts(locale, 'nav.boutique')}</Lien>
           </Colonne>
 

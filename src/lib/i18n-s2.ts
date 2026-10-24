@@ -12,6 +12,7 @@ const TEXTES = {
   /* ---------- navigation ---------- */
   'nav.classements': { fr: 'Classements', en: 'Leaderboards' },
   'nav.matchs': { fr: 'Matchs', en: 'Matches' },
+  'nav.evenements': { fr: 'Événements', en: 'Events' },
   'nav.boutique': { fr: 'Boutique', en: 'Store' },
   'nav.reglement': { fr: 'Règlement', en: 'Rules' },
   'nav.jouer': { fr: 'Jouer', en: 'Play' },

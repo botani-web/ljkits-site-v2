@@ -24,6 +24,8 @@ import { promoEnCours } from '@/lib/promo'
 const LIENS: { href: string; cle: CleS2 }[] = [
   { href: '/classement', cle: 'nav.classements' },
   { href: '/matchs', cle: 'nav.matchs' },
+  // 24/10/2026 : tournois (HG Run) avec classement en direct
+  { href: '/evenements', cle: 'nav.evenements' },
   { href: '/reglement', cle: 'nav.reglement' },
   // En dernier, et en orange : c'est le bouton de la barre (16/10/2026).
   { href: '/boutique', cle: 'nav.boutique' },

@@ -17,6 +17,7 @@ const ONGLETS = [
   { href: '/admin/grades', label: 'Grades' },
   { href: '/admin/packs', label: 'Packs' },
   { href: '/admin/promo', label: 'Promo' },
+  { href: '/admin/evenements', label: 'Événements' },
   { href: '/admin/commandes', label: 'Commandes' },
   { href: '/admin/recrutement', label: 'Recrutement' },
   { href: '/admin/avis', label: 'Avis' },
